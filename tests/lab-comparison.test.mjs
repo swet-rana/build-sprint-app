@@ -65,3 +65,12 @@ test('page-number footers cannot become a wrapped reference range',()=>{
  p.items.push(item('Page 2 of 19',376,550,70));
  assert.equal(parseReport([p]).markers[0].referenceText,'4000-10000');
 });
+test('alternate cholesterol names compare with their own source pages and reject conflicting aliases',()=>{
+ const old=page('19/Aug/2024','Ms.Sample Patient','TEST-123','127','mg/dL');
+ old.items=old.items.map(i=>({...i,str:i.str==='TOTAL LEUCOCYTE COUNT (TLC)'?'Cholesterol - LDL':i.str}));
+ const latest=page('27/May/2026','Ms.Sample Patient','TEST-123','137.7','mg/dL');latest.page=7;
+ latest.items=latest.items.map(i=>({...i,str:i.str==='TOTAL LEUCOCYTE COUNT (TLC)'?'LDL CHOLESTEROL':i.str}));
+ const result=compareReports(parseReport([old]),parseReport([latest]));
+ assert.equal(result.comparable.length,1);assert.equal(result.comparable[0].change,10.7);assert.equal(result.comparable[0].earlier.rawName,'Cholesterol - LDL');assert.equal(result.comparable[0].later.page,7);
+ assert.throws(()=>parseReport([old,{...latest,items:latest.items.map(i=>({...i,str:i.str.includes('27/May/2026')?': 19/Aug/2024':i.str}))}]),/Conflicting values/);
+});

@@ -1,9 +1,10 @@
+import { testIdentity, unitIdentity } from './test-names.js';
 const NUMBER = '[+-]?(?:\\d{1,3}(?:,\\d{3})+|\\d+)(?:\\.\\d+)?';
 const numeric = new RegExp(`^${NUMBER}$`);
 const clean = value => String(value ?? '').replace(/\s+/g,' ').trim();
 const months={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
 export function normalizePatient(name) { return clean(name).toLowerCase().replace(/^(mrs|ms|mr|miss|dr)\.?\s*/,'').replace(/[^a-z0-9]/g,''); }
-export function normalizeUnit(unit) { return clean(unit).toLowerCase().replace(/[µμ]/g,'u').replace(/\s/g,''); }
+export const normalizeUnit=unitIdentity;
 export function parseRange(text) {
   const input=clean(text).replace(/[–−]/g,'-').replace(/≥/g,'>=').replace(/≤/g,'<=');
   const interval=input.match(new RegExp(`^(${NUMBER})\\s*-\\s*(${NUMBER})$`));
@@ -38,13 +39,6 @@ function field(rows,label){
   const next=row.items[index+1];if(next)return clean(next.str).replace(/^:\s*/,'');}
  return null;
 }
-function markerIdentity(name,unit){
- const raw=clean(name).toUpperCase().replace(/\s*,?\s*(SERUM|WHOLE BLOOD EDTA)\s*$/,'').trim();
- let key=raw.replace(/[^A-Z0-9]/g,''),display=raw;
- const labels=[[/^(TOTAL LEUCOCYTE COUNT|WHITE BLOOD CELL|WBC)/,'wbc','White blood cells'],[/^HA?EMOGLOBIN$/,'haemoglobin','Haemoglobin'],[/^(ESR\b|ERYTHROCYTE SEDIMENTATION RATE)/,'esr','ESR'],[/^(HBA1C,|GLYCOSYLATED HEMOGLOBIN \(HBA1C\))/,'hba1c','HbA1c'],[/^(TSH\b|THYROID STIMULATING HORMONE)/,'tsh','TSH'],[/^VITAMIN D\b/,'vitamin-d','Vitamin D'],[/^VITAMIN B12\b/,'vitamin-b12','Vitamin B12'],[/^C-REACTIVE PROTEIN/,'crp','C-reactive protein'],[/^(TRI-IODOTHYRONINE|T3, TOTAL)/,'t3','Total T3'],[/^(THYROXINE|T4, TOTAL)/,'t4','Total T4']];
- for(const [pattern,id,label] of labels)if(pattern.test(raw)){key=id;display=label;break;}
- return {key:`${key}|${normalizeUnit(unit)}`,name:display,rawName:clean(name)};
-}
 export function parseReport(pages){
  const candidates=[],identities=[],dates=[],usedPages=new Set(),warnings=[];
  for(const page of pages){
@@ -75,7 +69,7 @@ export function parseReport(pages){
    }
    if(!unit&&!referenceText)continue;
    const value=Number(result.replaceAll(',',''));if(!Number.isFinite(value))continue;
-   const identity=markerIdentity(name,unit);
+   const identity=testIdentity(name,unit);
    candidates.push({...identity,value,unit:unit||'Ratio',referenceText:referenceText||'Not printed in result row',page:page.page,sourceText:row.text,date});
    pageUsed=true;
   }

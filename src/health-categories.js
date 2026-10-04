@@ -23,7 +23,7 @@ export function categoriesForTest(marker){
  const name=[marker.name,marker.rawName,...(marker.observations??[]).filter(Boolean).map(m=>m.rawName)].filter(Boolean).join(' ').toUpperCase().replace(/[^A-Z0-9]/g,'');
  const categories=new Set();
  const add=(category,match)=>{if(match)categories.add(category);};
- add('heart',/CHOLESTEROL|CHOLHDL|TRIGLYCERIDE|APOLIPOPROTEIN|LIPOPROTEIN|TROPONIN|NTPROBNP/.test(name));
+ add('heart',/CHOLESTEROL|CHOLHDL|LDLHDL|TRIGLYCERIDE|APOLIPOPROTEIN|LIPOPROTEIN|TROPONIN|NTPROBNP/.test(name));
  add('liver',/BILIRUBIN|ALANINEAMINO|ASPARTATEAMINO|SGPT|SGOT|GAMMAGLUTAMYL|GGT|ALKALINEPHOSPHATASE|PROTEINTOTAL|TOTALPROTEIN|GLOBULIN|AGRATIO/.test(name)||(/ALBUMIN/.test(name)&&!/URIN|MICROALBUMIN/.test(name)));
  add('kidney',/CREATININE|GLOMERULAR|EGFR|UREA|URICACID|CYSTATIN|MICROALBUMIN/.test(name));
  add('sugar',id==='hba1c'||/GLUCOSE|HBA1C|INSULIN|CPEPTIDE|FRUCTOSAMINE/.test(name));

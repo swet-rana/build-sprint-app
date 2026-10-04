@@ -53,6 +53,13 @@
       "description": "Choose zero or any number of available tests without a six-test cap. The count reads N selected; Select none clears selections. Picker controls are excluded from print.",
       "html": "<details class=\"ds-test-picker\"><summary>Choose tests for your summary <span>0 selected</span></summary><button class=\"ds-select-none\" type=\"button\">Select none</button></details>",
       "css": ".ds-test-picker{font-family:'Public Sans',sans-serif;margin-bottom:24px}.ds-test-picker summary{cursor:pointer;font-size:14px;font-weight:500;color:#174e65;padding:12px 0;line-height:1.5}.ds-test-picker summary span{font-size:12px;font-weight:400;margin-left:12px;color:#526977}.ds-select-none{background:white;border:1px solid #a7bfca;border-radius:7px;color:#174e65;font:500 13px 'Public Sans',sans-serif;padding:11px 15px;cursor:pointer}.ds-select-none:hover{background:#e5eef3}.ds-test-picker summary:focus-visible,.ds-select-none:focus-visible{outline:3px solid #c17824;outline-offset:4px}@media(max-width:760px){.ds-test-picker summary span{display:block;margin-left:0}}@media print{.ds-test-picker{display:none!important}}"
+    },
+    {
+      "name": "Original printed test name",
+      "kind": "custom",
+      "description": "When the original printed test name differs from the common display name, show it beneath the reference range and before the source control. It wraps rather than truncates. Matching uses a strictly verified alias dictionary, without fuzzy matching or numeric unit conversion; recorded values, dates, reference ranges and sources are preserved.",
+      "html": "<span class=\"ds-report-test-name\">Report name: Total Leucocyte Count</span>",
+      "css": ".ds-report-test-name{display:block;overflow-wrap:anywhere;line-height:1.5;margin-top:5px;font:400 11px/1.5 'Public Sans',sans-serif;color:#526977}@media(max-width:760px){.ds-report-test-name{font-size:12px}}@media print{.ds-report-test-name{font-size:9px}}"
     }
   ],
   "narrative": {
