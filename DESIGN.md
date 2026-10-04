@@ -82,6 +82,6 @@ Three-report comparisons use three selectors, with an optional third report. Eac
 
 The test picker includes Select none and allows every checkbox to be cleared. With zero selected tests, the summary explains how to add one and the print action is hidden.
 
-My summary includes a grid of clickable health-category buttons with test counts and pressed states. Four columns become two on phones. Clicking a category filters test choices and comparable/unpaired result lists, placing results before the selected summary. Summary selections persist across categories. Tests can belong to multiple groups; unmatched names remain in Other tests and empty categories remain visible. Categories are browsing aids, not diagnoses, and are excluded from print.
+My summary includes a grid of clickable health-category buttons with test counts and pressed states. Four columns become two on phones. Clicking a category filters test choices and comparable/unpaired result lists, placing results before the selected summary. Clicking a category selects all its comparable tests and clears all other summary selections. Tests can belong to multiple groups; unmatched names remain in Other tests and empty categories remain visible. Categories are browsing aids, not diagnoses, and are excluded from print.
 
 The test picker has no selection cap. Print allows the summary to span multiple A4 pages, keeping each test block together and preserving readable charts and source details.
