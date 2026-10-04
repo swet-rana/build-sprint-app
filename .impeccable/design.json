@@ -1,1 +1,36 @@
-{"version":1,"world":"dated clinical comparison sheet","tokens":{"color":{"background":"#f1f5f7","paper":"#ffffff","text":"#233c48","secondary":"#526977","action":"#174e65","chart":"#176889","reference":"#e6f0f1"},"font":{"family":"Public Sans","body":14,"title":34},"spacing":{"inset":32,"mobileInset":20},"layout":{"maxWidth":1096,"mobileBreakpoint":760}}}
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-04T00:00:00Z",
+  "title": "Design System: Health history",
+  "extensions": {
+    "breakpoints": [
+      {
+        "name": "mobile",
+        "value": "760px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Print summary",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Print the dated comparison sheet.",
+      "html": "<button class=\"ds-primary\">Print summary</button>",
+      "css": ".ds-primary{font:600 14px 'Public Sans',sans-serif;background:#174e65;color:#fff;border:0;border-radius:7px;padding:13px 18px;cursor:pointer}.ds-primary:hover{background:#123e53}.ds-primary:focus-visible{outline:3px solid #c17824;outline-offset:4px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Dated clinical comparison sheet",
+    "overview": "The summary is a reading surface used by patients and doctors during a visit. Paired results sit beneath each chart, with source links beside the evidence.",
+    "keyCharacteristics": [],
+    "rules": [],
+    "dos": [
+      "Do explicitly label fictional data.",
+      "Do show source links beside every value."
+    ],
+    "donts": [
+      "Don't label measured changes as health improving or worsening."
+    ]
+  }
+}
