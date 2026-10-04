@@ -30,12 +30,12 @@ Project folder: `/Users/swetrana/build-sprint-app`. Start locally with `npm run 
 
 Original uploads persist in Convex. Access depends on a key stored in the same browser profile; clearing browser data loses access. Extracted comparisons are held in memory, so prepare the summary again after refresh. Sign-in and cross-device access are not built. Scanned PDFs/photos can be stored but cannot yet be analyzed.
 
-Code is saved in local Git on `main`; **no GitHub remote is connected**. Latest app checkpoint: `fc70493` (summary above both result tables). The frontend is not published; the Convex development backend is running. `package.json` has no deploy command yet.
+Code is saved on `main` and backed up to the private GitHub repository https://github.com/swet-rana/build-sprint-app (`origin`). Latest app checkpoint: `fc70493` (summary above both result tables). After future checked changes, commit and run `git push` to update the online backup. The frontend is not published; the Convex development backend is running. `package.json` has no deploy command yet.
 
 ## Next work and rules
 
-Suggested next step: connect the user's GitHub repository and push the existing code. Then set up Convex static hosting, add `npm run deploy`, deploy and check the live page. Use the Convex static-hosting skill for hosting work.
+Suggested next step: set up Convex static hosting, add `npm run deploy`, deploy and check the live page. Use the Convex static-hosting skill for hosting work.
 
 Use Codex for code, GitHub for code backup, and Convex for backend, database, sign-in and hosting. A Git push does not deploy this project. Use plain words, announce actions briefly, and check changes before calling them done.
 
-At handover, `PRODUCT.md` has existing uncommitted edits. `.agents/`, `skills-lock.json` and several reference images/PDFs are untracked. Preserve these; do not include personal medical PDFs, access keys or `.env.local` in commits. This file summarizes project state, not the full conversation.
+Product notes and `skills-lock.json` are backed up. Installed `.agents/` skills, private reference PDFs/images, access keys and `.env.local` stay local and are excluded from Git. Preserve local files. This file summarizes project state, not the full conversation.
