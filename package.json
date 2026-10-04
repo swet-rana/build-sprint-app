@@ -16,7 +16,8 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "convex": "^1.46.0"
+    "convex": "^1.46.0",
+    "pdfjs-dist": "^6.4.299"
   },
   "devDependencies": {
     "@fontsource/public-sans": "^5.3.0",

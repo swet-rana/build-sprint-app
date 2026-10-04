@@ -52,7 +52,7 @@ Self-hosted Public Sans uses 400 for body, 500 for labels, 600 for headings and 
 
 ## Layout
 
-Maximum content width is 1096px. Tests use two columns on desktop and one at 760px and below. Summary insets use the spacing tokens above. Original report links repeat beside each value. Print uses A4 and shows the summary only; browser preview was verified as one page.
+Maximum content width is 1096px. Tests use two columns on desktop and one at 760px and below. Summary insets use the spacing tokens above. Original report links repeat beside each value. Print uses A4 and shows the selected summary only. The original fictional sample was verified as one page; the real summary print check is tracked separately.
 
 ## Elevation & Depth
 
@@ -66,7 +66,9 @@ The paper summary has gently rounded corners; controls use the smaller corner to
 
 The primary upload and print buttons use the action color. Source links are underlined. Keyboard focus uses an amber outline. Charts show blue measured trends and a pale reference band from the sample reports.
 
-The upload panel continues the white paper surface and rounded borders. Its file picker uses a dashed border and amber keyboard focus. Selected files show names, sizes and written upload states; errors use the error color and explain what to try next. Secondary controls have white backgrounds and thin blue-gray borders. Busy controls are disabled and muted. Uploaded originals appear in bordered rows with an Open report button; actions and file states stack on phones. My reports and Sample summary use underlined active-view buttons.
+The upload panel continues the white paper surface and rounded borders. Its file picker uses a dashed border and amber keyboard focus. Selected files show names, sizes and written upload states; errors use the error color and explain what to try next. Secondary controls have white backgrounds and thin blue-gray borders. Busy controls are disabled and muted. Uploaded originals appear in bordered rows with an Open report button; actions and file states stack on phones. My reports, My summary and Sample summary use underlined active-view buttons.
+
+My summary preserves the same dated comparison sheet. Two report selectors lead into a draft review notice and an expandable test picker with one to six selected tests. Source controls sit beside each value and include the original PDF page number. Additional expandable sections show all comparable results, unpaired values and excluded-page notes. Tests with different units or conditions stay separate; unpaired values have no trend line. Selectors and test choices stack on phones, and the full results table scrolls horizontally. Printing excludes selection and coverage controls, keeping the selected comparison sheet.
 
 ## Do's and Don'ts
 
@@ -74,4 +76,4 @@ The upload panel continues the white paper surface and rounded borders. Its file
 - Do show source links beside every value.
 - Don't label measured changes as health improving or worsening.
 
-Current scope supports uploading and opening original PDF, JPG, PNG and WebP files up to 10 MB each. Access is tied to this browser; clearing browser data loses access. Uploaded originals stay separate from the fictional sample summary. Reading results from reports, reviewing extracted results, sign-in and generating summaries from uploads are not implemented.
+Current scope supports uploading and opening original PDF, JPG, PNG and WebP files up to 10 MB each. Access is tied to this browser; clearing browser data loses access. Uploaded originals stay separate from the fictional sample summary. My summary reads two text-readable blood-test PDFs with different collection dates for the same patient and matching test units. The checked report pair yielded 55 matching tests; this is a verified example, not a limit or a promise for other report formats. Users select one to six tests for the summary and can inspect all comparable and unpaired values with links to source pages. The generated comparison remains in memory and is rebuilt after reload. Scanned-only PDFs and photos are excluded from comparison. The summary shows measured changes and report reference ranges without diagnoses. Sign-in is not implemented.
