@@ -28,4 +28,6 @@ The comparison shows recorded changes and printed reference ranges, without diag
 
 Browser verification covered desktop/mobile upload layouts and persistence after reload. File-storage integration checks confirmed opening the original fixture without changing its bytes.
 
-Health-category blocks filter both comparable and unmatched results using common Indian lab-panel groups. Clicking a category selects all its comparable tests and clears other summary selections. Printing continues across multiple pages when needed. Shared tests can appear in multiple groups; unknown tests remain in Other tests. Mapping sources are documented in references/health-categories.md.
+Health-category blocks filter both comparable and unmatched results using common Indian lab-panel groups. Clicking a category selects all its tests and clears other summary selections. Printing continues across multiple pages when needed. Shared tests can appear in multiple groups; unknown tests remain in Other tests. Mapping sources are documented in references/health-categories.md.
+
+Category selection includes tests without a matching result or unit. These tests are selectable individually and printable with recorded dates, values, reference ranges and source pages. They show a single-report label without a trend line or calculated change. Different units remain separate.

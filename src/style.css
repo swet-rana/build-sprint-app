@@ -6,3 +6,4 @@
 .source-button{position:relative}.test-options label{min-width:0;overflow-wrap:anywhere}.test-options label span{min-width:0}.table-scroll{position:relative}
 @media print{.real-summary-paper{break-inside:auto;overflow:visible}.real-summary-paper .marker{break-inside:avoid;page-break-inside:avoid}.real-summary-paper .summary-heading,.real-summary-paper .context,.real-summary-paper .summary-footer{break-inside:avoid}.real-summary-paper .section-heading{break-after:avoid}.real-summary-paper .chart{height:88px}.real-summary-paper .values strong{font-size:18px}.real-summary-paper .values span,.real-summary-paper .source-button{font-size:9px}}
 @media print{html{background:white}}
+.single-result-note{font-size:12px;line-height:1.6;color:var(--muted);padding:14px 0;margin:10px 0 14px}@media print{.single-result-note{font-size:10px;padding:12px 0}}
