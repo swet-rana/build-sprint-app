@@ -28,3 +28,20 @@ test('undated attachments and urine tests cannot enter blood-test comparisons',(
  const urine={...lab,page:3,items:[...lab.items,item('COMPLETE URINE EXAMINATION (CUE)',26,590,200)]};
  const report=parseReport([lab,attachment,urine]);assert.equal(report.markers.length,1);assert.deepEqual(report.usedPages,[1]);assert.equal(report.excludedPages,2);
 });
+test('reads Tata collection labels and compares names across lab-specific patient IDs',()=>{
+ const tata=page('19/Aug/2024','Ms.Sample Patient','TATA-9','11.7','g/dL');
+ tata.items=tata.items.map(i=>({...i,str:i.str==='Patient Name'?'Name':i.str==='UHID/MR No'?'Patient ID':i.str==='Collected'?'Collection Date':i.str==='TOTAL LEUCOCYTE COUNT (TLC)'?'Hemoglobin':i.str==='4000-10000'?'12.0 - 15.0':i.str}));
+ const old=parseReport([tata]);
+ assert.equal(old.date,'2024-08-19');assert.equal(old.markers[0].key,'haemoglobin|g/dl');
+ const apollo=page('27/May/2026','Mrs.Sample Patient','APOLLO-1','12','g/dL');
+ apollo.items=apollo.items.map(i=>({...i,str:i.str==='TOTAL LEUCOCYTE COUNT (TLC)'?'HAEMOGLOBIN':i.str}));
+ const comparison=compareReports(old,parseReport([apollo]));assert.equal(comparison.comparable[0].change,0.3);
+ assert.throws(()=>compareReports(old,{...parseReport([apollo]),patientName:'Other Person'}),/different people/);
+});
+test('keeps wrapped reference categories without borrowing the next test or notes',()=>{
+ const p=page('19/Aug/2024');
+ p.items=p.items.filter(i=>i.transform[5]>=573);
+ p.items=p.items.map(i=>({...i,str:i.str==='4000-10000'?'Deficiency: <20,':i.str}));
+ p.items.push(item('Insufficiency: 20-29,',376,561,78),item('Sufficiency: 30-100',376,550,78),item('Comment:',33,530),item('Not a reference',376,515,78));
+ assert.equal(parseReport([p]).markers[0].referenceText,'Deficiency: <20, Insufficiency: 20-29, Sufficiency: 30-100');
+});

@@ -16,7 +16,7 @@ Reports are saved in Convex with a random, browser-specific access key held in l
 
 The preview supports 20 files per browser. File type, size, and format headers are checked on the server; this does not verify that a document is medical or extract any results. A retry of the same pending upload reuses its upload ID to prevent duplicates.
 
-My summary reads two text-readable PDFs with dated blood-test tables, checks that patient identifiers agree, and compares tests only when their names and units match. Choose one to six tests for the printable summary; all matching results and results without a match remain available below it. Each result links to its original report page. Photos, scanned-only PDFs, and other table layouts are not supported yet.
+My summary reads two text-readable Apollo or Tata 1mg PDFs with dated blood-test tables and compares tests only when their names and units match. Within one lab, patient IDs must agree; across these labs, patient names must agree because their IDs are different. Choose one to six tests for the printable summary; all matching results and results without a match remain available below it. Each result links to its original report page. Photos, scanned-only PDFs, and other table layouts are not supported yet.
 
 The comparison shows recorded changes and printed reference ranges, without diagnoses. Check the draft against the originals before sharing. Extracted results stay in browser memory; after refreshing, prepare the summary again. Original uploads remain saved in Convex. Sign-in and Convex static hosting remain to be built.
 
