@@ -41,7 +41,7 @@ function field(rows,label){
 function markerIdentity(name,unit){
  const raw=clean(name).toUpperCase().replace(/\s*,?\s*(SERUM|WHOLE BLOOD EDTA)\s*$/,'').trim();
  let key=raw.replace(/[^A-Z0-9]/g,''),display=raw;
- const labels=[[/^(TOTAL LEUCOCYTE COUNT|WHITE BLOOD CELL|WBC)/,'wbc','White blood cells'],[/^HA?EMOGLOBIN$/,'haemoglobin','Haemoglobin'],[/^ESR\b/,'esr','ESR'],[/^(HBA1C,|GLYCOSYLATED HEMOGLOBIN \(HBA1C\))/,'hba1c','HbA1c'],[/^(TSH\b|THYROID STIMULATING HORMONE)/,'tsh','TSH'],[/^VITAMIN D\b/,'vitamin-d','Vitamin D'],[/^VITAMIN B12\b/,'vitamin-b12','Vitamin B12'],[/^C-REACTIVE PROTEIN/,'crp','C-reactive protein'],[/^(TRI-IODOTHYRONINE|T3, TOTAL)/,'t3','Total T3'],[/^(THYROXINE|T4, TOTAL)/,'t4','Total T4']];
+ const labels=[[/^(TOTAL LEUCOCYTE COUNT|WHITE BLOOD CELL|WBC)/,'wbc','White blood cells'],[/^HA?EMOGLOBIN$/,'haemoglobin','Haemoglobin'],[/^(ESR\b|ERYTHROCYTE SEDIMENTATION RATE)/,'esr','ESR'],[/^(HBA1C,|GLYCOSYLATED HEMOGLOBIN \(HBA1C\))/,'hba1c','HbA1c'],[/^(TSH\b|THYROID STIMULATING HORMONE)/,'tsh','TSH'],[/^VITAMIN D\b/,'vitamin-d','Vitamin D'],[/^VITAMIN B12\b/,'vitamin-b12','Vitamin B12'],[/^C-REACTIVE PROTEIN/,'crp','C-reactive protein'],[/^(TRI-IODOTHYRONINE|T3, TOTAL)/,'t3','Total T3'],[/^(THYROXINE|T4, TOTAL)/,'t4','Total T4']];
  for(const [pattern,id,label] of labels)if(pattern.test(raw)){key=id;display=label;break;}
  return {key:`${key}|${normalizeUnit(unit)}`,name:display,rawName:clean(name)};
 }
@@ -100,4 +100,29 @@ export function compareReports(a,b){
  const keys=new Set(comparable.map(m=>m.key));
  const unpaired=[...earlier.markers.filter(m=>!keys.has(m.key)).map(m=>({...m,date:earlier.date})),...later.markers.filter(m=>!keys.has(m.key)).map(m=>({...m,date:later.date}))];
  return {earlier,later,comparable,unpaired};
+}
+
+export function compareReportSeries(input){
+ if(input.length<2||input.length>3)throw Error('Choose two or three uploaded PDFs.');
+ for(let i=0;i<input.length;i++)for(let j=i+1;j<input.length;j++){
+  const a=input[i],b=input[j];
+  if(a.patientId&&b.patientId&&a.patientIdIssuer===b.patientIdIssuer?a.patientId!==b.patientId:normalizePatient(a.patientName)!==normalizePatient(b.patientName))throw Error('These reports appear to belong to different people. Check the patient names before comparing.');
+  if(a.date===b.date)throw Error('Choose reports from different dates.');
+ }
+ const reports=[...input].sort((a,b)=>a.date.localeCompare(b.date));
+ const groups=new Map();
+ reports.forEach((report,index)=>report.markers.forEach(marker=>{
+  if(!groups.has(marker.key))groups.set(marker.key,{key:marker.key,name:marker.name,unit:marker.unit,observations:Array(reports.length).fill(null)});
+  groups.get(marker.key).observations[index]={...marker,date:report.date,report};
+ }));
+ const comparable=[],unpaired=[];
+ for(const group of groups.values()){
+  const found=group.observations.filter(Boolean);
+  if(found.length<2){unpaired.push(found[0]);continue;}
+  const earlier=found[0],later=found.at(-1);
+  const missingLabels=group.observations.map((m,i)=>m?null:reports[i].markers.some(other=>other.key.split('|')[0]===group.key.split('|')[0])?'Different unit':'Not reported');
+  comparable.push({...group,missingLabels,earlier,later,change:Number((later.value-earlier.value).toPrecision(10))});
+ }
+ if(!comparable.length)throw Error('No matching tests with the same units were found. Choose comparable blood reports.');
+ return {reports,earlier:reports[0],later:reports.at(-1),comparable,unpaired};
 }

@@ -45,3 +45,18 @@ test('keeps wrapped reference categories without borrowing the next test or note
  p.items.push(item('Insufficiency: 20-29,',376,561,78),item('Sufficiency: 30-100',376,550,78),item('Comment:',33,530),item('Not a reference',376,515,78));
  assert.equal(parseReport([p]).markers[0].referenceText,'Deficiency: <20, Insufficiency: 20-29, Sufficiency: 30-100');
 });
+test('three reports are ordered by date and missing results remain empty',async()=>{
+ const {compareReportSeries}=await import('../src/lab-parser.js');
+ const a=parseReport([page('19/Aug/2024')]),b=parseReport([page('27/May/2026','Ms.Sample Patient','TEST-123','7000')]),c=parseReport([page('25/Aug/2026','Ms.Sample Patient','TEST-123','7920')]);
+ a.markers.push({...a.markers[0],key:'crp|mg/l',name:'C-reactive protein',unit:'mg/L',value:4});
+ c.markers.push({...a.markers[1],value:3});
+ const result=compareReportSeries([c,a,b]);
+ assert.deepEqual(result.reports.map(r=>r.date),['2024-08-19','2026-05-27','2026-08-25']);
+ assert.deepEqual(result.comparable[0].observations.map(m=>m.value),[6830,7000,7920]);
+ assert.deepEqual(result.comparable[1].observations.map(m=>m?.value??null),[4,null,3]);
+ assert.equal(result.comparable[1].missingLabels[1],'Not reported');
+ b.markers.push({...a.markers[1],key:'crp|mg/dl',unit:'mg/dL'});
+ assert.equal(compareReportSeries([a,b,c]).comparable[1].missingLabels[1],'Different unit');
+ assert.throws(()=>compareReportSeries([a,b,{...c,patientName:'Other',patientId:'OTHER'}]),/different people/);
+ assert.throws(()=>compareReportSeries([a,b,b]),/different dates/);
+});

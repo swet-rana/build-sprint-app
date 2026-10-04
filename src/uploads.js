@@ -33,7 +33,7 @@ export function mountUploads(root, onReports = () => {}) {
       list.innerHTML = `<div class="reports-empty">${documentIcon}<div><h3>No reports uploaded yet</h3><p>Choose your first reports above. They’ll appear here once saved.</p></div></div>`;
       return;
     }
-    list.innerHTML = `<ul class="report-rows">${saved.map(report => `<li>${documentIcon}<div class="report-details"><h3>${escape(report.name)}</h3><p>${report.contentType==='application/pdf'?'PDF':'Photo'} · ${sizeLabel(report.size)} · Uploaded ${new Date(report.uploadedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</p></div><button class="report-open secondary" type="button" data-report-id="${report.id}" aria-label="Open ${escape(report.name)}">Open report</button></li>`).join('')}</ul><p class="stored-note">Open My summary to read two PDFs and compare their recorded results.</p>`;
+    list.innerHTML = `<ul class="report-rows">${saved.map(report => `<li>${documentIcon}<div class="report-details"><h3>${escape(report.name)}</h3><p>${report.contentType==='application/pdf'?'PDF':'Photo'} · ${sizeLabel(report.size)} · Uploaded ${new Date(report.uploadedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</p></div><button class="report-open secondary" type="button" data-report-id="${report.id}" aria-label="Open ${escape(report.name)}">Open report</button></li>`).join('')}</ul><p class="stored-note">Open My summary to read two or three PDFs and compare their recorded results.</p>`;
   }
   try {
     sessionKey = localStorage.getItem('health-history-upload-session');
