@@ -66,7 +66,7 @@ export function parseReport(pages){
    for(let k=n+1;k<rows.length;k++){
     if(/^(Comment|Comments|Interpretation|Note)\s*:/i.test(rows[k].text))break;
     const [continuation,number,unitContinuation,referenceContinuation]=cells(rows[k]);
-    if(number||row.y-rows[k].y>=100)break;
+    if(number||row.y-rows[k].y>=100||rows[k].y<100||/\bPage\s+\d+\s*(?:of|\/)/i.test(rows[k].text))break;
     if(row.y-rows[k].y<12){
      if(continuation)name=clean(name+' '+continuation);
      if(unitContinuation)unit=clean(unit+' '+unitContinuation);

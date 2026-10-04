@@ -60,3 +60,8 @@ test('three reports are ordered by date and missing results remain empty',async(
  assert.throws(()=>compareReportSeries([a,b,{...c,patientName:'Other',patientId:'OTHER'}]),/different people/);
  assert.throws(()=>compareReportSeries([a,b,b]),/different dates/);
 });
+test('page-number footers cannot become a wrapped reference range',()=>{
+ const p=page('27/May/2026');p.items=p.items.filter(i=>i.transform[5]>=573);
+ p.items.push(item('Page 2 of 19',376,550,70));
+ assert.equal(parseReport([p]).markers[0].referenceText,'4000-10000');
+});
