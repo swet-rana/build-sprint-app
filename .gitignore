@@ -6,3 +6,7 @@ dist/
 *.swp
 .impeccable/review/
 tmp/
+.agents/
+references/*.pdf
+references/*.png
+references/*.jpeg

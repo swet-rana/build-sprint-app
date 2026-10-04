@@ -39,7 +39,7 @@ Things it takes to get the job done today: 8 · With my product: 5
 
 What must not happen:
 1) Putting a wrong report for the AI analysis (as shown in Step 3: With my product)
-2) AI acts like a doctor, suggests a diagnosis, or labels changes as health improving or worsening. It only shows measured changes, units, and each report's reference ranges; the doctor interprets them.
+2) AI acts like doctor and calls out diagnosis (it only helps the doctor with stats and trendiness)
 3) the product misreading the uploaded or scanned reports
 
 ## 4. Onboarding
@@ -64,8 +64,11 @@ What we don't ask on day one: user profile, mail access to scan reports
 What we ask later, and when: to do a mail/phone sign in to save all your reports and have access to more summaries.
 
 ## 5. v1
-Does: prepares health summary comparing the blood reports across at least 2 different dates. It will have visual cues and trend-lines showing measured changes, with units and the reference ranges printed in each report. It will share "View Original Report" link under each value. Moreover, it will also flag non-medical reports or reports which can't be compared.
-Doesn't: suggest diagnoses or label measured changes as health improving or worsening. Interpretation belongs to the doctor.
+Does: prepares health summary comparing the blood reports across at least 2 different dates. It will have visual cues and trend-lines. It will share "View Original Report" link under each value. Moreover, it will also flag non-medical reports or reports which can't be compared.
+Doesn't: diagnose the medical reports to act like doctors
 Nice to have (only after the must haves work): access the mail for historical or present health records and prescriptions (only after sign-up)
 How I'll know it worked: they will be uploading more reports and maybe share the reason for doing that.
 
+## 6. The riskiest guess
+If this is false, the product is pointless: [ ]
+Thirty-minute check, no code (run it while you build), and what happened: [ ]
