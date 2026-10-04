@@ -27,3 +27,5 @@ The comparison shows recorded changes and printed reference ranges, without diag
 - `npm run test:storage` checks upload, original bytes, browser isolation, retry behavior and invalid files against the configured development deployment. Each run creates one small fictional report under an isolated random access key. It never reads personal reports.
 
 Browser verification covered desktop/mobile upload layouts and persistence after reload. File-storage integration checks confirmed opening the original fixture without changing its bytes.
+
+Health-category blocks filter both comparable and unmatched results using common Indian lab-panel groups. They preserve selected summary tests. Shared tests can appear in multiple groups; unknown tests remain in Other tests. Mapping sources are documented in references/health-categories.md.

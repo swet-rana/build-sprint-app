@@ -39,6 +39,13 @@
       "description": "Two or three reports, with an optional third. Missing values and different units are explicit; charts stop at missing dates. Change labels show the first and last available dates. Selected summaries were verified as one printed page.",
       "html": "<div class=\"ds-date-slot\"><span>18 Sep 2025</span><p>No matching value in this report</p></div>",
       "css": ".ds-date-slot{display:flex;flex-direction:column;align-items:flex-start;font-family:'Public Sans',sans-serif}.ds-date-slot span{font-size:11px;color:#526977}.ds-date-slot p{font-size:12px;line-height:1.6;color:#526977;margin:7px 0}"
+    },
+    {
+      "name": "Health category blocks",
+      "kind": "button",
+      "description": "Four desktop columns become two on phones. Pressed blocks show test counts and filter comparable results, unpaired results and test choices without clearing selections. Tests may belong to multiple groups; Other is the fallback. Empty groups say no tests are available. Common Indian lab groups are supported, not exhaustive categorization. Category controls are excluded from print.",
+      "html": "<div class=\"ds-category-grid\"><button class=\"ds-health-category\" type=\"button\" aria-pressed=\"true\"><strong>All tests</strong><span>55 tests available</span></button><button class=\"ds-health-category\" type=\"button\" aria-pressed=\"false\"><strong>Other</strong><span>No tests in these reports</span></button></div>",
+      "css": ".ds-category-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:18px 0}.ds-health-category{display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:9px;min-height:82px;padding:16px;text-align:left;background:#fff;border:1px solid #bdccd4;border-radius:7px;color:#233c48;font-family:'Public Sans',sans-serif;cursor:pointer}.ds-health-category strong{font-size:13px;font-weight:500;line-height:1.5}.ds-health-category span{font-size:11px;color:#526977;line-height:1.5}.ds-health-category:hover{background:#e5eef3}.ds-health-category[aria-pressed=true]{background:#174e65;border-color:#174e65;color:white}.ds-health-category[aria-pressed=true] span{color:#e5eef3}.ds-health-category:focus-visible{outline:3px solid #c17824;outline-offset:4px}@media(max-width:760px){.ds-category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.ds-health-category{padding:13px;min-height:88px}}@media print{.ds-category-grid{display:none!important}}"
     }
   ],
   "narrative": {

@@ -81,3 +81,5 @@ Current scope supports uploading and opening original PDF, JPG, PNG and WebP fil
 Three-report comparisons use three selectors, with an optional third report. Each selected test has dated values across all selected reports, including explicit missing-value labels. Charts stop at missing dates, and change labels show their own first and last available dates.
 
 The test picker includes Select none and allows every checkbox to be cleared. With zero selected tests, the summary explains how to add one and the print action is hidden.
+
+My summary includes a grid of clickable health-category buttons with test counts and pressed states. Four columns become two on phones. Clicking a category filters test choices and comparable/unpaired result lists, placing results before the selected summary. Summary selections persist across categories. Tests can belong to multiple groups; unmatched names remain in Other tests and empty categories remain visible. Categories are browsing aids, not diagnoses, and are excluded from print.
