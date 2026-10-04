@@ -46,10 +46,6 @@ export function mountAnalysis(root,onReady){
    render();output.querySelector('.test-picker').open=true;
    output.querySelector(`[data-category="${activeCategory}"]`).focus();
   }));
-  if(activeCategory!=='all'){
-   const paper=output.querySelector('.real-summary-paper');
-   paper.before(output.querySelector('.all-results'),output.querySelector('.unpaired-results'));
-  }
   onReady(markers.length>0);
   if(!markers.length)output.querySelector('.markers').innerHTML='<p>No tests selected. Choose a test above to add it to your summary.</p>';
   output.querySelector('#select-no-tests').addEventListener('click',()=>{selected.clear();render();output.querySelector('.test-picker').open=true;output.querySelector('.test-picker summary').focus();output.querySelector('#selection-status').textContent='All tests cleared.';});
