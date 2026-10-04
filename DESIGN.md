@@ -89,3 +89,5 @@ The test picker has no selection cap. Print allows the summary to span multiple 
 Category selection includes tests without a matching result or unit. These tests are selectable individually and printable with recorded dates, values, reference ranges and source pages. They show a single-report label without a trend line or calculated change. Different units remain separate.
 
 Test matching uses checked equivalent-name aliases, with the original printed name shown beside each summary value when different. Numeric units and distinct test conditions remain separate. The alias rules and sources are recorded in references/test-name-matching.md.
+
+Unmatched results use the same bordered table styling as comparable results, with test, report date, recorded value/unit, printed reference range and source columns. Tables scroll horizontally on phones and show a written empty state.

@@ -74,5 +74,8 @@
     "donts": [
       "Don't label measured changes as health improving or worsening."
     ]
-  }
+  },
+  "notes": [
+    "Unmatched results use a horizontally scrolling table with test, date, value/unit, reference and source columns, matching comparable-results styling."
+  ]
 }
