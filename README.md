@@ -1,7 +1,27 @@
 # Health history
 
-Sample comparison screen using fictional March and September 2025 blood reports. Includes WBC and CRP trends, reference ranges, source documents, and a one-page print layout.
+Upload original blood reports (PDF, JPG, PNG or WebP, up to 10 MB each) and open saved files. A separate sample view compares fictional March and September 2025 results.
 
-Run `npm install`, then `npm run dev`. Open the local address shown in the terminal. `npm run build` creates the production files in `dist/`.
+## Run locally
 
-Real report upload, report reading, sign-in, saving, and Convex hosting are still to be built. Nothing has been deployed.
+1. Run `npm install`.
+2. Run `npx convex dev --once` against the existing Convex development project. This creates `.env.local`; the frontend needs `VITE_CONVEX_URL`, as shown in `.env.example`.
+3. Run `npm run dev` and open the local address shown in the terminal.
+
+`npm run build` produces the frontend in `dist/`. The frontend has not been published; backend functions are running on the existing Convex development deployment.
+
+## Storage and access
+
+Reports are saved in Convex with a random, browser-specific access key held in local storage. Listings and opening files require that key; direct public file URLs are not returned. The app fetches original files through a protected Convex HTTP action, then opens a temporary local browser URL. Clearing browser data loses access. Sign-in and cross-device access are not built yet.
+
+The preview supports 20 files per browser. File type, size, and format headers are checked on the server; this does not verify that a document is medical or extract any results. A retry of the same pending upload reuses its upload ID to prevent duplicates.
+
+Report reading, value review, real summaries, sign-in, and Convex static hosting remain to be built.
+
+## Checks
+
+- `npm test` checks supported file types, size limits, format headers and access key shape.
+- `npm run check` checks Convex code types.
+- `npm run test:storage` checks upload, original bytes, browser isolation, retry behavior and invalid files against the configured development deployment. Each run creates one small fictional report under an isolated random access key. It never reads personal reports.
+
+Browser verification covered desktop/mobile upload layouts and persistence after reload. File-storage integration checks confirmed opening the original fixture without changing its bytes.

@@ -10,6 +10,7 @@ colors:
   chart: "#176889"
   reference: "#e6f0f1"
   above-range: "#6e542c"
+  error: "#8e342d"
 typography:
   title:
     fontFamily: "Public Sans, sans-serif"
@@ -63,7 +64,9 @@ The paper summary has gently rounded corners; controls use the smaller corner to
 
 ## Components
 
-The print button uses the action color. Source links are underlined. Keyboard focus uses an amber outline. Charts show blue measured trends and a pale reference band from the sample reports.
+The primary upload and print buttons use the action color. Source links are underlined. Keyboard focus uses an amber outline. Charts show blue measured trends and a pale reference band from the sample reports.
+
+The upload panel continues the white paper surface and rounded borders. Its file picker uses a dashed border and amber keyboard focus. Selected files show names, sizes and written upload states; errors use the error color and explain what to try next. Secondary controls have white backgrounds and thin blue-gray borders. Busy controls are disabled and muted. Uploaded originals appear in bordered rows with an Open report button; actions and file states stack on phones. My reports and Sample summary use underlined active-view buttons.
 
 ## Do's and Don'ts
 
@@ -71,4 +74,4 @@ The print button uses the action color. Source links are underlined. Keyboard fo
 - Do show source links beside every value.
 - Don't label measured changes as health improving or worsening.
 
-Current scope is a sample screen. Upload, report reading, sign-in, and saving are not implemented.
+Current scope supports uploading and opening original PDF, JPG, PNG and WebP files up to 10 MB each. Access is tied to this browser; clearing browser data loses access. Uploaded originals stay separate from the fictional sample summary. Reading results from reports, reviewing extracted results, sign-in and generating summaries from uploads are not implemented.

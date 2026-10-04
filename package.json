@@ -6,17 +6,22 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "node --test tests/*.test.mjs",
+    "check": "tsc --noEmit -p convex/tsconfig.json",
+    "test:storage": "node tests/upload-integration.mjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
     "convex": "^1.46.0"
   },
   "devDependencies": {
     "@fontsource/public-sans": "^5.3.0",
+    "@types/node": "^26.6.4",
+    "typescript": "^7.0.2",
     "vite": "^6.4.3"
   }
 }
