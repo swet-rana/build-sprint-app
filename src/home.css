@@ -133,12 +133,14 @@ body:has(#home-view:not([hidden])){background:var(--home-ground);color:#171d4b}
 .home-selection-heading>span{font-size:11px;line-height:1.4;color:var(--home-secondary);text-align:right}
 
 .home-blood-reports{display:grid;gap:12px;color:var(--home-secondary)}
-.home-blood-report{background:white;border:1px solid #e1dcf5;border-radius:10px;padding:14px 16px;box-shadow:0 4px 14px rgb(42 36 131 / 5%)}
-.home-blood-report header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.home-blood-report{background:white;border:1px solid #e1dcf5;border-radius:10px;padding:10px 16px;box-shadow:0 4px 14px rgb(42 36 131 / 5%)}
+.home-blood-report header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
 .home-blood-file{display:flex;align-items:center;gap:6px;font-size:10px;white-space:nowrap;color:var(--home-muted)}
 .home-blood-file svg{width:18px;height:18px;flex-shrink:0}
 .home-blood-report header strong{font-size:12px;text-align:right;color:var(--home-purple)}
-.home-blood-results{display:grid;gap:4px;border-top:1px solid #edeaf9;padding-top:8px;font-size:11px}
+.home-blood-results{display:grid;gap:2px;border-top:1px solid #edeaf9;padding-top:8px;font-size:11px}
 .home-blood-results>div{display:flex;justify-content:space-between;gap:12px}
 .home-blood-results>div>span:last-child{white-space:nowrap;font-variant-numeric:tabular-nums}
 @media(max-width:760px){.home-blood-report{padding:11px 14px}.home-blood-reports{gap:9px}}
+
+.home-blood-date{font-size:10px;color:var(--home-muted);margin:0 0 4px}

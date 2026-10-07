@@ -24,11 +24,11 @@ function reportsVisual() {
 }
 function bloodReportsVisual() {
   const reports = [
-    { number: 2, title: 'Complete blood count', rows: [['Hemoglobin', '13.2 g/dL'], ['WBC', '7,800 /µL'], ['Platelets', '2.6 L/µL']] },
-    { number: 3, title: 'Lipid profile', rows: [['Total cholesterol', '180 mg/dL'], ['HDL cholesterol', '52 mg/dL'], ['Triglycerides', '110 mg/dL']] },
-    { number: 5, title: 'Blood glucose', rows: [['Fasting glucose', '92 mg/dL'], ['HbA1c', '5.4%'], ['Average glucose', '108 mg/dL']] },
+    { number: 2, date: '12 Mar 2025', title: 'Complete blood count', rows: [['Hemoglobin', '13.2 g/dL'], ['WBC', '7,800 /µL'], ['Platelets', '2.6 L/µL']] },
+    { number: 3, date: '18 Sep 2025', title: 'Complete blood count', rows: [['Hemoglobin', '12.8 g/dL'], ['WBC', '7,600 /µL'], ['Platelets', '2.4 L/µL']] },
+    { number: 5, date: '06 Jan 2026', title: 'Complete blood count', rows: [['Hemoglobin', '13.0 g/dL'], ['WBC', '7,700 /µL'], ['Platelets', '2.5 L/µL']] },
   ];
-  return `<div class="home-blood-reports" aria-label="Three illustrative blood test reports">${reports.map(report => `<article class="home-blood-report"><header><span class="home-blood-file">${homeIcon('reports')}<span>Test Report ${report.number}</span></span><strong>${report.title}</strong></header><div class="home-blood-results">${report.rows.map(([marker, value]) => `<div><span>${marker}</span><span>${value}</span></div>`).join('')}</div></article>`).join('')}</div>`;
+  return `<div class="home-blood-reports" aria-label="Three illustrative blood test reports">${reports.map(report => `<article class="home-blood-report"><header><span class="home-blood-file">${homeIcon('reports')}<span>Test Report ${report.number}</span></span><strong>${report.title}</strong></header><div class="home-blood-date">${report.date}</div><div class="home-blood-results">${report.rows.map(([marker, value]) => `<div><span>${marker}</span><span>${value}</span></div>`).join('')}</div></article>`).join('')}</div>`;
 }
 function summaryPreview(completed = false) {
   return `<div class="home-summary-preview${completed ? ' home-completed-report' : ''}">
