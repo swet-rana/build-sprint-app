@@ -47,7 +47,7 @@ function switchView(view) {
   home.setActive(view==='home');
   document.querySelector('.intro').hidden=view==='profile'||view==='home';
   document.title=`HealthStats · ${{home:'Home',reports:'My Reports',summary:'Summary',profile:'Profile'}[view]||'HealthStats'}`;
-  document.querySelector('#page-title').textContent=view==='reports'?'Bring your reports together.':'Your history, ready for your doctor.';
+  document.querySelector('#page-title').textContent=view==='reports'?'Bring your reports together.':'Your Health Summary, ready for your doctor.';
   document.querySelector('#page-description').textContent=view==='sample'?'Two blood reports. One clear view of what changed.':view==='summary'?'Your uploaded reports, compared with their sources.':'Keep the originals ready for your next doctor visit.';
 }
 for(const name of ['home','reports','summary','profile']) document.querySelector(`#${name}-tab`).addEventListener('click',()=>switchView(name));
