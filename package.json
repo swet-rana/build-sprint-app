@@ -13,15 +13,19 @@
     "predev": "node scripts/prepare-ocr.mjs",
     "prebuild": "node scripts/prepare-ocr.mjs",
     "test:ocr": "node scripts/prepare-ocr.mjs && node scripts/create-ocr-fixtures.mjs && node tests/ocr-integration.mjs",
-    "setup:auth": "node scripts/setup-auth.mjs"
+    "setup:auth": "node scripts/setup-auth.mjs",
+    "verify": "npm test && npm run check && npm audit --omit=dev",
+    "predeploy": "npm run verify && node scripts/setup-auth.mjs --prod --site-url=https://zealous-kiwi-423.convex.site --skip-push",
+    "deploy": "npx @convex-dev/static-hosting deploy"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "@auth/core": "^0.41.1",
+    "@auth/core": "^0.41.3",
     "@convex-dev/auth": "^0.0.96",
+    "@convex-dev/static-hosting": "^0.2.1",
     "@fontsource/manrope": "^5.3.0",
     "@tesseract.js-data/eng": "^1.0.0",
     "convex": "^1.46.0",

@@ -1,8 +1,9 @@
 import { isAllowedOrigin } from "./originRules.js";
 import { auth } from "./auth";
 import { httpRouter } from "convex/server";
+import { registerStaticRoutes } from "@convex-dev/static-hosting";
 import { httpAction } from "./_generated/server";
-import { internal } from "./_generated/api";
+import { components, internal } from "./_generated/api";
 import { fileError, isSessionKey, matchesFileType } from "./fileRules.js";
 import type { Id } from "./_generated/dataModel";
 
@@ -90,4 +91,6 @@ http.route({ path: "/reports/open", method: "POST", handler: httpAction(async (c
   headers.set("Content-Disposition", `inline; filename*=UTF-8''${encodeURIComponent(report.name)}`);
   return new Response(file, { status: 200, headers });
 }) });
+registerStaticRoutes(http, components.staticHosting);
+
 export default http;
