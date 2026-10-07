@@ -85,6 +85,10 @@ body:has(#uploads-view:not([hidden])){background:#f6f5ff;color:#171d4b}
 .premium-reports .saved-heading{margin-bottom:0}
 .premium-reports .reports-guide{margin-top:0}
 
-.premium-reports .reports-title-with-art{display:flex;align-items:center;gap:18px}
+.premium-reports .reports-title-with-art{display:flex;align-items:center;gap:6px}
 .premium-reports .reports-heading-art{display:block;width:88px;height:88px;object-fit:contain;flex-shrink:0}
-@media(max-width:760px){.premium-reports .reports-title-with-art{gap:12px}.premium-reports .reports-heading-art{width:64px;height:64px}}
+@media(max-width:760px){.premium-reports .reports-title-with-art{gap:6px}.premium-reports .reports-heading-art{width:64px;height:64px}}
+
+/* Match the card top inset below the header so the illustration is centered. */
+.premium-reports .saved-heading{margin-bottom:28px}
+@media(max-width:760px){.premium-reports .saved-heading{margin-bottom:18px}}
