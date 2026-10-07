@@ -22,6 +22,14 @@ function reportsVisual() {
     <div class="home-paper home-paper-lab"><strong>Lab report</strong><div class="home-report-columns"><span>Marker</span><span>Value</span></div><div class="home-marker-rows">${reportRows}</div><small>Illustrative values</small></div>
   </div>`;
 }
+function bloodReportsVisual() {
+  const reports = [
+    { number: 2, title: 'Complete blood count', rows: [['Hemoglobin', '13.2 g/dL'], ['WBC', '7,800 /µL'], ['Platelets', '2.6 L/µL']] },
+    { number: 3, title: 'Lipid profile', rows: [['Total cholesterol', '180 mg/dL'], ['HDL cholesterol', '52 mg/dL'], ['Triglycerides', '110 mg/dL']] },
+    { number: 5, title: 'Blood glucose', rows: [['Fasting glucose', '92 mg/dL'], ['HbA1c', '5.4%'], ['Average glucose', '108 mg/dL']] },
+  ];
+  return `<div class="home-blood-reports" aria-label="Three illustrative blood test reports">${reports.map(report => `<article class="home-blood-report"><header><span class="home-blood-file">${homeIcon('reports')}<span>Test Report ${report.number}</span></span><strong>${report.title}</strong></header><div class="home-blood-results">${report.rows.map(([marker, value]) => `<div><span>${marker}</span><span>${value}</span></div>`).join('')}</div></article>`).join('')}</div>`;
+}
 function summaryPreview(completed = false) {
   return `<div class="home-summary-preview${completed ? ' home-completed-report' : ''}">
     <div class="home-preview-title"><strong>Health Summary</strong><span>Example</span></div>
@@ -45,7 +53,7 @@ export function mountHome(root) {
     <div class="home-stage" data-home-stage="intro" hidden><div class="home-stage-copy">${introCopy}</div>${reportsVisual()}</div>
     <div class="home-stage" data-home-stage="upload" hidden><div class="home-stage-copy"><h1>Upload your reports</h1><p>Add lab reports, scans, prescriptions<br>and more.</p></div><div class="home-upload-demo">${reportsVisual()}<div class="home-upload-well">${homeIcon('upload')}<strong>Upload Reports</strong><span>PDF, JPG, PNG</span></div><span class="home-demo-caption">In My Reports · illustrative reports</span></div></div>
     <div class="home-stage" data-home-stage="select" hidden><div class="home-stage-copy"><h1>Click reports<br>for analysis</h1><p>Choose the reports you want to include.</p></div><div class="home-selection-demo"><div class="home-selection-heading"><h2>My Reports</h2><span>For Summary</span></div><div class="home-demo-report-list">${Array.from({ length: 6 }, (_, index) => `<label data-demo-report="${index + 1}"><span class="home-report-mini-icon">${homeIcon('reports')}</span><span>Test Report ${index + 1}</span><input type="checkbox" disabled aria-label="Test Report ${index + 1}"></label>`).join('')}</div><span class="home-demo-caption">Illustrative reports · 2, 3 and 5 selected</span></div></div>
-    <div class="home-stage" data-home-stage="prepare" hidden><div class="home-stage-copy"><h1>Prepare summary</h1><p>Bring your selected reports<br>into one clear view.</p></div><div class="home-prepare-demo">${summaryPreview()}<div class="home-demo-button-wrap"><button type="button" class="primary home-prepare-button" disabled>Prepare Summary</button><svg class="home-demo-pointer" viewBox="0 0 24 30" aria-hidden="true"><path d="M3 2v22l6-6 5 10 5-3-5-9h8z"/></svg></div><span class="home-demo-caption">In Summary · illustrative values</span></div></div>
+    <div class="home-stage" data-home-stage="prepare" hidden><div class="home-stage-copy"><h1>Prepare summary</h1><p>Bring your selected reports<br>into one clear view.</p></div><div class="home-prepare-demo">${bloodReportsVisual()}<div class="home-demo-button-wrap"><button type="button" class="primary home-prepare-button" disabled>Prepare Summary</button><svg class="home-demo-pointer" viewBox="0 0 24 30" aria-hidden="true"><path d="M3 2v22l6-6 5 10 5-3-5-9h8z"/></svg></div><span class="home-demo-caption">In Summary · illustrative values</span></div></div>
     <div class="home-stage" data-home-stage="ready" hidden><div class="home-stage-copy"><h1>You are ready now!</h1><p>A clear, organised summary<br>for your next doctor conversation.</p></div><div>${summaryPreview(true)}<span class="home-demo-caption">An example of your completed summary</span></div></div>
     <div class="home-resting" data-home-stage="settled"><div class="home-resting-copy">${introCopy}</div><ol class="home-journey" aria-label="Your report-to-summary journey">${steps.map((step, index) => `<li><button type="button" data-home-replay="${step.phase}" aria-label="Step ${index + 1}: ${step.label.replace(/<br>/g, ' ')}"><span class="home-step-icon">${homeIcon(step.icon)}</span><span class="home-step-number">${index + 1}</span><span class="home-step-label">${step.label}</span></button></li>`).join('')}</ol></div>
   </section>`;
