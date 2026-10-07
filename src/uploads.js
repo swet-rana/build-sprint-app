@@ -4,8 +4,8 @@ import { ConvexClient } from 'convex/browser';
 import './reports.css';
 import { api } from '../convex/_generated/api';
 import { fileError } from '../convex/fileRules.js';
-import { numberReports, fileFingerprint, sortReports } from './report-list.js';
-import { emptyDetails, detailsFromReport, testDateLabel, fillMissingDetails, shortTestType } from './report-details.js';
+import { numberReports, sortReports } from './report-list.js';
+import { emptyDetails, testDateLabel, shortTestType } from './report-details.js';
 const escape = text => String(text).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const sizeLabel = n => n >= 1024 * 1024 ? `${(n / (1024 * 1024)).toFixed(1)} MB` : `${Math.max(1,Math.round(n / 1024))} KB`;
 const documentIcon = '<svg width="24" height="28" viewBox="0 0 24 28" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 2h10l6 6v18H4zM14 2v6h6M8 14h8M8 19h8"/></svg>';
@@ -33,7 +33,7 @@ export function mountUploads(root, onReports = () => {}) {
   const submit = root.querySelector('#upload-submit');
   const clear = root.querySelector('#clear-selection');
   const list = root.querySelector('#reports-list');
-  let queue = [], saved = [], busy = false, loaded = false, sessionKey, client, editingId = null, readingDetails = false, readingHashes = false, deletedReports = [], trashCursor = null, trashDone = true, trashPageCount = 1, reportControlsReady = false, searchTerm = '', reportFilter = 'all', readingPreviews = false;
+  let queue = [], saved = [], busy = false, loaded = false, sessionKey, client, editingId = null, deletedReports = [], trashCursor = null, trashDone = true, trashPageCount = 1, reportControlsReady = false, searchTerm = '', reportFilter = 'all';
   let reportSort = localStorage.getItem('healthstats-report-sort') || 'upload-newest';
   if (!['upload-newest','upload-oldest','report-newest','report-oldest'].includes(reportSort)) reportSort = 'upload-newest';
   root.querySelector('#sort-reports').value = reportSort;
@@ -46,10 +46,7 @@ export function mountUploads(root, onReports = () => {}) {
   try{const stored=JSON.parse(localStorage.getItem('health-history-analysis-reports')||'[]');if(Array.isArray(stored))analysisIds=new Set(stored.filter(id=>typeof id==='string'));}catch{}
   function publishSelection(){localStorage.setItem('health-history-analysis-reports',JSON.stringify([...analysisIds]));onReports(numberReports(saved),[...analysisIds]);}
   const readingErrors=new Map();
-  const previews=new Map(), previewByHash=new Map(), attemptedPreviews=new Set();
   const trashPages = [], trashSubscriptions = [];
-  const attemptedHashes = new Set();
-  const attemptedDetails = new Set();
   const url = import.meta.env.VITE_CONVEX_URL;
   const site = url?.replace(/\.convex\.cloud\/?$/, '.convex.site');
   function message(text, isError = false) { status.textContent = text; status.classList.toggle('is-error', isError); }
@@ -77,29 +74,9 @@ export function mountUploads(root, onReports = () => {}) {
     });
     list.innerHTML = visible.length ? `<ul class="report-rows premium-grid">${visible.map(report => {
       const d = report.details || emptyDetails(), type=shortTestType(d.testType) || 'Medical report';
-      const preview=previews.get(report.id);
-      return `<li class="premium-report-card"><div class="card-topline"><span class="report-number">Report #${report.serial}</span><details class="report-menu" data-report-menu="${report.id}" ${openMenus.has(report.id)?'open':''}><summary aria-label="Actions for report #${report.serial}"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></summary><div><button class="secondary" type="button" data-edit-id="${report.id}" aria-label="Edit details for report #${report.serial}">Edit details</button><button class="secondary report-delete" type="button" ${reportControlsReady ? '' : 'disabled'} data-delete-id="${report.id}" aria-label="Delete report #${report.serial}">Delete report</button></div></details></div>${readingErrors.has(report.id)?`<p class="report-reading-error" role="status">Reading error: ${escape(readingErrors.get(report.id))}</p>`:''}${report.duplicateOf ? `<p class="duplicate-note">Duplicate of report #${report.duplicateOf}</p>` : ''}<div class="card-report-content"><div class="report-preview" aria-hidden="true">${preview?`<img src="${escape(preview)}" alt="">`:`${documentIcon}<span>${report.contentType==='application/pdf'?'PDF':'Photo'}</span>`}</div><label class="report-analysis-check"><input type="checkbox" data-analysis-id="${report.id}" aria-label="Select report #${report.serial} for analysis" ${analysisIds.has(report.id)?'checked':''}><span>For summary</span></label><div class="report-details"><h2>${escape(type)}</h2><p class="report-lab">${escape(d.labName || 'Lab not added')}</p><p class="report-date"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 11h16"/></svg>${escape(d.testDate?testDateLabel(d.testDate):'Test date not added')}</p><p class="report-person"><span>For</span> ${escape(d.patientName || 'Name not added')}</p><span class="report-file-badge">${documentIcon}${report.contentType==='application/pdf'?'PDF':'Photo'} · ${sizeLabel(report.size)}</span></div></div><p class="report-filename" title="${escape(report.name)}">${escape(report.name)}</p><div class="report-edit-slot"></div><button class="report-open primary" type="button" data-report-id="${report.id}" aria-label="Open report #${report.serial}">Open report</button></li>`;
+      return `<li class="premium-report-card"><div class="card-topline"><span class="report-number">Report #${report.serial}</span><details class="report-menu" data-report-menu="${report.id}" ${openMenus.has(report.id)?'open':''}><summary aria-label="Actions for report #${report.serial}"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></summary><div><button class="secondary" type="button" data-edit-id="${report.id}" aria-label="Edit details for report #${report.serial}">Edit details</button><button class="secondary report-delete" type="button" ${reportControlsReady ? '' : 'disabled'} data-delete-id="${report.id}" aria-label="Delete report #${report.serial}">Delete report</button></div></details></div>${readingErrors.has(report.id)?`<p class="report-reading-error" role="status">Reading error: ${escape(readingErrors.get(report.id))}</p>`:''}${report.duplicateOf ? `<p class="duplicate-note">Duplicate of report #${report.duplicateOf}</p>` : ''}<div class="card-report-content"><div class="report-preview" aria-hidden="true">${documentIcon}<span>${report.contentType==='application/pdf'?'PDF':'Photo'}</span></div><label class="report-analysis-check"><input type="checkbox" data-analysis-id="${report.id}" aria-label="Select report #${report.serial} for analysis" ${analysisIds.has(report.id)?'checked':''}><span>For summary</span></label><div class="report-details"><h2>${escape(type)}</h2><p class="report-lab">${escape(d.labName || 'Lab not added')}</p><p class="report-date"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 11h16"/></svg>${escape(d.testDate?testDateLabel(d.testDate):'Test date not added')}</p><p class="report-person"><span>For</span> ${escape(d.patientName || 'Name not added')}</p><span class="report-file-badge">${documentIcon}${report.contentType==='application/pdf'?'PDF':'Photo'} · ${sizeLabel(report.size)}</span></div></div><p class="report-filename" title="${escape(report.name)}">${escape(report.name)}</p><div class="report-edit-slot"></div><button class="report-open primary" type="button" data-report-id="${report.id}" aria-label="Open report #${report.serial}">Open report</button></li>`;
     }).join('')}</ul>` : '<div class="reports-empty"><p>No reports match. Try another search or choose All reports.</p></div>';
-    list.innerHTML += `<p class="stored-note" id="details-status" role="status">${readingDetails?'Reading details from your saved reports…':'Check report details against the originals. Access stays tied to this browser until sign-in is available.'}</p>`;
-  }
-  async function readPreviews() {
-    if(readingPreviews)return;readingPreviews=true;
-    try {
-      let report;
-      while((report=saved.find(r=>!attemptedPreviews.has(r.id)))){
-        attemptedPreviews.add(report.id);
-        if(report.contentHash&&previewByHash.has(report.contentHash)){previews.set(report.id,previewByHash.get(report.contentHash));renderReports();continue;}
-        try{
-          const response=await fetch(`${site}/reports/open`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionKey,reportId:report.id}),signal:AbortSignal.timeout(60000)});
-          if(!response.ok)continue;
-          const blob=await response.blob();
-          let preview;
-          if(report.contentType==='application/pdf')preview=await (await import('./report-reader.js')).reportPreview(blob);
-          else preview=URL.createObjectURL(blob);
-          previews.set(report.id,preview);if(report.contentHash)previewByHash.set(report.contentHash,preview);renderReports();
-        }catch{/* Original-file icon remains if a preview cannot be read. */}
-      }
-    }finally{readingPreviews=false;}
+    list.innerHTML += `<p class="stored-note" id="details-status" role="status">Check report details against the originals. Access stays tied to this browser until sign-in is available.</p>`;
   }
   list.addEventListener('change',event=>{
     const input=event.target.closest('[data-analysis-id]');if(!input)return;
@@ -135,43 +112,6 @@ export function mountUploads(root, onReports = () => {}) {
       if(!result.isDone&&index+1<trashPageCount&&!trashSubscriptions[index+1])watchTrashPage(index+1,result.continueCursor);
     },()=>message('Could not load deleted reports. Reload to try again.',true));
   }
-  async function readMissingHashes() {
-    if(readingHashes)return;
-    readingHashes=true;
-    try {
-      let report;
-      while((report=saved.find(r=>!r.contentHash&&!attemptedHashes.has(r.id)))) {
-        attemptedHashes.add(report.id);
-        try {
-          const response=await fetch(`${site}/reports/open`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionKey,reportId:report.id}),signal:AbortSignal.timeout(60000)});
-          if(!response.ok)throw Error('Could not check duplicate.');
-          const contentHash=await fileFingerprint(await response.blob());
-          await client.mutation(api.reports.setContentHash,{sessionKey,reportId:report.id,contentHash});
-        } catch { message('Some reports could not be checked for duplicates. Reload to try again.',true); }
-      }
-    } finally { readingHashes=false; }
-  }
-  async function readMissingDetails() {
-    if (readingDetails || !saved.some(r => !r.details && !attemptedDetails.has(r.id))) return;
-    readingDetails = true;
-    renderReports();
-    try {
-      await fillMissingDetails({
-        getReports: () => saved, attempted: attemptedDetails,
-        readDetails: async report => {
-          const response = await fetch(`${site}/reports/open`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionKey,reportId:report.id}),signal:AbortSignal.timeout(60000)});
-          if (!response.ok) throw Error('Could not read report.');
-          const blob = await response.blob();
-          const { readLabReport } = await import('./report-reader.js');
-          try {const result=await readLabReport(blob,()=>{},report.contentType);readingErrors.delete(report.id);return detailsFromReport(result);}
-          catch(error){readingErrors.set(report.id,error.message);throw error;}
-        },
-        saveDetails: (report, details) => client.mutation(api.reports.updateDetails, {sessionKey,reportId:report.id,details,onlyIfMissing:true}),
-        onFailure: () => message('Report details could not be read or saved. Reload to try again, or use Edit details.',true),
-      });
-    } finally { readingDetails = false; renderReports(); }
-  }
-
   try {
     sessionKey = localStorage.getItem('health-history-upload-session');
     if (!/^[a-f0-9]{64}$/.test(sessionKey ?? '')) {
@@ -196,17 +136,17 @@ export function mountUploads(root, onReports = () => {}) {
         loaded=complete;renderReports();renderQueue();
         if(complete){
           analysisIds=new Set([...analysisIds].filter(id=>saved.some(r=>r.id===id)));
-          publishSelection();void readPreviews();void readMissingDetails();if(reportControlsReady)void readMissingHashes();
+          publishSelection();
         }else if(!reportSubscriptions[index+1])watchReports(index+1,result.continueCursor);
       },()=>{
         message('Unlimited uploads need the latest storage update. Run npx convex dev --once, then reload.',true);
         if(!legacySubscription)legacySubscription=client.onUpdate(api.reports.list,{sessionKey},reports=>{
-          saved=reports;loaded=true;renderReports();renderQueue();publishSelection();void readPreviews();void readMissingDetails();
+          saved=reports;loaded=true;renderReports();renderQueue();publishSelection();
         },()=>{loaded=false;renderQueue();message('Reports could not be loaded. Check your connection and reload.',true);});
       });
     }
     watchReports(0,null);
-    void client.mutation(api.reports.ensureNumbers,{sessionKey}).then(()=>{reportControlsReady=true;renderReports();void readMissingHashes();watchTrashPage(0,null);}).catch(()=>message('Numbering, duplicate checks and Delete need the latest Convex update. Run npx convex dev --once, then reload.',true));
+    void client.mutation(api.reports.ensureNumbers,{sessionKey}).then(()=>{reportControlsReady=true;renderReports();watchTrashPage(0,null);}).catch(()=>message('Numbering, duplicate checks and Delete need the latest Convex update. Run npx convex dev --once, then reload.',true));
   } catch {
     input.disabled = true;
     list.innerHTML = '<p>Your reports are unavailable in this browser.</p>';
