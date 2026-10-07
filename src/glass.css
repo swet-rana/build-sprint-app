@@ -1,0 +1,67 @@
+@media screen{
+:root{--glass-lavender:linear-gradient(135deg,rgba(255,255,255,.82) 0%,rgba(231,225,255,.62) 48%,rgba(206,197,249,.48) 100%);--glass-edge:rgba(255,255,255,.9);--glass-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.48),0 8px 24px rgba(57,43,129,.08)}
+body:has(#uploads-view:not([hidden])),body:has(#summary-view:not([hidden])){background:radial-gradient(ellipse at 8% 12%,#e6e0fb 0,transparent 42%),radial-gradient(ellipse at 90% 55%,#e9e4fc 0,transparent 45%),#f6f5ff;background-attachment:fixed}
+.premium-reports,#summary-view{background:var(--glass-lavender);border-color:var(--glass-edge);box-shadow:var(--glass-shadow);backdrop-filter:blur(20px) saturate(135%);-webkit-backdrop-filter:blur(20px) saturate(135%)}
+#summary-view .health-category,.premium-reports .report-filters button,#summary-view .real-summary-paper .marker-heading h4,.premium-reports .report-file-badge,#summary-view .summary-review,#summary-view .report-count{background:var(--glass-lavender);border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow);backdrop-filter:blur(12px) saturate(145%);-webkit-backdrop-filter:blur(12px) saturate(145%);color:#35308f}
+#summary-view .health-category strong,#summary-view .health-category span{color:#35308f}
+#summary-view .health-category:hover,.premium-reports .report-filters button:hover{background:linear-gradient(135deg,#fff,rgba(222,213,255,.88));border-color:#c5b9ef}
+#summary-view .health-category[aria-pressed="true"],.premium-reports .report-filters button[aria-pressed="true"]{background:#4942bc;border-color:#4942bc;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 5px 14px rgba(73,66,188,.2);backdrop-filter:none;-webkit-backdrop-filter:none}
+#summary-view .health-category[aria-pressed="true"] strong,#summary-view .health-category[aria-pressed="true"] span{color:#fff}
+.premium-reports .primary,#summary-view .primary,#app:has(#summary-view:not([hidden])) #print{background:var(--glass-lavender);color:#35308f;border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.premium-reports .primary:hover,#summary-view .primary:hover,#app:has(#summary-view:not([hidden])) #print:hover{background:linear-gradient(135deg,#fff,#ddd4fc)}
+.premium-reports .primary:active,#summary-view .primary:active{background:#4942bc;color:#fff}
+.premium-reports .primary:disabled,#summary-view .primary:disabled{background:#e4e1f1;color:#555f88;box-shadow:none;backdrop-filter:none}
+#summary-view .context,#summary-view .summary-footer,#summary-view .table-scroll thead{background:linear-gradient(110deg,rgba(245,242,255,.92),rgba(227,220,249,.65))}
+@media(prefers-reduced-transparency:reduce){.premium-reports,#summary-view{background:#f0eeff;backdrop-filter:none;-webkit-backdrop-filter:none}#summary-view .health-category,.premium-reports .report-filters button,#summary-view .real-summary-paper .marker-heading h4{backdrop-filter:none;-webkit-backdrop-filter:none}}
+}
+@media screen{
+.premium-reports #show-upload,.premium-reports #show-upload:hover,.premium-reports #show-upload:active{background:#4942bc;color:#fff;border-color:#4942bc;font-family:inherit;font-size:13px;font-weight:500;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 5px 14px rgba(73,66,188,.2);backdrop-filter:none;-webkit-backdrop-filter:none}
+}
+@media screen{
+.premium-reports .report-sort select{background:#4942bc;color:#fff;border-color:#4942bc;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 5px 14px rgba(73,66,188,.2)}
+.premium-reports .report-sort select option{background:#fff;color:#35308f}
+}
+@media screen{
+.premium-reports .premium-report-card{background:linear-gradient(135deg,#fff 0%,rgba(255,255,255,.96) 38%,rgba(247,247,252,.92) 70%,#fff 100%);box-shadow:inset 0 2px 0 rgba(255,255,255,1),inset 0 -1px 0 rgba(227,225,241,.55),0 8px 24px rgba(57,43,129,.07);backdrop-filter:blur(12px) saturate(110%);-webkit-backdrop-filter:blur(12px) saturate(110%)}
+@media(prefers-reduced-transparency:reduce){.premium-reports .premium-report-card{background:linear-gradient(135deg,#fff,#f7f7fc 70%,#fff);backdrop-filter:none;-webkit-backdrop-filter:none}}
+}
+@media screen{
+.premium-reports .report-open.primary{background:linear-gradient(160deg,#f0edff 0%,#e0dbff 42%,#d7d0fa 100%);color:#35308f;border:1px solid #dcd8fa;box-shadow:inset 0 2px 0 rgba(255,255,255,.9),inset 0 -1px 0 rgba(189,178,233,.35),0 4px 10px rgba(57,43,129,.08);backdrop-filter:none;-webkit-backdrop-filter:none}
+.premium-reports .report-open.primary:hover{background:linear-gradient(160deg,#f5f2ff,#e7e3ff 42%,#ddd6fc)}
+.premium-reports .report-open.primary:active{background:#d7d0fa;color:#35308f;box-shadow:inset 0 1px 3px rgba(57,43,129,.12)}
+}
+@media screen{
+.premium-reports .report-open.primary{background:linear-gradient(160deg,rgba(255,255,255,.14),rgba(255,255,255,0) 48%,rgba(28,20,110,.12)) #4942bc;color:#fff;border-color:#4942bc;box-shadow:inset 0 2px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(28,20,110,.18),0 5px 14px rgba(73,66,188,.2)}
+.premium-reports .report-open.primary:hover{background:linear-gradient(160deg,rgba(255,255,255,.2),rgba(255,255,255,.04) 48%,rgba(28,20,110,.08)) #4942bc;color:#fff}
+.premium-reports .report-open.primary:active{background:#4942bc;color:#fff;box-shadow:inset 0 2px 4px rgba(28,20,110,.2)}
+}
+@media screen{
+.premium-reports #saved-title{color:#35328b}
+}
+@media screen{
+#summary-view .analysis-selected-list li{background:var(--glass-lavender);border:1px solid var(--glass-edge);border-radius:24px;box-shadow:var(--glass-shadow);backdrop-filter:blur(12px) saturate(145%);-webkit-backdrop-filter:blur(12px) saturate(145%);color:#35308f;padding:12px 18px;font-size:13px}
+#summary-view .analysis-selected-list li strong{color:#35308f;font-weight:500}
+#summary-view .analysis-selected-list li span{color:#35308f}
+@media(prefers-reduced-transparency:reduce){#summary-view .analysis-selected-list li{background:#eeeaff;backdrop-filter:none;-webkit-backdrop-filter:none}}
+}
+@media screen{
+#summary-view #prepare-summary{background:linear-gradient(160deg,rgba(255,255,255,.14),rgba(255,255,255,0) 48%,rgba(28,20,110,.12)) #4942bc;color:#fff;border:1px solid #4942bc;border-radius:9px;box-shadow:inset 0 2px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(28,20,110,.18),0 5px 14px rgba(73,66,188,.2);backdrop-filter:none;-webkit-backdrop-filter:none}
+#summary-view #prepare-summary:hover:not(:disabled){background:linear-gradient(160deg,rgba(255,255,255,.2),rgba(255,255,255,.04) 48%,rgba(28,20,110,.08)) #4942bc;color:#fff}
+#summary-view #prepare-summary:active:not(:disabled){background:#4942bc;color:#fff;box-shadow:inset 0 2px 4px rgba(28,20,110,.2)}
+#summary-view #prepare-summary:disabled{background:#e4e1f1;color:#555f88;border-color:#e4e1f1;box-shadow:none}
+}
+@media screen{
+.topbar{height:136px}
+.brand .healthstats-logo{display:block;width:170px;height:auto;border-radius:8px}
+@media(max-width:600px){.topbar{height:116px}.brand .healthstats-logo{width:140px}}
+}
+@media screen{
+.premium-reports #saved-title{font-family:Helvetica,Arial,sans-serif}
+}
+@media screen{
+#app:has(#summary-view:not([hidden])) #page-title{color:#35328b}
+}
+@media screen{
+#summary-view #prepare-summary,#summary-view #prepare-summary:hover,#summary-view #prepare-summary:active,#summary-view #prepare-summary:disabled{color:#fff}
+#summary-view #prepare-summary:disabled{background:#756fbb;border-color:#756fbb}
+}

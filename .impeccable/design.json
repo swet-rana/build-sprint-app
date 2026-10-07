@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-04T00:00:00Z",
+  "generatedAt": "2026-10-06T00:00:00Z",
   "title": "Design System: Health history",
   "extensions": {
     "breakpoints": [
@@ -8,16 +8,43 @@
         "name": "mobile",
         "value": "760px"
       }
-    ]
+    ],
+    "shadows": [
+      {
+        "name": "reports-card",
+        "value": "0 5px 14px rgb(53 43 140 / 5%)",
+        "purpose": "Ambient depth for My Reports and My Summary screen cards; clinical sample and print retain their existing flat treatment."
+      },
+      {
+        "name": "reports-menu",
+        "value": "0 8px 24px rgb(35 27 85 / 12%)",
+        "purpose": "Local elevation for the report action menu."
+      },
+      {
+        "name": "glass",
+        "value": "inset 0 1px 0 rgba(255,255,255,.95), inset 0 -1px 0 rgba(255,255,255,.48), 0 8px 24px rgba(57,43,129,.08)",
+        "purpose": "Screen-only lavender glass panels and controls."
+      }
+    ],
+    "glass": {
+      "background": "linear-gradient(135deg,rgba(255,255,255,.82) 0%,rgba(231,225,255,.62) 48%,rgba(206,197,249,.48) 100%)",
+      "edge": "rgba(255,255,255,.9)",
+      "ink": "#35308f",
+      "panelBackdrop": "blur(20px) saturate(135%)",
+      "controlBackdrop": "blur(12px) saturate(145%)",
+      "selectedBackground": "#4942bc",
+      "selectedText": "#ffffff",
+      "scope": "My Reports and My Summary screen only; src/glass.css imported last."
+    }
   },
   "components": [
     {
       "name": "Print summary",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Print selected tests across as many A4 pages as needed. The summary allows page breaks and visible overflow; individual test markers avoid splitting across pages. Charts remain 88px high and source details 9px.",
+      "description": "Print selected tests across as many A4 pages as needed. The summary allows page breaks and visible overflow; individual test markers avoid splitting across pages. Charts remain 88px high and source details 9px. My Summary screen action uses the shared indigo palette; the clinical sample retains its blue action. The final screen-only glass layer in src/glass.css supplies the current material; sample and print retain their existing treatment.",
       "html": "<button class=\"ds-primary\">Print summary</button>",
-      "css": ".ds-primary{font:600 14px 'Public Sans',sans-serif;background:#174e65;color:#fff;border:0;border-radius:7px;padding:13px 18px;cursor:pointer}.ds-primary:hover{background:#123e53}.ds-primary:focus-visible{outline:3px solid #c17824;outline-offset:4px}"
+      "css": ".ds-primary{font:600 14px 'Public Sans',sans-serif;background:#4942bc;color:#fff;border:0;border-radius:9px;padding:13px 18px;cursor:pointer}.ds-primary:hover{background:#38319f}.ds-primary:focus-visible{outline:3px solid #9187de;outline-offset:4px}"
     },
     {
       "name": "Upload status error",
@@ -31,7 +58,7 @@
       "kind": "button",
       "description": "Opens the original report at the page containing a recorded value.",
       "html": "<button class=\"ds-source\" type=\"button\">View original report <span>\u00b7 p. 2</span></button>",
-      "css": ".ds-source{display:flex;align-items:center;flex-wrap:wrap;gap:4px;padding:0;margin-top:12px;background:transparent;border:0;text-decoration:underline;text-underline-offset:4px;color:#176889;font:400 11px 'Public Sans',sans-serif;line-height:1.6;text-align:left;cursor:pointer}.ds-source:hover{text-decoration-thickness:2px}.ds-source:focus-visible{outline:3px solid #c17824;outline-offset:4px}.ds-source:disabled{color:#526977;cursor:wait}"
+      "css": ".ds-source{display:flex;align-items:center;flex-wrap:wrap;gap:4px;padding:0;margin-top:12px;background:transparent;border:0;text-decoration:underline;text-underline-offset:4px;color:#4942bc;font:400 11px 'Public Sans',sans-serif;line-height:1.6;text-align:left;cursor:pointer}.ds-source:hover{text-decoration-thickness:2px}.ds-source:focus-visible{outline:3px solid #9187de;outline-offset:4px}.ds-source:disabled{color:#555f88;cursor:wait}"
     },
     {
       "name": "Report-date value slot",
@@ -43,16 +70,16 @@
     {
       "name": "Health category blocks",
       "kind": "button",
-      "description": "Four desktop columns become two on phones. Pressed blocks show test counts and filter comparable results, unpaired results and test choices by selecting all tests in that category and clearing other selections. Tests may belong to multiple groups; Other is the fallback. Empty groups say no tests are available. Common Indian lab groups are supported, not exhaustive categorization. Both result tables follow the blood report summary. Category controls are excluded from print.",
+      "description": "Four desktop columns become two on phones. Pressed blocks show test counts and filter comparable results, unpaired results and test choices by selecting all tests in that category and clearing other selections. Tests may belong to multiple groups; Other is the fallback. Empty groups say no tests are available. Common Indian lab groups are supported, not exhaustive categorization. Both result tables follow the blood report summary. Category controls are excluded from print. The final screen-only glass layer in src/glass.css supplies the current material; sample and print retain their existing treatment.",
       "html": "<div class=\"ds-category-grid\"><button class=\"ds-health-category\" type=\"button\" aria-pressed=\"true\"><strong>All tests</strong><span>55 tests available</span></button><button class=\"ds-health-category\" type=\"button\" aria-pressed=\"false\"><strong>Other</strong><span>No tests in these reports</span></button></div>",
-      "css": ".ds-category-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:18px 0}.ds-health-category{display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:9px;min-height:82px;padding:16px;text-align:left;background:#fff;border:1px solid #bdccd4;border-radius:7px;color:#233c48;font-family:'Public Sans',sans-serif;cursor:pointer}.ds-health-category strong{font-size:13px;font-weight:500;line-height:1.5}.ds-health-category span{font-size:11px;color:#526977;line-height:1.5}.ds-health-category:hover{background:#e5eef3}.ds-health-category[aria-pressed=true]{background:#174e65;border-color:#174e65;color:white}.ds-health-category[aria-pressed=true] span{color:#e5eef3}.ds-health-category:focus-visible{outline:3px solid #c17824;outline-offset:4px}@media(max-width:760px){.ds-category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.ds-health-category{padding:13px;min-height:88px}}@media print{.ds-category-grid{display:none!important}}"
+      "css": ".ds-category-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:18px 0}.ds-health-category{display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:9px;min-height:82px;padding:16px;text-align:left;background:#fff;border:1px solid #e3e0f7;border-radius:12px;color:#171d4b;font-family:'Public Sans',sans-serif;cursor:pointer}.ds-health-category strong{font-size:13px;font-weight:500;line-height:1.5}.ds-health-category span{font-size:11px;color:#555f88;line-height:1.5}.ds-health-category:hover{background:#e7e3ff}.ds-health-category[aria-pressed=true]{background:#4942bc;border-color:#4942bc;color:white}.ds-health-category[aria-pressed=true] span{color:#e7e3ff}.ds-health-category:focus-visible{outline:3px solid #9187de;outline-offset:4px}@media(max-width:760px){.ds-category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.ds-health-category{padding:13px;min-height:88px}}@media print{.ds-category-grid{display:none!important}}"
     },
     {
       "name": "Test picker",
       "kind": "custom",
       "description": "Choose zero or any number of available tests without a six-test cap. The count reads N selected; Select none clears selections. Picker controls are excluded from print.",
       "html": "<details class=\"ds-test-picker\"><summary>Choose tests for your summary <span>0 selected</span></summary><button class=\"ds-select-none\" type=\"button\">Select none</button></details>",
-      "css": ".ds-test-picker{font-family:'Public Sans',sans-serif;margin-bottom:24px}.ds-test-picker summary{cursor:pointer;font-size:14px;font-weight:500;color:#174e65;padding:12px 0;line-height:1.5}.ds-test-picker summary span{font-size:12px;font-weight:400;margin-left:12px;color:#526977}.ds-select-none{background:white;border:1px solid #a7bfca;border-radius:7px;color:#174e65;font:500 13px 'Public Sans',sans-serif;padding:11px 15px;cursor:pointer}.ds-select-none:hover{background:#e5eef3}.ds-test-picker summary:focus-visible,.ds-select-none:focus-visible{outline:3px solid #c17824;outline-offset:4px}@media(max-width:760px){.ds-test-picker summary span{display:block;margin-left:0}}@media print{.ds-test-picker{display:none!important}}"
+      "css": ".ds-test-picker{font-family:'Public Sans',sans-serif;margin-bottom:24px}.ds-test-picker summary{cursor:pointer;font-size:14px;font-weight:500;color:#413bbb;padding:12px 0;line-height:1.5}.ds-test-picker summary span{font-size:12px;font-weight:400;margin-left:12px;color:#555f88}.ds-select-none{background:white;border:1px solid #a7bfca;border-radius:7px;color:#413bbb;font:500 13px 'Public Sans',sans-serif;padding:11px 15px;cursor:pointer}.ds-select-none:hover{background:#e5eef3}.ds-test-picker summary:focus-visible,.ds-select-none:focus-visible{outline:3px solid #9187de;outline-offset:4px}@media(max-width:760px){.ds-test-picker summary span{display:block;margin-left:0}}@media print{.ds-test-picker{display:none!important}}"
     },
     {
       "name": "Original printed test name",
@@ -60,11 +87,27 @@
       "description": "When the original printed test name differs from the common display name, show it beneath the reference range and before the source control. It wraps rather than truncates. Matching uses a strictly verified alias dictionary, without fuzzy matching or numeric unit conversion; recorded values, dates, reference ranges and sources are preserved.",
       "html": "<span class=\"ds-report-test-name\">Report name: Total Leucocyte Count</span>",
       "css": ".ds-report-test-name{display:block;overflow-wrap:anywhere;line-height:1.5;margin-top:5px;font:400 11px/1.5 'Public Sans',sans-serif;color:#526977}@media(max-width:760px){.ds-report-test-name{font-size:12px}}@media print{.ds-report-test-name{font-size:9px}}"
+    },
+    {
+      "name": "Premium report card",
+      "kind": "card",
+      "refersTo": "report-card",
+      "description": "User-selected 02 Premium Cards reference. Two desktop columns become one at 760px. Real original-file previews have an icon fallback; cards retain stable serials, duplicate notices, short types, details, filenames and a full-width Open report action. The menu holds Edit details and Delete report. The final screen-only glass layer in src/glass.css supplies the current material; sample and print retain their existing treatment.",
+      "html": "<article class=\"ds-report-card\"><div class=\"ds-report-top\"><span>Report #4</span><button aria-label=\"Report actions\">\u2022\u2022\u2022</button></div><p class=\"ds-report-duplicate\">Duplicate of report #3</p><h2>Comprehensive blood tests</h2><p>Apollo Diagnostics</p><p>18 Sep 2025 \u00b7 For Patient</p><p>PDF \u00b7 240 KB</p><small>original-report.pdf</small><button class=\"ds-report-open\">Open report</button></article>",
+      "css": ".ds-report-card{padding:18px;background:#fff;border:1px solid #e9e6fa;border-radius:16px;box-shadow:0 5px 14px rgb(53 43 140 / 5%);font:400 13px/1.5 \"Public Sans\",sans-serif;color:#555f88;min-width:0}.ds-report-top{display:flex;justify-content:space-between;align-items:center;font-size:12px}.ds-report-top button{background:transparent;color:#56509e;border:0;border-radius:7px;padding:8px;cursor:pointer}.ds-report-top button:hover{background:#eeeaff}.ds-report-card h2{font-size:18px;line-height:1.35;color:#171d4b;font-weight:600}.ds-report-duplicate{display:inline-block;background:#fff3d9;color:#75551e;padding:5px 9px;border-radius:6px;font-size:12px}.ds-report-card small{display:block;overflow-wrap:anywhere;margin:17px 0 15px;font-size:11px}.ds-report-open{display:block;width:100%;min-height:44px;border:0;border-radius:9px;padding:12px 16px;background:#4942bc;color:#fff;font:600 14px \"Public Sans\",sans-serif;cursor:pointer}.ds-report-open:hover{background:#38319f}.ds-report-card button:focus-visible{outline:3px solid #9187de;outline-offset:3px}@media(max-width:760px){.ds-report-card h2{font-size:17px}}"
+    },
+    {
+      "name": "Premium summary surface",
+      "kind": "card",
+      "refersTo": "summary-screen-card",
+      "description": "My Summary screen shares My Reports palette and Public Sans typography. Lavender shell surrounds white selection, test-picker, summary and result cards. Screen-only overrides preserve clinical sample and print styles. The final screen-only glass layer in src/glass.css supplies the current material; sample and print retain their existing treatment.",
+      "html": "<section class=\"ds-summary-shell\"><article class=\"ds-summary-card\"><h2>Your blood report summary</h2><p>Dated results with links to their original reports.</p></article></section>",
+      "css": ".ds-summary-shell{padding:28px;background:#f0eeff;border:1px solid #e0ddfa;border-radius:20px;font-family:\"Public Sans\",sans-serif;color:#171d4b}.ds-summary-card{padding:24px;background:#fff;border:1px solid #e9e6fa;border-radius:16px;box-shadow:0 5px 14px rgb(53 43 140 / 5%)}.ds-summary-card h2{font-size:24px;font-weight:600;letter-spacing:-.015em}.ds-summary-card p{color:#555f88;font-size:14px;line-height:1.6}@media(max-width:760px){.ds-summary-shell{padding:18px;border-radius:16px}.ds-summary-card{padding:18px}.ds-summary-card h2{font-size:22px}}"
     }
   ],
   "narrative": {
     "northStar": "Dated clinical comparison sheet",
-    "overview": "The summary is a reading surface used by patients and doctors during a visit. Paired results sit beneath each chart, with source links beside the evidence.",
+    "overview": "The summary is a reading surface used by patients and doctors during a visit. Paired results sit beneath each chart, with source links beside the evidence. My Reports follows the user-selected 02 Premium Cards reference. My Summary now shares its lavender surroundings, white cards, indigo actions and Public Sans typography on screen. The fictional sample and printed clinical comparison retain their existing treatment. Current screen panels, actions, unselected categories/filters, test-name headings and badges have translucent lavender glass; selected categories and filters stay solid indigo with white text. Summary table headers use a light lavender gradient.",
     "keyCharacteristics": [],
     "rules": [],
     "dos": [
@@ -76,6 +119,11 @@
     ]
   },
   "notes": [
-    "Unmatched results use a horizontally scrolling table with test, date, value/unit, reference and source columns, matching comparable-results styling."
+    "Unmatched results use a horizontally scrolling table with test, date, value/unit, reference and source columns, matching comparable-results styling.",
+    "My Reports search and All reports/Blood tests/Photos filters precede a two-column grid, reduced to one at 760px. Upload report toggles an inline white panel above cards.",
+    "Automatic and legacy test-category descriptions display as short three-to-five-word report types; manual details remain editable.",
+    "Premium Cards review: ship; desktop 1440px and phone 390px fidelity passed. Evidence: .impeccable/review/premium-reports-desktop.png and .impeccable/review/premium-reports-mobile.png. Browser checks covered search/filter/upload toggle/menu/edit Cancel/all four real previews without overflow. 26 unit tests, type check and build passed. Backend numbers and duplicate #4 of #3 were visible and Delete enabled; actual deletion/restoration and saved edits were not proved.",
+    "My Summary now shares the Premium Cards screen palette via src/summary.css inside @media screen. Sample and clinical print styles retain their existing treatment. Desktop and 390px phone evidence: .impeccable/review/premium-summary-desktop.png and .impeccable/review/premium-summary-mobile.png. Browser checks verified two selected reports with 27 matching tests and category pressed state; document width equalled the 390px phone viewport. 27 tests, type check and build passed. Print was not re-rendered in this review.",
+    "Lavender glass review: build and design detector passed. Desktop/phone evidence: .impeccable/review/glass-{reports,summary}-{desktop,mobile}.png. Browser showed three selected reports and 63 matching tests. Selected categories and filters remain solid #4942bc with white text. Sample and print CSS unchanged."
   ]
 }

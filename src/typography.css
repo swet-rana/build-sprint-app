@@ -1,0 +1,9 @@
+/* Shared font rule for app text, forms, charts and print. */
+:root{font-family:Manrope,Helvetica,Arial,sans-serif;font-weight:400}
+body,#app,#app *, .original-viewer,.original-viewer *{font-family:Manrope,Helvetica,Arial,sans-serif!important;font-weight:400!important}
+
+#app:has(#summary-view:not([hidden])) #page-title{font-weight:700!important}
+#app .premium-reports #saved-title{font-weight:700!important}
+#app #profile-title{font-weight:700!important}
+#app #summary-view .analysis-controls h2{font-weight:700!important}
+#app .reports-guide strong{font-weight:700!important}

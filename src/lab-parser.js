@@ -40,7 +40,7 @@ function field(rows,label){
  return null;
 }
 export function parseReport(pages){
- const candidates=[],identities=[],dates=[],usedPages=new Set(),warnings=[];
+ const candidates=[],identities=[],dates=[],usedPages=new Set(),warnings=[],labNames=new Set();
  for(const page of pages){
   const rows=rowsFromItems(page.items),patientName=field(rows,'Patient Name')??field(rows,'Name'),patientId=field(rows,'UHID/MR No')??field(rows,'Patient ID'),patientIdIssuer=field(rows,'UHID/MR No')?'apollo':field(rows,'Collection Date')?'tata-1mg':null,date=parseDate(field(rows,'Collected')??field(rows,'Collection Date')??'');
   if(!date||!patientName)continue;
@@ -73,16 +73,21 @@ export function parseReport(pages){
    candidates.push({...identity,value,unit:unit||'Ratio',referenceText:referenceText||'Not printed in result row',page:page.page,sourceText:row.text,date});
    pageUsed=true;
   }
-  if(pageUsed){usedPages.add(page.page);identities.push({patientName,patientId,patientIdIssuer});dates.push(date);}
+  if(pageUsed){
+   const printedText=rows.map(r=>r.text).join(' ');
+   if(/\bApollo\s+(?:Diagnostics|Hospitals?|Health)/i.test(printedText))labNames.add('Apollo');
+   if(/\bTata\s*1\s*mg\b/i.test(printedText))labNames.add('Tata 1mg');
+   usedPages.add(page.page);identities.push({patientName,patientId,patientIdIssuer});dates.push(date);
+  }
  }
- if(!candidates.length)throw Error('No dated blood-test tables could be read. Use a text-readable lab PDF with test names, results, units and reference columns. Scanned photos need manual review.');
+ if(!candidates.length)throw Error('No dated blood-test tables could be read. Use a clear full-page report showing the patient, collection date, test names, results, units and reference columns.');
  if(new Set(identities.map(p=>p.patientId||normalizePatient(p.patientName))).size>1)throw Error('This file contains records for different people. Upload a separate file for each person.');
  if(new Set(dates).size>1)throw Error('This file contains blood tests from different dates. Upload each dated lab report separately.');
  const markers=new Map();
  for(const marker of candidates){const prior=markers.get(marker.key);if(prior&&prior.value!==marker.value)throw Error(`Conflicting values for ${marker.name} were found on different pages. Check the original before comparing.`);if(!prior)markers.set(marker.key,marker);}
  const excludedPages=pages.length-usedPages.size;
  if(excludedPages)warnings.push(`${excludedPages} of ${pages.length} pages were not used: attachments, non-blood results, notes, or pages without readable dated result tables.`);
- return {date:dates[0],patientName:identities[0].patientName,patientId:identities[0].patientId,patientIdIssuer:identities[0].patientIdIssuer,markers:[...markers.values()],usedPages:[...usedPages],excludedPages,pageCount:pages.length,warnings};
+ return {date:dates[0],patientName:identities[0].patientName,patientId:identities[0].patientId,patientIdIssuer:identities[0].patientIdIssuer,labName:labNames.size===1?[...labNames][0]:'',markers:[...markers.values()],usedPages:[...usedPages],excludedPages,pageCount:pages.length,warnings};
 }
 export function compareReports(a,b){
  if(a.patientId&&b.patientId&&a.patientIdIssuer===b.patientIdIssuer?a.patientId!==b.patientId:normalizePatient(a.patientName)!==normalizePatient(b.patientName))throw Error('These reports appear to belong to different people. Check the patient names before comparing.');
@@ -97,7 +102,7 @@ export function compareReports(a,b){
 }
 
 export function compareReportSeries(input){
- if(input.length<2||input.length>3)throw Error('Choose two or three uploaded PDFs.');
+ if(input.length<2)throw Error('Choose at least two uploaded PDFs.');
  for(let i=0;i<input.length;i++)for(let j=i+1;j<input.length;j++){
   const a=input[i],b=input[j];
   if(a.patientId&&b.patientId&&a.patientIdIssuer===b.patientIdIssuer?a.patientId!==b.patientId:normalizePatient(a.patientName)!==normalizePatient(b.patientName))throw Error('These reports appear to belong to different people. Check the patient names before comparing.');

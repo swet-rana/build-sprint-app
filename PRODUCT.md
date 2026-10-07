@@ -1,18 +1,18 @@
 # PRODUCT.md
 
 ## 1. The job
-When the doctor needs my past health records, I want to share a one-page summary of my health history, so the doctor can make a proper and fast diagnosis.
+When the doctor needs my past health records, I want to share a one-page summary of my health history, so I can avoid repeated visits to the doctor.
 Who, by situation: This is for anyone whose reports are spread across years and places, now at a doctor for something that isn't going away. 
 Today they hire: Right now, I usually take the most recent report and the doctor will ask for more relevant reports for further diagnosis and I will have to come for the next visit. Also, the doctor will manually piece together this information in the reports to make sense.
 
 ## 2. The switch
 What they'd fire: Today, the doctor gets either the most recent health report or nothing even if they have an ailment which is not going away.  
-Push: In most cases, the doctor would advise them to come back again with all the relevant reports.
+Push: In most cases, the doctor would advise them to come back again with all the relevant reports -> the 1 page health summary could avoid this re-visit.
 Pull: A visual health summary the doctor can read in 2 minutes. 
-Anxiety: Will the doctor trust the health summary?
-Habit: Its easy to grab the latest report and visit the doctor.
+Anxiety: Will the doctor trust the health summary? -> the product has the link on the summary page to the reports for validation and building trust.
+Habit: Its easy to grab the latest report and visit the doctor. -> the quick upload of all relevant reports and the required summary would take less than 5 min.
 How I know: from personal experience. When I shared all the reports from the past (though she still had to piece together the information), she was able to make the right diagnosis.
-The one worry onboarding must remove: will the doctor appreciate the summary?
+The one worry onboarding must remove: will the doctor trust the summary?
 
 
 ## 3. The core flow
@@ -31,7 +31,7 @@ With my product:
 The story: I want to give my doctor the relevant context from my entire health history without searching through years of reports.
 1) I have a health issue that needs further diagnosis.
 2) I prepare by opening the product, adding any missing recent reports, and ask it to prepare my history for this visit.
-3) I inform the product about the reason for visit. The product finds relevant past reports, pasts diagnoses written in their reports and prepares health-marker visuals and trend-lines.
+3) The product compares the tests from at-least 2 uploaded reports with the help of health-marker visuals and trend-lines.
 4) upon doctor's visit, I share the summary withe doctor
 5) The doctor gets the relevant history and trends in ~2 minutes, and can open the source reports when needed.
 
@@ -67,8 +67,20 @@ What we ask later, and when: to do a mail/phone sign in to save all your reports
 Does: prepares health summary comparing the blood reports across at least 2 different dates. It will have visual cues and trend-lines. It will share "View Original Report" link under each value. Moreover, it will also flag non-medical reports or reports which can't be compared.
 Doesn't: diagnose the medical reports to act like doctors
 Nice to have (only after the must haves work): access the mail for historical or present health records and prescriptions (only after sign-up)
-How I'll know it worked: they will be uploading more reports and maybe share the reason for doing that.
+How I'll know it worked: they will be uploading more reports.
 
 ## 6. The riskiest guess
-If this is false, the product is pointless: [ ]
-Thirty-minute check, no code (run it while you build), and what happened: [ ]
+If this is false, the product is pointless: The AI has to accurately recognise the same test even when two labs give it different names.
+Thirty-minute check, no code (run it while you build), and what happened: I uploaded my March and September 2025 blood reports to ChatGPT. WBC and CRP came through correctly. But in the Heart & cholesterol block, CHOLESTEROL -LDL and LDL CHOLESTEROL are the same test, and ChatGPT read them as different tests. So v1 must thoroughly check the test names and check if it's the same test or not and then correctly add it for summary and analysis across different dates.
+
+## 7. Milestones
+1. I can upload all kinds of reports in pdf and image formats.
+2. I can upload 2 or more blood reports, then see LDL from both shown as one report.
+3. I can flag a file which isn't a medical report.
+4. I can create simple to understand health summary based on the required check-ups and share it with the doctor.
+5. I can view the original report from the link in the summary page to ensure there is no error.
+6. I can enable sign-in after the user has tried the link and sees the first summary.
+7. Last: I can close it, reopen it, and my data is still there. 
+
+
+

@@ -10,3 +10,6 @@ tmp/
 references/*.pdf
 references/*.png
 references/*.jpeg
+
+public/ocr/
+eng.traineddata

@@ -1,3 +1,5 @@
+import { isAllowedOrigin } from "./originRules.js";
+import { auth } from "./auth";
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
@@ -5,11 +7,10 @@ import { fileError, isSessionKey, matchesFileType } from "./fileRules.js";
 import type { Id } from "./_generated/dataModel";
 
 const http = httpRouter();
+auth.addHttpRoutes(http);
 function cors(request: Request): Headers | null {
   const origin = request.headers.get("Origin");
-  const allowed = ["http://localhost:5173", "http://127.0.0.1:5173",
-    new URL(request.url).origin, process.env.APP_ORIGIN].filter(Boolean);
-  if (origin && !allowed.includes(origin)) return null;
+  if (!isAllowedOrigin(origin, new URL(request.url).origin, process.env.APP_ORIGIN)) return null;
   const headers = new Headers({ "Cache-Control": "no-store", "Vary": "Origin",
     "X-Content-Type-Options": "nosniff" });
   if (origin) headers.set("Access-Control-Allow-Origin", origin);
@@ -49,19 +50,20 @@ http.route({ path: "/reports/upload", method: "POST", handler: httpAction(async 
   const existing = await ctx.runQuery(internal.reports.findUpload, { sessionKey, uploadId });
   if (existing) { headers.set("Content-Type", "application/json"); return new Response(JSON.stringify({ reportId: existing }), { status: 200, headers }); }
   if (!await ctx.runQuery(internal.reports.canUpload, { sessionKey }))
-    return reply("This preview supports up to 20 reports in this browser.", 409, headers);
+    return reply("Invalid upload session.", 400, headers);
   const name = file.name.replace(/[\u0000-\u001f\u007f]/g, "").slice(0, 200).trim() || "Untitled report";
   const storageId = await ctx.storage.store(file);
+  const contentHash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",await file.arrayBuffer())),n=>n.toString(16).padStart(2,"0")).join("");
   try {
     const saved = await ctx.runMutation(internal.reports.save, {
-      sessionKey, storageId, name, contentType: file.type, size: file.size, uploadId,
+      sessionKey, storageId, name, contentType: file.type, size: file.size, uploadId, contentHash,
     });
     if (saved.reused) await ctx.storage.delete(storageId);
     headers.set("Content-Type", "application/json");
     return new Response(JSON.stringify({ reportId: saved.reportId }), { status: 201, headers });
   } catch {
     await ctx.storage.delete(storageId);
-    return reply("The report could not be saved. Check your connection and try again.", 409, headers);
+    return reply("The report could not be saved. Check your connection and try again.", 400, headers);
   }
 }) });
 

@@ -10,6 +10,14 @@ test('reads dated result columns, commas and source pages without extracting not
  assert.equal(report.date,'2026-05-27');assert.equal(report.patientName,'Mrs.Sample Patient');
  assert.equal(report.markers.length,1);assert.equal(report.markers[0].value,6830);assert.equal(report.markers[0].page,1);assert.equal(report.markers[0].referenceText,'4000-10000');
 });
+test('lab names require printed branding rather than generic patient and date labels',()=>{
+ const unknown=page('27/May/2026');
+ assert.equal(parseReport([unknown]).labName,'');
+ assert.equal(parseReport([{...unknown,items:[...unknown.items,item('Apollo Diagnostics',30,800,130)]}]).labName,'Apollo');
+ assert.equal(parseReport([{...unknown,items:[...unknown.items,item('Tata 1mg',30,800,130)]}]).labName,'Tata 1mg');
+ const generic={...unknown,items:unknown.items.map(i=>({...i,str:i.str==='Collected'?'Collection Date':i.str==='UHID/MR No'?'Patient ID':i.str}))};
+ assert.equal(parseReport([generic]).labName,'');
+});
 test('different titles for the same patient compare in date order without inventing missing tests',()=>{
  const first=parseReport([page('27/May/2026')]);const last=parseReport([page('25/Aug/2026','Ms.Sample Patient','TEST-123','7,920')]);
  const result=compareReports(last,first);assert.equal(result.comparable.length,1);assert.equal(result.comparable[0].change,1090);assert.equal(result.earlier.date,'2026-05-27');assert.equal(result.comparable.some(m=>m.name==='C-reactive protein'),false);
@@ -73,4 +81,17 @@ test('alternate cholesterol names compare with their own source pages and reject
  const result=compareReports(parseReport([old]),parseReport([latest]));
  assert.equal(result.comparable.length,1);assert.equal(result.comparable[0].change,10.7);assert.equal(result.comparable[0].earlier.rawName,'Cholesterol - LDL');assert.equal(result.comparable[0].later.page,7);
  assert.throws(()=>parseReport([old,{...latest,items:latest.items.map(i=>({...i,str:i.str.includes('27/May/2026')?': 19/Aug/2024':i.str}))}]),/Conflicting values/);
+});
+
+test('compares four, ten and twenty reports chronologically without a three-report limit',async()=>{
+ const {compareReportSeries}=await import('../src/lab-parser.js');
+ const reports=Array.from({length:20},(_,i)=>parseReport([page(`${String(i+1).padStart(2,'0')}/May/2026`,'Mrs.Sample Patient','TEST-123',String(6000+i))]));
+ for(const count of [4,10,20]){
+  const result=compareReportSeries(reports.slice(0,count).reverse());
+  assert.equal(result.reports.length,count);
+  assert.equal(result.comparable[0].observations.length,count);
+  assert.equal(result.comparable[0].change,count-1);
+ }
+ assert.throws(()=>compareReportSeries([reports[0]]),/at least two/);
+ assert.throws(()=>compareReportSeries([...reports.slice(0,4),reports[0]]),/different dates/);
 });

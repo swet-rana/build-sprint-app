@@ -1,0 +1,126 @@
+/* My Summary shares the Premium Cards palette and Public Sans typography. */
+@media screen{
+body:has(#summary-view:not([hidden])){background:#f6f5ff;color:#171d4b;--blue:#4942bc;--muted:#555f88}
+#app:has(#summary-view:not([hidden])) .brand{color:#35328b}
+#app:has(#summary-view:not([hidden])) .view-tabs{border-color:#dcdaf0}
+#app:has(#summary-view:not([hidden])) .view-tabs button[aria-pressed="true"]{color:#413bbb;border-color:#5149c8}
+#app:has(#summary-view:not([hidden])) .intro h1{font-size:28px;letter-spacing:-.025em}
+#app:has(#summary-view:not([hidden])) .primary{background:#4942bc;border-radius:9px}
+#app:has(#summary-view:not([hidden])) .primary:hover{background:#38319f}
+#summary-view{padding:28px;background:#f0eeff;border:1px solid #e0ddfa;border-radius:20px;--muted:#555f88;--blue:#4942bc}
+#summary-view h2,#summary-view h3,#summary-view h4{color:#171d4b;letter-spacing:-.015em}
+#summary-view .analysis-controls,#summary-view .test-picker,#summary-view .real-summary-paper,#summary-view .all-results,#summary-view .unpaired-results{background:#fff;border:1px solid #e9e6fa;border-radius:16px;box-shadow:0 5px 14px rgb(53 43 140 / 5%)}
+#summary-view .analysis-controls{padding:24px}
+#summary-view .analysis-controls h2{font-size:22px;font-weight:600;margin:0 0 10px}
+#summary-view .analysis-selected-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#summary-view .analysis-selected-list li{background:#faf9ff;border:1px solid #e9e6fa;border-radius:10px;font-size:14px;line-height:1.6;overflow-wrap:anywhere}
+#summary-view .analysis-selected-list span{color:#555f88}
+#summary-view .primary{background:#4942bc;color:white;border-radius:9px;min-height:44px;font-size:14px;font-weight:600}
+#summary-view .primary:hover{background:#38319f}
+#summary-view .primary:disabled{background:#e4e1f1;color:#555f88}
+#summary-view .secondary{background:#f0efff;border-color:#dcd8fa;color:#413bbb;border-radius:9px}
+#summary-view .secondary:hover{background:#e0dbff}
+#summary-view .summary-review{background:#e7e3ff;color:#373d76;border-radius:12px}
+#summary-view .health-category{background:white;border-color:#e3e0f7;border-radius:12px;padding:16px;box-shadow:0 5px 14px rgb(53 43 140 / 3%);color:#171d4b}
+#summary-view .health-category strong{font-weight:600;font-size:14px}
+#summary-view .health-category:hover{background:#e7e3ff}
+#summary-view .health-category[aria-pressed="true"]{background:#4942bc;border-color:#4942bc;color:white}
+#summary-view .health-category[aria-pressed="true"] strong{color:white}
+#summary-view .health-category[aria-pressed="true"] span{color:#eeeaff}
+#summary-view .test-picker{padding:8px 20px;margin-top:20px}
+#summary-view details>summary{color:#413bbb;font-weight:600}
+#summary-view .test-options{accent-color:#4942bc}
+#summary-view .summary-heading h2{font-size:24px;font-weight:600}
+#summary-view .report-count{background:#f0efff;border-color:#e3e0f7;color:#555f88;border-radius:10px}
+#summary-view .report-count strong{color:#4942bc}
+#summary-view .context{background:#faf9ff;border-color:#e9e6fa}
+#summary-view .marker-heading h4{font-size:18px;font-weight:600}
+#summary-view .marker,#summary-view .change{border-color:#e9e6fa}
+#summary-view .chart path{stroke:#4942bc}
+#summary-view .chart circle{fill:#4942bc}
+#summary-view .chart rect{fill:#eeebff}
+#summary-view .chart line{stroke:#9187de}
+#summary-view .chart text{fill:#555f88}
+#summary-view .legend i{background:#eeebff;border-color:#9187de}
+#summary-view .source-button{color:#4942bc}
+#summary-view .summary-footer{background:#faf9ff;border-color:#e9e6fa;color:#555f88}
+#summary-view .all-results,#summary-view .unpaired-results{padding:8px 20px 16px;margin-top:18px}
+#summary-view .table-scroll table,#summary-view .table-scroll th,#summary-view .table-scroll td{border-color:#e9e6fa}
+#summary-view .table-scroll thead{background:#f0eeff;color:#171d4b}
+#summary-view .table-scroll tbody tr:nth-child(even){background:#fcfbff}
+#summary-view :focus-visible{outline:3px solid #9187de;outline-offset:3px}
+#summary-view ::selection{background:#ded7ff;color:#171d4b}
+@media(max-width:760px){
+#summary-view{padding:18px;border-radius:16px}
+#app:has(#summary-view:not([hidden])) .intro h1{font-size:25px}
+#summary-view .analysis-controls{padding:18px}
+#summary-view .analysis-controls h2{font-size:20px}
+#summary-view .analysis-selected-list{grid-template-columns:1fr}
+#summary-view .health-category{padding:12px}
+#summary-view .health-category strong{font-size:13px}
+#summary-view .test-picker,#summary-view .all-results,#summary-view .unpaired-results{padding:8px 14px 14px}
+#summary-view .summary-heading h2{font-size:22px}
+#summary-view .marker-heading h4{font-size:17px}
+#summary-view .summary-heading,#summary-view .context{padding:18px}
+#summary-view .markers{padding:0 18px 20px}
+#summary-view .section-heading{padding-left:18px;padding-right:18px}
+}
+}
+
+/* Use each observation's own printed range, including earlier reports. */
+#summary-view .result-value.range-above,#summary-view .result-value.range-below{color:#b42332;fill:#b42332}
+#summary-view .chart .result-point.range-above,#summary-view .chart .result-point.range-below{fill:#b42332}
+@media print{#summary-view .result-value.range-above,#summary-view .result-value.range-below{color:#b42332!important;fill:#b42332!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+.real-summary-paper .aligned-results{overflow-x:auto}
+.real-summary-paper .aligned-results-inner{min-width:calc(var(--result-count)*140px)}
+.real-summary-paper .aligned-results .values{grid-template-columns:repeat(var(--result-count),minmax(0,1fr));gap:0}
+.real-summary-paper .aligned-results .values>div{align-items:center;text-align:center;padding:0 8px}
+.real-summary-paper .aligned-results .source-button{justify-content:center;text-align:center}
+@media print{.real-summary-paper .aligned-results{overflow:visible}.real-summary-paper .aligned-results-inner{min-width:0}}
+#summary-view .real-summary-paper .aligned-results .values .source-button{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;max-width:185px;min-height:40px;padding:9px 10px;margin-top:12px;background:#4942bc;color:#fff;border:1px solid #4942bc;border-radius:6px;text-decoration:none;text-align:center;font-size:11px;font-weight:500;line-height:1.5}
+#summary-view .real-summary-paper .aligned-results .values .source-button:hover{background:#38319f;border-color:#38319f;text-decoration:none}
+#summary-view .real-summary-paper .aligned-results .values .source-button:disabled{background:#4942bc;color:#fff;opacity:.7;cursor:wait}
+@media print{#summary-view .real-summary-paper .aligned-results .values .source-button{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+
+#summary-view .real-summary-paper .values .source-button span{color:#fff}
+#summary-view .real-summary-paper .change{background:#f2f2f4;padding:14px 12px;border:0;border-radius:6px;width:100%;box-sizing:border-box}
+@media print{#summary-view .real-summary-paper .change{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+#summary-view .real-summary-paper .aligned-results .values .source-button{background:#45454f;border-color:#45454f;color:#fff}
+#summary-view .real-summary-paper .aligned-results .values .source-button:hover{background:#33333c;border-color:#33333c}
+#summary-view .real-summary-paper .aligned-results .values .source-button:disabled{background:#45454f;color:#fff}
+#summary-view .real-summary-paper .marker-heading h4{background:#4942bc;color:#fff;border-radius:6px;padding:9px 12px;margin:0;line-height:1.4}
+@media print{#summary-view .real-summary-paper .marker-heading h4{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+#summary-view .real-summary-paper .aligned-results .values .source-button{display:flex;justify-content:center;width:auto;max-width:100%;min-height:0;padding:0;margin-top:12px;background:transparent;color:#4942bc;border:0;border-radius:0;text-decoration:underline;text-underline-offset:4px;font-size:11px;font-weight:400}
+#summary-view .real-summary-paper .aligned-results .values .source-button:hover{background:transparent;color:#38319f;text-decoration-thickness:2px}
+#summary-view .real-summary-paper .aligned-results .values .source-button:disabled{background:transparent;color:#555f88}
+#summary-view .real-summary-paper .values .source-button span{color:inherit}
+#summary-view .real-summary-paper .change .range-above,#summary-view .real-summary-paper .change .range-below{color:#b42332}
+
+.analysis-guide{list-style:none;padding:0;margin:16px 0 22px;display:grid;gap:14px}
+.analysis-guide li{display:flex;align-items:flex-start;gap:12px;color:#555f88;font-size:14px;line-height:1.6}
+.analysis-guide svg{flex:0 0 24px;width:24px;height:24px;fill:none;stroke:#4942bc;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.analysis-guide strong{color:#171d4b;font-weight:600}
+
+/* Category illustrations leave the label and test count unobstructed. */
+#summary-view .health-category-with-art{position:relative;padding-right:92px;min-height:104px}
+#summary-view .health-category-art{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:76px;height:76px;object-fit:contain;pointer-events:none}
+@media(max-width:760px){
+ #summary-view .health-category-with-art{padding-right:72px}
+ #summary-view .health-category-art{right:6px;width:60px;height:72px}
+}
+#summary-view .health-category-with-art strong{max-width:100%;overflow-wrap:anywhere}
+@media(max-width:760px){
+ #summary-view .health-category-with-art[data-category="inflammation"]{padding-right:56px}
+ #summary-view .health-category-with-art[data-category="inflammation"] .health-category-art{width:44px;height:60px}
+}
+@media(max-width:760px){
+ #summary-view .health-category-with-art[data-category="electrolytes"]{padding-right:60px}
+ #summary-view .health-category-with-art[data-category="electrolytes"] .health-category-art{width:48px;height:64px}
+}
+
+@media(max-width:760px){
+ #summary-view .health-category-with-art[data-category="hormones"]{padding-right:56px}
+ #summary-view .health-category-with-art[data-category="hormones"] .health-category-art{width:44px;height:60px}
+}
+

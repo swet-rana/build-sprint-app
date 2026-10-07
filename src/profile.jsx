@@ -1,0 +1,56 @@
+import React, {useState} from 'react';
+import {createRoot} from 'react-dom/client';
+import {ConvexReactClient, useConvexAuth, useQuery} from 'convex/react';
+import {ConvexAuthProvider, useAuthActions} from '@convex-dev/auth/react';
+import {api} from '../convex/_generated/api';
+import './profile.css';
+
+function Profile({continueWithoutAccount}) {
+  const {isLoading,isAuthenticated}=useConvexAuth();
+  const {signIn,signOut}=useAuthActions();
+  const user=useQuery(api.profiles.me,isAuthenticated?{}:'skip');
+  const [flow,setFlow]=useState('signUp'),[busy,setBusy]=useState(false),[notice,setNotice]=useState('');
+  async function submit(event){
+    event.preventDefault();if(busy)return;
+    const form=event.currentTarget, data=new FormData(form);
+    if(flow==='signUp' && data.get('password')!==data.get('confirmPassword')){setNotice('Passwords do not match.');return;}
+    data.delete('confirmPassword');data.set('flow',flow);
+    data.set('email',String(data.get('email')).trim().toLowerCase());
+    setBusy(true);setNotice('');
+    try{await signIn('password',data);form.reset();}
+    catch(error){
+      const text=String(error.message||'');
+      setNotice(/JWT_PRIVATE_KEY|JWKS|Could not find|not configured/i.test(text)?'Account access is not ready yet. Please try again later.':flow==='signIn'?'Could not sign in. Check your email and password and try again.':'Could not create your account. If you already have an account, choose Sign in.');
+    }finally{setBusy(false);}
+  }
+  async function logOut(){setBusy(true);setNotice('');try{await signOut();}catch{setNotice('Could not sign out. Please try again.');}finally{setBusy(false);}}
+  return <section className="profile-card" aria-labelledby="profile-title">
+    <h1 id="profile-title">My profile</h1>
+    {isLoading?<p role="status">Loading your profile…</p>:isAuthenticated?<>
+      <p>You’re signed in{user?.name?` as ${user.name}`:''}.</p>
+      {user?<dl className="profile-details"><dt>Name</dt><dd>{user.name||'Not added'}</dd><dt>Email</dt><dd>{user.email}</dd></dl>:<p role="status">Loading account details…</p>}
+      <p>Your uploaded reports currently stay tied to this browser.</p>
+      <button type="button" className="primary profile-submit" disabled={busy} onClick={logOut}>{busy?'Signing out…':'Sign out'}</button>
+    </>:<>
+      <p>Create an account or sign in when you choose. You can keep using HealthStats without one.</p>
+      <div className="profile-actions" aria-label="Account options">
+        <button type="button" aria-pressed={flow==='signUp'} disabled={busy} onClick={()=>{setFlow('signUp');setNotice('');}}>Sign up</button>
+        <button type="button" aria-pressed={flow==='signIn'} disabled={busy} onClick={()=>{setFlow('signIn');setNotice('');}}>Sign in</button>
+      </div>
+      <form className="profile-form" key={flow} onSubmit={submit}>
+        {flow==='signUp'&&<label>Name<input name="name" autoComplete="name" maxLength={100} required disabled={busy}/></label>}
+        <label>Email<input name="email" type="email" autoComplete="email" maxLength={254} required disabled={busy}/></label>
+        <label>Password<input name="password" type="password" autoComplete={flow==='signUp'?'new-password':'current-password'} minLength={flow==='signUp'?8:undefined} required disabled={busy}/></label>
+        {flow==='signUp'&&<><p className="password-help">Use at least 8 characters.</p><label>Confirm password<input name="confirmPassword" type="password" autoComplete="new-password" minLength={8} required disabled={busy}/></label></>}
+        <button type="submit" className="primary profile-submit" disabled={busy}>{busy?'Please wait…':flow==='signUp'?'Create account':'Sign in'}</button>
+      </form>
+      <p>Your reports remain available in this browser whether you sign in or continue without an account.</p>
+    </>}
+    <p className="profile-status" role="status">{notice}</p>
+    <button type="button" className="profile-continue" onClick={continueWithoutAccount}>{isAuthenticated?'Go to My reports':'Continue without an account'}</button>
+  </section>;
+}
+export function mountProfile(root,continueWithoutAccount){
+  const client=new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
+  createRoot(root).render(<ConvexAuthProvider client={client}><Profile continueWithoutAccount={continueWithoutAccount}/></ConvexAuthProvider>);
+}

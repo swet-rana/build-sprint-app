@@ -8,8 +8,12 @@
  * @module
  */
 
+import type * as auth from "../auth.js";
 import type * as fileRules from "../fileRules.js";
 import type * as http from "../http.js";
+import type * as originRules from "../originRules.js";
+import type * as profiles from "../profiles.js";
+import type * as reportDetails from "../reportDetails.js";
 import type * as reports from "../reports.js";
 
 import type {
@@ -19,8 +23,12 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
   fileRules: typeof fileRules;
   http: typeof http;
+  originRules: typeof originRules;
+  profiles: typeof profiles;
+  reportDetails: typeof reportDetails;
   reports: typeof reports;
 }>;
 

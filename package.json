@@ -9,15 +9,27 @@
     "preview": "vite preview --host 0.0.0.0",
     "test": "node --test tests/*.test.mjs",
     "check": "tsc --noEmit -p convex/tsconfig.json",
-    "test:storage": "node tests/upload-integration.mjs"
+    "test:storage": "node tests/upload-integration.mjs",
+    "predev": "node scripts/prepare-ocr.mjs",
+    "prebuild": "node scripts/prepare-ocr.mjs",
+    "test:ocr": "node scripts/prepare-ocr.mjs && node scripts/create-ocr-fixtures.mjs && node tests/ocr-integration.mjs",
+    "setup:auth": "node scripts/setup-auth.mjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@auth/core": "^0.41.1",
+    "@convex-dev/auth": "^0.0.96",
+    "@fontsource/manrope": "^5.3.0",
+    "@tesseract.js-data/eng": "^1.0.0",
     "convex": "^1.46.0",
-    "pdfjs-dist": "^6.4.299"
+    "jose": "^5.10.0",
+    "pdfjs-dist": "^6.4.299",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "tesseract.js": "^6.0.1"
   },
   "devDependencies": {
     "@fontsource/public-sans": "^5.3.0",
