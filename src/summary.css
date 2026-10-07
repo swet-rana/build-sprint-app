@@ -124,3 +124,8 @@ body:has(#summary-view:not([hidden])){background:#f6f5ff;color:#171d4b;--blue:#4
  #summary-view .health-category-with-art[data-category="hormones"] .health-category-art{width:44px;height:60px}
 }
 
+
+.summary-heading-art{display:none}
+#app:has(#summary-view:not([hidden])) .summary-title-with-art{display:flex;align-items:center;gap:6px;min-width:0}
+#app:has(#summary-view:not([hidden])) .summary-heading-art{display:block;width:88px;height:88px;object-fit:contain;flex-shrink:0}
+@media(max-width:760px){#app:has(#summary-view:not([hidden])) .summary-heading-art{width:64px;height:64px}}
