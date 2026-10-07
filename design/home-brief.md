@@ -16,7 +16,7 @@ The first exposure lasts 7,000ms in visible Home: intro 1,200ms, upload 1,300ms,
 
 Completion stores `complete` under `healthstats-home-explainer-v1` in localStorage. A later visit starts on final Home. Storage failure falls back to session memory. Hidden-document time and time spent in another view do not advance the demonstration. Reduced motion starts on final Home and removes transitions; deliberate step replay remains available.
 
-**Final steering:** numbers 1–4 replay only upload, select, prepare and ready respectively, for that phase’s duration, then restore final Home and focus to the originating button. They do not run the remaining sequence or change the active tab. The selection replay clears its illustrative checks first and checks only reports 2, 3 and 5. Bottom navigation is the one existing four-tab control: Home, My Reports, Summary and Profile. Real report and summary panels retain their mounted state.
+**Final steering:** numbers 1–4 replay only upload, select, prepare and ready respectively, for 3,000ms, then restore final Home and focus to the originating button. They do not run the remaining sequence or change the active tab. The selection replay clears its illustrative checks first and checks only reports 2, 3 and 5. Bottom navigation is the one existing four-tab control: Home, My Reports, Summary and Profile. Real report and summary panels retain their mounted state.
 
 Home-specific colour properties and components remain scoped to this extension. Preserve root DESIGN.md and .impeccable/design.json; no global token refresh is part of this work.
 

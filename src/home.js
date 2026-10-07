@@ -53,7 +53,7 @@ export function mountHome(root) {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let completed = reducedMotion.matches;
   try { completed ||= localStorage.getItem(COMPLETED_KEY) === 'complete'; } catch { /* Home still works without browser storage. */ }
-  let elapsed = completed ? totalDuration : 0, frame = 0, lastTime = null, active = false, currentPhase = null, replayEnd = null, replayButton = null;
+  let elapsed = completed ? totalDuration : 0, frame = 0, lastTime = null, active = false, currentPhase = null, replayEnd = null, replayPhase = null, replayButton = null;
   function showPhase(id) {
     if (id === currentPhase) return;
     currentPhase = id;
@@ -67,6 +67,7 @@ export function mountHome(root) {
   function finish() {
     completed = true;
     replayEnd = null;
+    replayPhase = null;
     elapsed = totalDuration;
     showPhase('settled');
     root.dataset.homeComplete = 'true';
@@ -83,7 +84,7 @@ export function mountHome(root) {
     if (lastTime !== null) elapsed += now - lastTime;
     lastTime = now;
     if (elapsed >= (replayEnd ?? totalDuration)) { finish(); return; }
-    const phase = homePhaseAt(elapsed);
+    const phase = replayPhase ? { id: replayPhase.id, elapsed: elapsed - replayPhase.start } : homePhaseAt(elapsed);
     showPhase(phase.id);
     if (phase.id === 'select') {
       [2, 3, 5].forEach((number, index) => {
@@ -115,7 +116,8 @@ export function mountHome(root) {
     const phase = button.dataset.homeReplay;
     const phaseIndex = HOME_PHASES.findIndex(item => item.id === phase);
     elapsed = HOME_PHASES.slice(0, phaseIndex).reduce((sum, item) => sum + item.duration, 0);
-    replayEnd = elapsed + HOME_PHASES[phaseIndex].duration;
+    replayPhase = { id: phase, start: elapsed };
+    replayEnd = elapsed + 3000;
     replayButton = button;
     root.querySelectorAll('[data-demo-report]').forEach(row => {
       row.querySelector('input').checked = false;
