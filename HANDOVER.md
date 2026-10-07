@@ -115,3 +115,5 @@ Verification supplied by the implementation run: 35 tests and production build p
 2026-10-07 animation 3 update: replaced Health Summary preview with three distinct illustrative blood-report documents: Test Report 2 complete blood count, Test Report 3 lipid profile and Test Report 5 blood glucose. Prepare Summary button and 3-second replay retained. Build passed; browser confirmed all three report visuals and button. Ready animation keeps completed summary.
 
 Animation 3 follow-up: all three reports now show the same Hemoglobin/WBC/Platelets markers with different illustrative values and dates (12 Mar 2025, 18 Sep 2025, 06 Jan 2026). Browser checked report content and spacing.
+
+Animation 4 follow-up: three animated SVG trendlines for Hemoglobin/WBC/Platelets share the same data source as animation 3, preserving all three report dates and values. Each marker uses its own scale, labeled as illustrative. Browser confirmed lines draw fully and 390px phone layout; build passed. Three-second isolated replay retained.

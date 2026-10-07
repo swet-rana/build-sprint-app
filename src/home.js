@@ -22,22 +22,30 @@ function reportsVisual() {
     <div class="home-paper home-paper-lab"><strong>Lab report</strong><div class="home-report-columns"><span>Marker</span><span>Value</span></div><div class="home-marker-rows">${reportRows}</div><small>Illustrative values</small></div>
   </div>`;
 }
-function bloodReportsVisual() {
-  const reports = [
+const demoBloodReports = [
     { number: 2, date: '12 Mar 2025', title: 'Complete blood count', rows: [['Hemoglobin', '13.2 g/dL'], ['WBC', '7,800 /µL'], ['Platelets', '2.6 L/µL']] },
     { number: 3, date: '18 Sep 2025', title: 'Complete blood count', rows: [['Hemoglobin', '12.8 g/dL'], ['WBC', '7,600 /µL'], ['Platelets', '2.4 L/µL']] },
     { number: 5, date: '06 Jan 2026', title: 'Complete blood count', rows: [['Hemoglobin', '13.0 g/dL'], ['WBC', '7,700 /µL'], ['Platelets', '2.5 L/µL']] },
-  ];
+];
+function bloodReportsVisual() {
+  const reports = demoBloodReports;
   return `<div class="home-blood-reports" aria-label="Three illustrative blood test reports">${reports.map(report => `<article class="home-blood-report"><header><span class="home-blood-file">${homeIcon('reports')}<span>Test Report ${report.number}</span></span><strong>${report.title}</strong></header><div class="home-blood-date">${report.date}</div><div class="home-blood-results">${report.rows.map(([marker, value]) => `<div><span>${marker}</span><span>${value}</span></div>`).join('')}</div></article>`).join('')}</div>`;
 }
 function summaryPreview(completed = false) {
+  const trends = demoBloodReports[0].rows.map(([marker, firstValue], index) => {
+    const values = demoBloodReports.map(report => report.rows[index][1]);
+    const numbers = values.map(value => Number(value.split(' ')[0].replaceAll(',', '')));
+    const min = Math.min(...numbers), max = Math.max(...numbers);
+    const points = numbers.map((value, point) => ({ x: 30 + point * 120, y: max === min ? 35 : 52 - (value - min) / (max - min) * 28 }));
+    const unit = firstValue.split(' ').slice(1).join(' ');
+    return `<div class="home-trend"><div class="home-trend-title"><strong>${marker}</strong><span>${unit}</span></div><svg viewBox="0 0 300 70" role="img" aria-label="${marker}: ${values.map((value, point) => `${value} on ${demoBloodReports[point].date}`).join('; ')}"><path class="home-trend-guide" d="M30 58H270"/><path class="home-trend-line" style="--trend-delay:${index * 0.22}s" d="${points.map((point, number) => `${number ? 'L' : 'M'}${point.x} ${point.y}`).join(' ')}" pathLength="1"/>${points.map((point, number) => `<circle cx="${point.x}" cy="${point.y}" r="3.5"/><text x="${point.x}" y="${point.y - 9}" text-anchor="middle">${values[number].split(' ')[0]}</text>`).join('')}</svg></div>`;
+  }).join('');
   return `<div class="home-summary-preview${completed ? ' home-completed-report' : ''}">
     <div class="home-preview-title"><strong>Health Summary</strong><span>Example</span></div>
-    <p class="home-preview-context">Two dates. Original values together.</p>
-    <div class="home-preview-marker"><span>Hemoglobin</span><strong>12.8 → 13.2 <small>g/dL</small></strong></div>
-    <div class="home-preview-marker"><span>WBC</span><strong>7,600 → 7,800 <small>/µL</small></strong></div>
-    <div class="home-preview-marker"><span>Platelets</span><strong>2.4 → 2.6 <small>L/µL</small></strong></div>
-    <p class="home-preview-source">Recorded values · linked to original reports</p>
+    <p class="home-preview-context">Three reports. Trends over time.</p>
+    ${trends}
+    <div class="home-trend-dates">${demoBloodReports.map(report => `<span>${report.date}</span>`).join('')}</div>
+    <p class="home-preview-source">Illustrative values · each marker uses its own scale</p>
     ${completed ? `<span class="home-completion-check">${homeIcon('ready')}</span>` : ''}
   </div>`;
 }

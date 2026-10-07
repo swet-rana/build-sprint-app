@@ -144,3 +144,15 @@ body:has(#home-view:not([hidden])){background:var(--home-ground);color:#171d4b}
 @media(max-width:760px){.home-blood-report{padding:11px 14px}.home-blood-reports{gap:9px}}
 
 .home-blood-date{font-size:10px;color:var(--home-muted);margin:0 0 4px}
+
+.home-trend{border-top:1px solid #edeaf9;padding:8px 0 0}
+.home-trend-title{display:flex;align-items:center;justify-content:space-between;font-size:11px}
+.home-trend-title>span{font-size:10px;color:var(--home-muted)}
+.home-trend svg{display:block;width:100%;height:70px;overflow:visible;color:var(--home-purple)}
+.home-trend svg text{fill:var(--home-secondary);font-family:inherit;font-size:10px}
+.home-trend svg circle{fill:currentColor}
+.home-trend-guide{fill:none;stroke:#e1dcf5;stroke-width:1}
+.home-trend-line{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:home-trend-draw .65s var(--trend-delay) ease-out forwards}
+.home-trend-dates{display:flex;justify-content:space-between;gap:8px;font-size:9px;color:var(--home-muted);margin-top:4px}
+@keyframes home-trend-draw{to{stroke-dashoffset:0}}
+@media(prefers-reduced-motion:reduce){.home-trend-line{stroke-dashoffset:0;animation:none}}
