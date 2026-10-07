@@ -19,3 +19,8 @@
 .profile-details{display:grid;grid-template-columns:70px 1fr;gap:12px;font-size:14px}.profile-details dd{margin:0;overflow-wrap:anywhere}
 body:has(#profile-view:not([hidden])){background:radial-gradient(ellipse at 8% 12%,#e6e0fb 0,transparent 42%),radial-gradient(ellipse at 90% 55%,#e9e4fc 0,transparent 45%),#f6f5ff}
 #app:has(#profile-view:not([hidden])) .view-tabs button[aria-pressed="true"]{color:#413bbb;border-color:#5149c8}
+
+.profile-title-with-art{display:flex;align-items:center;gap:6px;margin-bottom:16px}
+.profile-title-with-art h1{margin:0}
+.profile-heading-art{display:block;width:88px;height:88px;object-fit:contain;flex-shrink:0}
+@media(max-width:600px){.profile-heading-art{width:64px;height:64px}}
