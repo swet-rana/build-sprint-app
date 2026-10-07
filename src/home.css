@@ -127,3 +127,7 @@ body:has(#home-view:not([hidden])){background:var(--home-ground);color:#171d4b}
  .home-journey{margin-top:32px}
  .home-resting-copy>p{margin-top:14px}
 }
+
+.home-selection-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding-right:8px;margin-bottom:12px}
+.home-selection-heading h2{margin:0}
+.home-selection-heading>span{font-size:11px;line-height:1.4;color:var(--home-secondary);text-align:right}
