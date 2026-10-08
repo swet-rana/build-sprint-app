@@ -53,7 +53,10 @@ export function mountAnalysis(root,onReady){
    activeCategory=button.dataset.category;
    selected=new Set(summaryTests(comparison).filter(m=>testInCategory(m,activeCategory)).map(m=>m.key));
    render();output.querySelector('.test-picker').open=true;
-   output.querySelector(`[data-category="${activeCategory}"]`).focus();
+   const heading=output.querySelector('.test-picker>summary');
+   heading.style.scrollMarginTop='24px';
+   heading.focus({preventScroll:true});
+   heading.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
   }));
   onReady(markers.length>0);
   if(!markers.length)output.querySelector('.markers').innerHTML='<p>No tests selected. Choose a test above to add it to your summary.</p>';
