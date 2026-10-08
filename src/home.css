@@ -156,3 +156,13 @@ body:has(#home-view:not([hidden])){background:var(--home-ground);color:#171d4b}
 .home-trend-dates{display:flex;justify-content:space-between;gap:8px;font-size:9px;color:var(--home-muted);margin-top:4px}
 @keyframes home-trend-draw{to{stroke-dashoffset:0}}
 @media(prefers-reduced-motion:reduce){.home-trend-line{stroke-dashoffset:0;animation:none}}
+
+#home-view .home-begin{margin:28px auto 0;min-height:48px;padding:13px 32px;background:var(--home-purple);color:#fff;border-radius:12px;font-size:16px;font-weight:700}
+#home-view .home-begin:hover{background:var(--home-secondary)}
+#home-view .home-begin:focus-visible{outline:3px solid var(--home-purple);outline-offset:4px}
+
+@media(min-width:641px) and (max-height:760px){
+ .home-resting{padding-top:8px}
+ .home-journey{margin-top:36px}
+ #home-view .home-begin{margin-top:20px}
+}

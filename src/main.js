@@ -37,7 +37,8 @@ const analysis=mountAnalysis(document.querySelector('#summary-view'),ready=>{
 mountUploads(document.querySelector('#uploads-view'),(reports,ids)=>analysis.updateReports(reports,ids));
 function switchView(view) {
   currentView=view;
-  for(const name of ['home','reports','summary','profile']) {
+  document.querySelector('#home-begin').addEventListener('click',()=>switchView('reports'));
+for(const name of ['home','reports','summary','profile']) {
     document.querySelector(`#${name==='reports'?'uploads':name}-view`).hidden=name!==view;
     const tab=document.querySelector(`#${name}-tab`);
     tab.setAttribute('aria-pressed',String(name===view));
@@ -50,6 +51,7 @@ function switchView(view) {
   document.querySelector('#page-title').textContent=view==='reports'?'Bring your reports together.':'Your Health Summary, ready for your doctor.';
   document.querySelector('#page-description').textContent=view==='sample'?'Two blood reports. One clear view of what changed.':view==='summary'?'Your uploaded reports, compared with their sources.':'Keep the originals ready for your next doctor visit.';
 }
+document.querySelector('#home-begin').addEventListener('click',()=>switchView('reports'));
 for(const name of ['home','reports','summary','profile']) document.querySelector(`#${name}-tab`).addEventListener('click',()=>switchView(name));
 
 document.querySelector('#sample-view').addEventListener('click',event=>{
