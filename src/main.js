@@ -34,7 +34,7 @@ const analysis=mountAnalysis(document.querySelector('#summary-view'),ready=>{
   summaryReady=ready;
   document.querySelector('#print').hidden=!(currentView==='sample'||currentView==='summary'&&ready);
 });
-mountUploads(document.querySelector('#uploads-view'),(reports,ids)=>analysis.updateReports(reports,ids));
+mountUploads(document.querySelector('#uploads-view'),(reports,ids)=>analysis.updateReports(reports,ids),()=>switchView('summary'));
 function switchView(view) {
   currentView=view;
   document.querySelector('#home-begin').addEventListener('click',()=>switchView('reports'));

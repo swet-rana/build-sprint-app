@@ -92,3 +92,9 @@ body:has(#uploads-view:not([hidden])){background:#f6f5ff;color:#171d4b}
 /* Match the card top inset below the header so the illustration is centered. */
 .premium-reports .saved-heading{margin-bottom:28px}
 @media(max-width:760px){.premium-reports .saved-heading{margin-bottom:18px}}
+
+.premium-reports .reports-title-with-art{flex-wrap:wrap}
+.premium-reports .reports-summary-action{background:#00007f;color:#fff;min-height:48px;white-space:normal;border-radius:12px;margin-left:16px}
+.premium-reports .reports-summary-action:hover{background:#2a2483}
+.premium-reports .reports-summary-action[hidden]{display:none}
+@media(max-width:760px){.premium-reports .reports-summary-action{margin-left:0;flex-basis:100%}}
