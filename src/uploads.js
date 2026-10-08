@@ -1,3 +1,4 @@
+import { matchesReportSearch } from './report-search.js';
 import { MAX_ANALYSIS_REPORTS } from './analysis-rules.js';
 import { openReportViewer } from './report-viewer.js';
 import { ConvexClient } from 'convex/browser';
@@ -17,7 +18,7 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
   uploadPanel.id='add-reports-panel';uploadPanel.hidden=true;
   savedPanel.querySelector('.saved-heading').innerHTML=`<div class="reports-title-with-art"><img class="reports-heading-art" src="/images/reports-summary.png" alt="" width="88" height="88" decoding="async"><h1 id="saved-title">My reports</h1><button class="primary reports-summary-action" type="button" id="move-to-summary" hidden>Move to summary page</button></div><div class="report-upload-heading"><button class="primary premium-upload" type="button" id="show-upload" aria-expanded="false" aria-controls="add-reports-panel"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5M4 15v6h16v-6"/></svg>Upload report</button><p id="report-count-label"></p></div>`;
   const toolbar=document.createElement('div');toolbar.className='reports-toolbar';
-  toolbar.innerHTML=`<label class="report-search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><span class="sr-only">Search reports</span><input id="search-reports" type="search" placeholder="Search reports" autocomplete="off"></label><div class="report-arrange-row"><div class="report-filters" aria-label="Filter reports"><button type="button" data-report-filter="all" aria-pressed="true">All reports</button><button type="button" data-report-filter="blood" aria-pressed="false">Blood tests</button><button type="button" data-report-filter="photos" aria-pressed="false">Photos</button></div><label class="report-sort">Arrange by<select id="sort-reports"><option value="upload-newest">Upload date · newest first</option><option value="upload-oldest">Upload date · oldest first</option><option value="report-newest">Report date · newest first</option><option value="report-oldest">Report date · oldest first</option></select></label></div>`;
+  toolbar.innerHTML=`<label class="report-search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><span class="sr-only">Search reports</span><input id="search-reports" type="search" placeholder="Search by report type, lab or PDF / photo" autocomplete="off"></label><div class="report-arrange-row"><div class="report-filters" aria-label="Filter reports"><button type="button" data-report-filter="all" aria-pressed="true">All reports</button><button type="button" data-report-filter="blood" aria-pressed="false">Blood tests</button><button type="button" data-report-filter="photos" aria-pressed="false">Photos</button></div><label class="report-sort">Arrange by<select id="sort-reports"><option value="upload-newest">Upload date · newest first</option><option value="upload-oldest">Upload date · oldest first</option><option value="report-newest">Report date · newest first</option><option value="report-oldest">Report date · oldest first</option></select></label></div>`;
   savedPanel.querySelector('.saved-heading').after(toolbar);
   toolbar.after(uploadPanel);
   root.prepend(savedPanel);
@@ -76,7 +77,7 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
     const openMenus=new Set([...list.querySelectorAll('.report-menu[open]')].map(menu=>menu.dataset.reportMenu));
     const visible=sortReports(numberReports(saved), reportSort).filter(r=>{
       const d=r.details || emptyDetails();
-      const matches=[r.name,d.labName,d.patientName,shortTestType(d.testType),d.testDate,`#${r.serial}`].join(' ').toLowerCase().includes(searchTerm);
+      const matches=matchesReportSearch(r,searchTerm);
       return matches && (reportFilter==='all'||reportFilter==='photos'&&r.contentType.startsWith('image/')||reportFilter==='blood'&&/blood|cholesterol|thyroid|liver function|kidney function|vitamin|iron level|bone and mineral|electrolyte|hormone|pancreatic enzyme|clotting|allergy marker|infection and inflammation/i.test(d.testType));
     });
     list.innerHTML = visible.length ? `<ul class="report-rows premium-grid">${visible.map(report => {
