@@ -28,13 +28,19 @@ document.querySelector('#app').innerHTML=`
 <div class="markers">${markers.map(m=>`<section class="marker"><div class="marker-heading"><h4>${m.name} <span>${m.short}</span></h4><span>${m.unit}</span></div>${chart(m)}<div class="values">${m.values.map((v,i)=>`<div><span>${i?'18 Sep':'12 Mar'} 2025</span><p><strong>${fmt(v)}</strong> <span>${m.unit}</span></p><span>Reference: ${fmt(m.range[0])}–${fmt(m.range[1])}</span><a href="${source(i)}" target="_blank" rel="noopener">View original report<span class="sr-only"> for ${m.short}, ${i?'September':'March'}</span><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" aria-hidden="true"><path d="M6 3H3v10h10v-3M8 3h5v5M13 3 7 9"/></svg></a></div>`).join('')}</div><div class="change"><strong>Increased by ${fmt(m.values[1]-m.values[0])} ${m.unit}</strong><span>Latest value is above the range printed in the report.</span></div></section>`).join('')}</div>
 <footer class="summary-footer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 10v7m0-10v1"/></svg><p>This summary shows recorded values and measured changes. Your doctor interprets what they mean. Check the original reports for full context.</p></footer></article>
 <section class="sources"><div><h3>The reports behind this summary</h3><p>Every value above links back to its source.</p></div><div class="source-list">${[0,1].map(i=>`<a href="${source(i)}" target="_blank" rel="noopener"><svg width="23" height="26" viewBox="0 0 24 28" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 2h10l6 6v18H4zM14 2v6h6M8 14h8M8 19h8"/></svg><span><strong>${i?'September':'March'} 2025 blood report</strong><small>Fictional sample · opens within HealthStats</small></span><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" aria-hidden="true"><path d="M6 3H3v10h10v-3M8 3h5v5M13 3 7 9"/></svg></a>`).join('')}</div></section></div><p class="page-footer">Prepare for a conversation with your doctor</p></main>`;
-document.querySelector('#print').addEventListener('click',()=>window.print());
+const printButton=document.querySelector('#print');
+printButton.addEventListener('click',()=>window.print());
+function placePrintButton(){
+ const slot=currentView==='summary'?document.querySelector('#summary-view .summary-print-actions'):null;
+ (slot||document.querySelector('.intro')).append(printButton);
+ printButton.hidden=!(currentView==='sample'||currentView==='summary'&&summaryReady);
+}
 
 let currentView='home', summaryReady=false;
 const home=mountHome(document.querySelector('#home-view'));
 const analysis=mountAnalysis(document.querySelector('#summary-view'),ready=>{
   summaryReady=ready;
-  document.querySelector('#print').hidden=!(currentView==='sample'||currentView==='summary'&&ready);
+  placePrintButton();
 });
 mountUploads(document.querySelector('#uploads-view'),(reports,ids)=>analysis.updateReports(reports,ids),()=>{
  switchView('summary');
@@ -51,7 +57,7 @@ for(const name of ['home','reports','summary','profile']) {
     tab.setAttribute('aria-pressed',String(name===view));
     if(name===view)tab.setAttribute('aria-current','page');else tab.removeAttribute('aria-current');
   }
-  document.querySelector('#print').hidden=!(view==='sample'||view==='summary'&&summaryReady);
+  placePrintButton();
   home.setActive(view==='home');
   document.querySelector('.intro').hidden=view==='profile'||view==='home';
   document.title=`HealthStats · ${{home:'Home',reports:'My Reports',summary:'Summary',profile:'Profile'}[view]||'HealthStats'}`;
