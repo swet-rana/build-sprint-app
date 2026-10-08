@@ -18,7 +18,7 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
   uploadPanel.id='add-reports-panel';uploadPanel.hidden=true;
   savedPanel.querySelector('.saved-heading').innerHTML=`<div class="reports-title-with-art"><img class="reports-heading-art" src="/images/reports-summary.png" alt="" width="88" height="88" decoding="async"><h1 id="saved-title">My reports</h1><button class="primary reports-summary-action" type="button" id="move-to-summary" hidden>Move to summary page</button></div><div class="report-upload-heading"><button class="primary premium-upload" type="button" id="show-upload" aria-expanded="false" aria-controls="add-reports-panel"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5M4 15v6h16v-6"/></svg>Upload report</button><p id="report-count-label"></p></div>`;
   const toolbar=document.createElement('div');toolbar.className='reports-toolbar';
-  toolbar.innerHTML=`<label class="report-search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><span class="sr-only">Search reports</span><input id="search-reports" type="search" placeholder="Search by report type, lab or PDF / photo" autocomplete="off"></label><div class="report-arrange-row"><div class="report-filters" aria-label="Filter reports"><button type="button" data-report-filter="all" aria-pressed="true">All reports</button><button type="button" data-report-filter="pdf" aria-pressed="false">PDF</button><button type="button" data-report-filter="image" aria-pressed="false">Image</button></div><label class="report-sort">Arrange by<select id="sort-reports"><option value="upload-newest">Upload date · newest first</option><option value="upload-oldest">Upload date · oldest first</option><option value="report-newest">Report date · newest first</option><option value="report-oldest">Report date · oldest first</option></select></label></div>`;
+  toolbar.innerHTML=`<label class="report-search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><span class="sr-only">Search reports</span><input id="search-reports" type="search" placeholder="Search by report type, lab or PDF / photo" autocomplete="off"></label><div class="report-arrange-row"><div class="report-filters" aria-label="Filter reports"><button type="button" data-report-filter="all" aria-pressed="true">All reports</button><button type="button" data-report-filter="pdf" aria-pressed="false">PDF</button><button type="button" data-report-filter="image" aria-pressed="false">Image</button></div><button class="secondary" type="button" id="unselect-all-reports" disabled>Unselect all</button><label class="report-sort">Arrange by<select id="sort-reports"><option value="upload-newest">Upload date · newest first</option><option value="upload-oldest">Upload date · oldest first</option><option value="report-newest">Report date · newest first</option><option value="report-oldest">Report date · oldest first</option></select></label></div>`;
   savedPanel.querySelector('.saved-heading').after(toolbar);
   toolbar.after(uploadPanel);
   root.prepend(savedPanel);
@@ -46,7 +46,13 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
   let analysisIds=new Set();
   try{const stored=JSON.parse(localStorage.getItem('health-history-analysis-reports')||'[]');if(Array.isArray(stored))analysisIds=new Set(stored.filter(id=>typeof id==='string'));}catch{}
   root.querySelector('#move-to-summary').addEventListener('click',()=>{if(analysisIds.size>=2)onSummary();});
+  root.querySelector('#unselect-all-reports').addEventListener('click',()=>{
+    analysisIds.clear();
+    list.querySelectorAll('[data-analysis-id]').forEach(input=>input.checked=false);
+    publishSelection();
+  });
   function updateSummaryActions(){
+    root.querySelector('#unselect-all-reports').disabled=analysisIds.size===0;
     const selected=[...analysisIds].filter(id=>saved.some(report=>report.id===id));
     const latest=selected.length>=2?selected.at(-1):null;
     root.querySelectorAll('[data-summary-id]').forEach(button=>button.hidden=button.dataset.summaryId!==latest);
