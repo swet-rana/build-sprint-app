@@ -117,7 +117,7 @@ export function mountAnalysis(root,onReady){
    message('Report selection changed. Prepare the summary when ready.');
   }
   const choices=reportIds.map(id=>reports.find(r=>r.id===id));
-  selectionList.innerHTML=choices.length?`<ul class="analysis-selected-list">${choices.map(r=>`<li><strong>Report #${r.serial}</strong> · ${escape(r.details?.testType?shortTestType(r.details.testType):r.name)}<span>${escape(r.details?.labName||'')} · ${escape(r.details?.patientName||'')} · ${escape(r.details?.testDate||'Date not added')}${r.duplicateOf?` · Duplicate of report #${r.duplicateOf}`:''}</span></li>`).join('')}</ul>`:'<p>No reports selected. Tick the boxes in My reports to add them here.</p>';
+  selectionList.innerHTML=choices.length?`<ul class="analysis-selected-list">${choices.map(r=>`<li><div class="selected-report-icon" role="img" aria-label="Report #${escape(r.serial)}"><img src="/images/numbered-report.png" alt="" width="80" height="80"><strong>${escape(r.serial)}</strong></div><div class="selected-report-details">${escape(r.details?.testType?shortTestType(r.details.testType):r.name)}<span>${escape(r.details?.labName||'')} · ${escape(r.details?.patientName||'')} · ${escape(r.details?.testDate||'Date not added')}${r.duplicateOf?` · Duplicate of report #${r.duplicateOf}`:''}</span></div></li>`).join('')}</ul>`:'<p>No reports selected. Tick the boxes in My reports to add them here.</p>';
   button.disabled=busy||!canPrepare();
   if(reportIds.length>MAX_ANALYSIS_REPORTS)message(analysisCountError(reportIds.length),true);
   if(choices.length&&choices.length<2)message('Select at least two reports to compare.');
