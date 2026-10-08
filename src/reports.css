@@ -104,3 +104,6 @@ body:has(#uploads-view:not([hidden])){background:#f6f5ff;color:#171d4b}
 .premium-reports .report-summary-action{background:#eeebff;color:#2a2483;border:1px solid #d8d1f5}
 .premium-reports .report-summary-action:hover{background:#ded8fa}
 .premium-reports .report-summary-action[hidden]{display:none}
+
+.premium-reports #unselect-all-reports{background:#f0f0f0;color:#454545;border-color:#d6d6d6}
+.premium-reports #unselect-all-reports:hover:not(:disabled){background:#e4e4e4}
