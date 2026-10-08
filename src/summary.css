@@ -134,3 +134,5 @@ body:has(#summary-view:not([hidden])){background:#f6f5ff;color:#171d4b;--blue:#4
 #app:has(#summary-view:not([hidden])) .intro h1{margin-bottom:5px}
 #app:has(#summary-view:not([hidden])) .intro #page-description{font-size:13px;line-height:1.5;margin:0}
 }
+
+#app #summary-view #category-title{font-weight:700!important;color:#171d4b}
