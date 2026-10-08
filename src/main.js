@@ -76,4 +76,4 @@ document.querySelector('#sample-view').addEventListener('click',event=>{
 mountProfile(document.querySelector('#profile-view'),()=>switchView('reports'));
 
 document.querySelector('.brand').addEventListener('click',event=>{event.preventDefault();switchView('home');});
-switchView('home');
+switchView(window.location.hash==='#profile'?'profile':'home');

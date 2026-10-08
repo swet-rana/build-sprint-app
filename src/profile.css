@@ -24,3 +24,8 @@ body:has(#profile-view:not([hidden])){background:radial-gradient(ellipse at 8% 1
 .profile-title-with-art h1{margin:0}
 .profile-heading-art{display:block;width:88px;height:88px;object-fit:contain;flex-shrink:0}
 @media(max-width:600px){.profile-heading-art{width:64px;height:64px}}
+
+.profile-card .profile-google{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;max-width:420px;min-height:48px;padding:12px 18px;background:#fff;color:#35328b;border:1px solid #c9c5e6;border-radius:24px;font:inherit;font-size:14px}
+.profile-card .profile-google:hover:not(:disabled){background:#f6f5ff}
+.profile-card .profile-google:disabled{opacity:.6;cursor:default}
+.profile-card .profile-email-divider{max-width:420px;text-align:center;margin:16px 0;font-size:12px}
