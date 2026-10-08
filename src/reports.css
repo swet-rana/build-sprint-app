@@ -98,3 +98,9 @@ body:has(#uploads-view:not([hidden])){background:#f6f5ff;color:#171d4b}
 .premium-reports .reports-summary-action:hover{background:#2a2483}
 .premium-reports .reports-summary-action[hidden]{display:none}
 @media(max-width:760px){.premium-reports .reports-summary-action{margin-left:0;flex-basis:100%}}
+
+.premium-reports .report-card-actions{display:flex;align-items:stretch;gap:10px}
+.premium-reports .report-card-actions>button{flex:1;min-width:0;width:0;margin:0;min-height:48px;padding:12px 8px;border-radius:9px;font-size:14px;font-weight:600;line-height:1.4;white-space:normal;text-align:center}
+.premium-reports .report-summary-action{background:#eeebff;color:#2a2483;border:1px solid #d8d1f5}
+.premium-reports .report-summary-action:hover{background:#ded8fa}
+.premium-reports .report-summary-action[hidden]{display:none}
