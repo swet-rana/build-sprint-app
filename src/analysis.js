@@ -91,6 +91,12 @@ export function mountAnalysis(root,onReady){
    selected=new Set(preferred.map(prefix=>comparison.comparable.find(m=>m.key.split('|')[0]===prefix)?.key).filter(Boolean));
    for(const marker of comparison.comparable){if(selected.size>=6)break;selected.add(marker.key);}
    render();const readingWarnings=comparison.reports.flatMap(r=>r.warnings).filter(w=>w.startsWith('Reading error'));message(`${choices.length} reports read. ${comparison.comparable.length} matching tests found. ${readingWarnings.length?'Reading error: some scanned pages could not be read and were excluded. See What was included and check the originals.':'Check values against their source pages.'}`,readingWarnings.length>0);onReady(true);
+   if(!root.hidden){
+    const heading=output.querySelector('#category-title');
+    heading.setAttribute('tabindex','-1');
+    heading.focus({preventScroll:true});
+    heading.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
+   }
   }catch(error){message(error.name==='TimeoutError'?'A report took too long to download. Check your connection and try Prepare summary again.':error.message==='Failed to fetch'?'Could not read the report. Check your connection and try again.':error.message,true);}
   finally{busy=false;button.disabled=!canPrepare();button.textContent='Prepare summary';}
  }

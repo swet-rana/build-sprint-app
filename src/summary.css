@@ -138,3 +138,5 @@ body:has(#summary-view:not([hidden])){background:#f6f5ff;color:#171d4b;--blue:#4
 #app #summary-view #category-title,
 #app #summary-view .analysis-controls h2,
 #app #summary-view .summary-heading h2{font-size:22px;font-weight:700!important;color:#35328b}
+
+#summary-view #category-title{scroll-margin-top:24px}
