@@ -95,7 +95,9 @@ export function mountAnalysis(root,onReady){
     const heading=output.querySelector('#category-title');
     heading.setAttribute('tabindex','-1');
     heading.focus({preventScroll:true});
-    heading.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
+    const originalHeading=root.querySelector('.analysis-controls h2');
+    const targetTop=heading.getBoundingClientRect().top-originalHeading.getBoundingClientRect().top;
+    window.scrollTo({top:targetTop,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
    }
   }catch(error){message(error.name==='TimeoutError'?'A report took too long to download. Check your connection and try Prepare summary again.':error.message==='Failed to fetch'?'Could not read the report. Check your connection and try again.':error.message,true);}
   finally{busy=false;button.disabled=!canPrepare();button.textContent='Prepare summary';}
