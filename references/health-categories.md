@@ -36,3 +36,13 @@ This is an editorial grouping of established long-term cardiovascular, metabolic
 - [NIA aging-clock research](https://www.nia.nih.gov/news/research-context-can-we-slow-aging) and [biomarker-validation research review](https://pmc.ncbi.nlm.nih.gov/articles/PMC11090477/): aging clocks remain a distinct research/validation field; routine results cannot be presented as an individual lifespan prediction.
 
 Clinical relevance is not proof that changing a marker increases lifespan. Fertility results are not fertility probabilities. Empty cards mean no mapped tests were read, not a health assessment.
+
+## Semen-report extension — 9 October 2026
+
+This supersedes the earlier blood-only Fertility scope. Supported dated numeric semen tables now include volume, sperm concentration, total sperm count, total/progressive/non-progressive motility, immotile sperm, normal morphology forms, vitality, and DNA fragmentation index (DFI) with a printed assay method. Fertility blood hormones also include Inhibin B when reported; this is not a routine screening recommendation. TEX101 and physical trackers are not supported.
+
+The report must explicitly identify semen analysis or sperm DNA fragmentation, patient, collection date, test/result/unit/reference columns. Method is optional except for DFI. Text PDFs and clear images/scans using this layout follow the existing reader. Prepared/washed semen reports are rejected rather than compared with unprocessed samples. Ambiguous general Morphology and Motility labels are not guessed. Non-numeric results and unsupported rows receive omission notices; no zero is inferred from absent sperm. Only printed numeric values and ranges are shown.
+
+Semen keys use a specimen prefix, so results never merge into blood tests. Concentration and total count remain distinct; progressive and total motility remain distinct; DFI methods remain distinct. Printed units must be supported; different units are not converted. Summary groups semen measurements under their own heading, beside blood tests when both are selected. Report details label supported semen-only reports Semen analysis.
+
+[WHO sixth-edition manual](https://iris.who.int/bitstream/handle/10665/343208/9789240030787-eng.pdf) provides examination methods and distributions; its population reference limits are not diagnostic boundaries between fertile and infertile men. The app does not impose WHO ranges or fertility probability. The [AUA/ASRM guideline amended 2024](https://www.auanet.org/documents/Guidelines/PDF/2024%20Guidelines/Male%20Infertility%20Unabridged%20Final.pdf) does not recommend routine DFI in the initial infertility evaluation. This app displays existing DFI reports without suggesting the test.

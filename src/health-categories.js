@@ -13,7 +13,7 @@ export const HEALTH_CATEGORIES = [
  {id:'bone',label:'Bone & minerals',description:'Calcium, phosphorus, vitamin D and related markers'},
  {id:'electrolytes',label:'Electrolytes',description:'Sodium, potassium, chloride and mineral balance'},
  {id:'hormones',label:'Reproductive hormones',description:'Prolactin, FSH, LH and related hormones'},
- {id:'fertility',label:'Fertility',description:'AMH, FSH, LH, estradiol, progesterone, testosterone, prolactin and TSH',note:'Recorded fertility-related blood hormones. Cycle timing, age, medicines and clinical history affect interpretation. AMH is not a pregnancy-chance test. Semen analysis and ultrasound are not read by this blood-report summary.'},
+ {id:'fertility',label:'Fertility',description:'AMH, FSH, LH, estradiol, progesterone, testosterone, prolactin, inhibin B, TSH and semen measurements',note:'Blood hormones and semen measurements are shown separately. Cycle timing, age, medicines and clinical history affect interpretation. AMH is not a pregnancy-chance test. Semen results vary with collection conditions. DNA fragmentation methods remain separate. Ultrasound and physical trackers are not read by this summary.'},
  {id:'longevity',label:'Longevity',description:'Cholesterol, ApoB, Lp(a), glucose, HbA1c, kidney markers and hs-CRP',note:'Recorded markers relevant to long-term heart, metabolic and kidney health. This grouping does not estimate lifespan or biological age, and is not a recommended testing package.'},
  {id:'digestion',label:'Pancreas & digestion',description:'Amylase and lipase'},
  {id:'clotting',label:'Blood clotting',description:'PT, INR, APTT and related clotting tests'},
@@ -23,6 +23,7 @@ export const HEALTH_CATEGORIES = [
 export function categoriesForTest(marker){
  const id=String(marker.key??'').split('|')[0].toLowerCase();
  const name=[marker.name,marker.rawName,...(marker.observations??[]).filter(Boolean).map(m=>m.rawName)].filter(Boolean).join(' ').toUpperCase().replace(/[^A-Z0-9]/g,'');
+ if(id.startsWith('semen-'))return ['fertility'];
  const categories=new Set();
  const add=(category,match)=>{if(match)categories.add(category);};
  add('heart',/CHOLESTEROL|CHOLHDL|LDLHDL|TRIGLYCERIDE|APOLIPOPROTEIN|LIPOPROTEIN|TROPONIN|NTPROBNP/.test(name));
@@ -38,8 +39,8 @@ export function categoriesForTest(marker){
  add('bone',id==='vitamin-d'||/CALCIUM|PHOSPHORUS|PHOSPHATE|PARATHYROID|PTH|ALKALINEPHOSPHATASE/.test(name));
  const electrolyte=/SODIUM|POTASSIUM|CHLORIDE|BICARBONATE|MAGNESIUM|CALCIUM|PHOSPHORUS/.test(name);
  add('electrolytes',electrolyte);add('kidney',electrolyte);
- add('hormones',/PROLACTIN|FOLLICLESTIMULATING|LUTEINIZING|TESTOSTERONE|ESTRADIOL|OESTRADIOL|ESTROGEN|PROGESTERONE|ANTIMULLERIAN|AMH|BETAHCG/.test(name)||['fsh','lh'].includes(id));
- const fertilityHormone=/^(?:AMH|FSH|LH|TSH)$/.test(name)||['fsh','lh','tsh'].includes(id)||/ANTIM[UÜ]LLERIAN|FOLLICLESTIMULATING|LUTEINI[ZS]ING|ESTRADIOL|OESTRADIOL|PROGESTERONE|TESTOSTERONE|PROLACTIN|THYROIDSTIMULATING/.test(name);
+ add('hormones',/PROLACTIN|INHIBINB|FOLLICLESTIMULATING|LUTEINIZING|TESTOSTERONE|ESTRADIOL|OESTRADIOL|ESTROGEN|PROGESTERONE|ANTIMULLERIAN|AMH|BETAHCG/.test(name)||['fsh','lh'].includes(id));
+ const fertilityHormone=/^(?:AMH|FSH|LH|TSH)$/.test(name)||['fsh','lh','tsh'].includes(id)||/ANTIM[UÜ]LLERIAN|FOLLICLESTIMULATING|LUTEINI[ZS]ING|ESTRADIOL|OESTRADIOL|PROGESTERONE|TESTOSTERONE|PROLACTIN|INHIBINB|THYROIDSTIMULATING/.test(name);
  add('fertility',fertilityHormone);
  const lipids=/CHOLESTEROL|TRIGLYCERIDE|APOLIPOPROTEINB|APOB/.test(name)||(!/APOLIPOPROTEIN/.test(name)&&/LIPOPROTEINA/.test(name))||/^(?:LDL|HDL|NONHDL|LPA)$/.test(name);
  const glycaemia=id==='hba1c'||/GLUCOSE|HBA1C|GLYCATEDH[AE]*MOGLOBIN|GLYCOSYLATEDH[AE]*MOGLOBIN/.test(name);

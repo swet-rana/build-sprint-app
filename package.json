@@ -16,7 +16,8 @@
     "setup:auth": "node scripts/setup-auth.mjs",
     "verify": "npm test && npm run check && npm audit --omit=dev",
     "predeploy": "npm run verify && node scripts/setup-auth.mjs --prod --site-url=https://zealous-kiwi-423.convex.site --skip-push",
-    "deploy": "npx @convex-dev/static-hosting deploy"
+    "deploy": "npx @convex-dev/static-hosting deploy",
+    "test:semen": "node scripts/prepare-ocr.mjs && node tests/semen-ocr-integration.mjs"
   },
   "keywords": [],
   "author": "",

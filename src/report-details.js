@@ -20,7 +20,7 @@ export function detailsFromReport(report) {
   const types = HEALTH_CATEGORIES.filter(c => groups.has(c.id) && !['other','fertility','longevity'].includes(c.id));
   return {
     labName: report.labName || '',
-    testType: describeTypes(types),
+    testType: report.reportKind==='semen'?'Semen analysis':report.reportKind==='mixed'?'Blood and semen results':describeTypes(types),
     patientName: report.patientName || '', testDate: report.date || '',
   };
 }

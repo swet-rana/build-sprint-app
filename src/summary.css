@@ -155,3 +155,5 @@ body:has(#summary-view:not([hidden])){background:#f6f5ff;color:#171d4b;--blue:#4
 #summary-view .selected-report-icon img{display:block;width:100%;height:100%;object-fit:contain}
 #summary-view .selected-report-icon strong{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);font-size:20px;line-height:1;color:#35328b}
 #summary-view .selected-report-details{min-width:0;flex:1}
+
+#summary-view .markers > .specimen-heading{grid-column:1 / -1;margin:12px 0 0;font-size:20px;color:#35328b}

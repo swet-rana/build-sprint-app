@@ -28,6 +28,8 @@ export function ocrPage(data,width,height,page=1){
  let headerRow,foundHeaders;
  for(const row of rows){const found=headers.map(([label,tokens])=>({label,found:phrase(row.words,tokens)}));if(found.slice(0,4).every(f=>f.found)){headerRow=row;foundHeaders=found;break;}}
  const pageText=clean(data.text||words.map(w=>w.text).join(' '));
+ if(/\bSEMEN (?:ANALYSIS|EXAMINATION)|\bSPERM DNA FRAGMENTATION\b/i.test(pageText))items.push(item('SEMEN ANALYSIS',20,895));
+ if(/post[ -]?wash|pre[ -]?wash|washed sample|sperm preparation/i.test(pageText))items.push(item('Washed sample',20,885));
  const informationPage=/\blet[’']?s? understand the critical markers in detail that require your focus\b/i.test(pageText)&&!/(patient name|collection date|collected|test name|reference interval|\bresult\b)/i.test(pageText);
  if(!headerRow&&informationPage)return {page,items:[],exclusionReason:'information page'};
  if(!headerRow){const error=Error('Could not read the test, result, unit and reference columns. Upload a clearer full-page photo or scan.');error.code='NO_TABLE';throw error;}
