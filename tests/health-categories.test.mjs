@@ -15,3 +15,15 @@ test('allows shared tests and separates inflammation from heart and iron tests',
  assert.ok(!testInCategory(marker('MICROALBUMIN'),'liver'));
  assert.deepEqual(categoriesForTest(marker('Unrecognized assay')),['other']);
 });
+
+test('fertility groups recorded blood hormones but not pregnancy tests or unrelated vitamins',()=>{
+ for(const name of ['AMH','Anti-Mullerian hormone','FSH','Follicle stimulating hormone','LH','Luteinising hormone','Estradiol','Oestradiol','Progesterone','17-hydroxyprogesterone','Total testosterone','Prolactin','TSH']) assert.ok(testInCategory(marker(name),'fertility'),name);
+ for(const name of ['Beta HCG','Vitamin D','Semen volume','Glucose']) assert.ok(!testInCategory(marker(name),'fertility'),name);
+ assert.ok(testInCategory({key:'tsh|miu/l',name:'TSH',observations:[{rawName:'Thyroid stimulating hormone'}]},'fertility'));
+});
+test('longevity groups established long-term health markers without treating all inflammation as cardiac risk',()=>{
+ for(const name of ['LDL cholesterol','HDL','Non-HDL cholesterol','Triglycerides','Apolipoprotein B','ApoB','Lipoprotein(a)','Lp(a)','Glucose fasting','HbA1c','Creatinine','eGFR','Cystatin C','hs-CRP','High sensitivity C-reactive protein','C-reactive protein (high sensitivity)']) assert.ok(testInCategory(marker(name),'longevity'),name);
+ for(const name of ['CRP','C-reactive protein','ESR','Vitamin D','Testosterone','Apolipoprotein A1','Urine creatinine','Troponin','Telomere length']) assert.ok(!testInCategory(marker(name),'longevity'),name);
+ assert.ok(testInCategory(marker('HbA1c'),'sugar'));
+ assert.ok(testInCategory(marker('Creatinine'),'kidney'));
+});

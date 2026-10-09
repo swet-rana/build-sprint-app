@@ -13,11 +13,11 @@ function describeTypes(types) {
 export function shortTestType(value) {
   if (!value?.startsWith('Blood tests: ')) return value === 'Blood tests' ? 'Routine blood test report' : value;
   const labels = value.slice('Blood tests: '.length).split(', ').map(s => s.trim());
-  return describeTypes(HEALTH_CATEGORIES.filter(c => labels.includes(c.label) && c.id !== 'other'));
+  return describeTypes(HEALTH_CATEGORIES.filter(c => labels.includes(c.label) && !['other','fertility','longevity'].includes(c.id)));
 }
 export function detailsFromReport(report) {
   const groups = new Set(report.markers.flatMap(categoriesForTest));
-  const types = HEALTH_CATEGORIES.filter(c => groups.has(c.id) && c.id !== 'other');
+  const types = HEALTH_CATEGORIES.filter(c => groups.has(c.id) && !['other','fertility','longevity'].includes(c.id));
   return {
     labName: report.labName || '',
     testType: describeTypes(types),

@@ -13,6 +13,8 @@ export const HEALTH_CATEGORIES = [
  {id:'bone',label:'Bone & minerals',description:'Calcium, phosphorus, vitamin D and related markers'},
  {id:'electrolytes',label:'Electrolytes',description:'Sodium, potassium, chloride and mineral balance'},
  {id:'hormones',label:'Reproductive hormones',description:'Prolactin, FSH, LH and related hormones'},
+ {id:'fertility',label:'Fertility',description:'AMH, FSH, LH, estradiol, progesterone, testosterone, prolactin and TSH',note:'Recorded fertility-related blood hormones. Cycle timing, age, medicines and clinical history affect interpretation. AMH is not a pregnancy-chance test. Semen analysis and ultrasound are not read by this blood-report summary.'},
+ {id:'longevity',label:'Longevity',description:'Cholesterol, ApoB, Lp(a), glucose, HbA1c, kidney markers and hs-CRP',note:'Recorded markers relevant to long-term heart, metabolic and kidney health. This grouping does not estimate lifespan or biological age, and is not a recommended testing package.'},
  {id:'digestion',label:'Pancreas & digestion',description:'Amylase and lipase'},
  {id:'clotting',label:'Blood clotting',description:'PT, INR, APTT and related clotting tests'},
  {id:'allergy',label:'Allergy markers',description:'IgE and eosinophils; not an allergy diagnosis'},
@@ -37,6 +39,13 @@ export function categoriesForTest(marker){
  const electrolyte=/SODIUM|POTASSIUM|CHLORIDE|BICARBONATE|MAGNESIUM|CALCIUM|PHOSPHORUS/.test(name);
  add('electrolytes',electrolyte);add('kidney',electrolyte);
  add('hormones',/PROLACTIN|FOLLICLESTIMULATING|LUTEINIZING|TESTOSTERONE|ESTRADIOL|OESTRADIOL|ESTROGEN|PROGESTERONE|ANTIMULLERIAN|AMH|BETAHCG/.test(name)||['fsh','lh'].includes(id));
+ const fertilityHormone=/^(?:AMH|FSH|LH|TSH)$/.test(name)||['fsh','lh','tsh'].includes(id)||/ANTIM[UÜ]LLERIAN|FOLLICLESTIMULATING|LUTEINI[ZS]ING|ESTRADIOL|OESTRADIOL|PROGESTERONE|TESTOSTERONE|PROLACTIN|THYROIDSTIMULATING/.test(name);
+ add('fertility',fertilityHormone);
+ const lipids=/CHOLESTEROL|TRIGLYCERIDE|APOLIPOPROTEINB|APOB/.test(name)||(!/APOLIPOPROTEIN/.test(name)&&/LIPOPROTEINA/.test(name))||/^(?:LDL|HDL|NONHDL|LPA)$/.test(name);
+ const glycaemia=id==='hba1c'||/GLUCOSE|HBA1C|GLYCATEDH[AE]*MOGLOBIN|GLYCOSYLATEDH[AE]*MOGLOBIN/.test(name);
+ const kidneyFunction=/EGFR|GLOMERULAR|CYSTATINC/.test(name)||(/CREATININE/.test(name)&&!/URIN|RATIO/.test(name));
+ const highSensitivityCrp=/HSCRP|CRPHS|HIGHSENSITIVITY.*(?:CRP|CREACTIVEPROTEIN)|(?:CRP|CREACTIVEPROTEIN).*HIGHSENSITIVITY/.test(name);
+ add('longevity',lipids||glycaemia||kidneyFunction||highSensitivityCrp);
  add('digestion',/AMYLASE|LIPASE/.test(name));
  add('clotting',/PROTHROMBIN|THROMBOPLASTIN|FIBRINOGEN|DDIMER/.test(name)||['pt','inr','aptt'].includes(id));
  add('allergy',/EOSINOPHIL|IMMUNOGLOBULINE|TOTALIGE|SPECIFICIGE/.test(name)||id==='ige');
