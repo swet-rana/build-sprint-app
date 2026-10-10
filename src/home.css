@@ -171,3 +171,67 @@ body:has(#home-view:not([hidden])){background:var(--home-ground);color:#171d4b}
 #home-view .home-tutorial:hover{color:var(--home-secondary)}
 #home-view .home-tutorial:focus-visible{outline:3px solid var(--home-purple);outline-offset:3px}
 #home-view .home-tutorial + .home-begin{margin-top:4px}
+
+/* Premium Home: all surface changes are scoped to the Home view. */
+body:has(#home-view:not([hidden])){background:#f8f7ff;isolation:isolate}
+body:has(#home-view:not([hidden])):before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 50% 30%,#fff 0%,#f8f7ff 42%,transparent 72%),radial-gradient(ellipse at 0 55%,#e4dcff 0%,transparent 55%),radial-gradient(ellipse at 100% 65%,#eee9ff 0%,transparent 60%);animation:home-glow-breathe 24s ease-in-out infinite alternate}
+#app:has(#home-view:not([hidden]))>main{max-width:1920px;padding-inline:24px;margin-top:0}
+#app:has(#home-view:not([hidden])) .topbar{max-width:1920px;padding-inline:clamp(24px,5vw,96px)}
+#home-view{--home-purple:#24169b;--home-secondary:#100078;--home-muted:#62658c;--home-ground:#f8f7ff}
+.healthstats-home{max-width:none;position:relative;padding-top:16px}
+.home-resting{position:relative;padding-top:24px;min-height:480px;isolation:isolate}
+.home-resting-copy{position:relative;z-index:2;max-width:800px;margin:auto}
+#home-view .home-resting-copy h1{font-size:clamp(38px,3.2vw,56px)!important;line-height:1.2;letter-spacing:-.03em}
+.home-resting-copy>p{font-size:clamp(16px,1.2vw,21px);line-height:1.65;margin-top:22px}
+.home-journey{max-width:860px;margin:48px auto 0;gap:20px;z-index:2}
+.home-journey:before{background:#d5cef5;top:35px}
+.home-step-icon{width:70px;height:70px;background:#24169b;box-shadow:0 7px 18px rgb(36 22 155 / 15%),0 0 0 7px #eee9ff;transition:transform .25s ease,box-shadow .25s ease}
+#home-view .home-journey button{transition:color .2s ease}
+#home-view .home-journey button:hover{background:transparent;color:#100078}
+#home-view .home-journey button:hover .home-step-icon{transform:translateY(-4px);box-shadow:0 12px 22px rgb(36 22 155 / 20%),0 0 0 7px #e4dcff}
+.home-step-number{font-size:15px}.home-step-label{font-size:15px}
+#home-view .home-begin{position:relative;z-index:2;background:#24169b;min-width:220px;border-radius:32px;padding:16px 30px;box-shadow:0 9px 22px rgb(36 22 155 / 20%);transition:transform .25s ease,background .25s ease,box-shadow .25s ease}
+#home-view .home-begin:hover{background:#100078;transform:translateY(-3px);box-shadow:0 13px 28px rgb(36 22 155 / 25%)}
+#home-view .home-tutorial{position:relative;z-index:2;margin-top:14px}
+.home-premium-reports{position:absolute;left:clamp(-20px,1vw,24px);top:70px;width:clamp(200px,20vw,340px);height:390px;pointer-events:none;z-index:0;animation:home-decor-float 9s ease-in-out infinite}
+.home-floating-card{position:absolute;border-radius:16px;padding:20px;background:rgb(255 255 255 / 79%);color:#62658c;box-shadow:0 18px 42px rgb(94 66 175 / 10%)}
+.home-floating-card header{display:flex;gap:10px;align-items:center;white-space:nowrap}.home-floating-card header strong{font-size:12px}.home-floating-card header svg{width:23px;height:23px;color:#7061c1}
+.home-floating-imaging{width:175px;height:215px;left:65px;top:-10px;transform:rotate(15deg);opacity:.7}
+.home-imaging-thumb{height:94px;margin-top:15px;background:#e5def7;border-radius:8px;text-align:center;overflow:hidden}.home-imaging-thumb img{object-fit:contain;filter:grayscale(1);opacity:.5}
+.home-floating-prescription{width:165px;height:190px;left:130px;top:190px;transform:rotate(24deg);opacity:.55}.home-rx{font-size:25px;line-height:1}
+.home-floating-lab{width:210px;left:0;top:70px;transform:rotate(-10deg);z-index:2}
+.home-floating-lab .home-paper-lines{gap:8px;margin-top:18px}.home-floating-lab .home-paper-lines i{background:#e4dcff}
+.home-decor-trend{width:100%;height:55px;margin-top:12px;color:#a99ae8}
+.home-decor-results>div{display:grid;grid-template-columns:1fr auto 24px;align-items:center;gap:10px;padding:12px 0;font-size:10px}.home-decor-results i{height:5px;border-radius:4px;background:#b9d8d4}.home-decor-results>div:nth-child(2) i{background:#e1c0d4}.home-floating-lab small{font-size:8px;opacity:.8}
+.home-premium-ribbons{position:absolute;right:-24px;top:-65px;width:clamp(220px,22vw,390px);height:600px;z-index:0;pointer-events:none}
+.home-ribbon-art{width:100%;height:100%;object-fit:fill;object-position:right center;opacity:.82}
+.home-health-symbols{position:absolute;right:24%;top:17%;display:grid;gap:24px}.home-health-symbols span{display:grid;place-items:center;width:64px;height:64px;border-radius:50%;background:rgb(255 255 255 / 92%);box-shadow:0 8px 24px rgb(90 60 180 / 9%),0 0 0 7px rgb(238 233 255 / 70%);color:#4432ae}.home-health-symbols svg{width:28px;height:28px}
+@keyframes home-decor-float{0%,100%{translate:0 0}50%{translate:0 -10px}}
+@keyframes home-glow-breathe{from{opacity:.8}to{opacity:1}}
+@media(min-width:1280px) and (max-width:1450px){.home-journey{max-width:760px}.home-premium-reports{scale:.85;transform-origin:left center}.home-premium-ribbons{width:230px}.home-resting-copy{max-width:760px}}
+@media(max-width:1279px){.home-premium-reports,.home-premium-ribbons{display:none}}
+@media(max-width:760px){
+ #app:has(#home-view:not([hidden]))>main{padding-inline:16px;padding-bottom:100px}
+ .healthstats-home{padding-top:0}.home-resting{padding-top:8px;min-height:0}
+ #home-view .home-resting-copy h1{font-size:clamp(26px,7vw,30px)!important;line-height:1.25;max-width:none}
+ .home-resting-copy>p{font-size:13px;margin-top:16px;line-height:1.75}
+ .home-journey{max-width:340px;margin-top:34px;gap:24px 16px}
+ .home-step-icon{width:56px;height:56px;box-shadow:0 6px 14px rgb(36 22 155 / 13%),0 0 0 6px #eee9ff}
+ .home-journey li:nth-child(odd):before{top:28px;width:calc(100% + 16px);background:#d5cef5}
+ .home-step-label{font-size:12px}.home-step-number{font-size:13px}
+ #home-view .home-tutorial{margin-top:12px}
+ #home-view .home-begin{max-width:340px;width:100%;min-width:0;padding:14px 24px}
+}
+@media(prefers-reduced-motion:reduce){body:has(#home-view:not([hidden])):before{animation:none}}
+body:has(#home-view:not([hidden])){min-height:100vh}
+.home-premium-ribbons{height:calc(100vh - 85px);min-height:550px}
+.home-ribbon-art{mask-image:linear-gradient(to bottom,#000 85%,transparent 100%)}
+@media(max-width:760px) and (max-height:780px){
+ #app:has(#home-view:not([hidden])) .topbar{height:100px}
+ .home-resting-copy>p{margin-top:12px}
+ .home-journey{margin-top:24px;row-gap:16px}
+ .home-step-icon{width:50px;height:50px}
+ .home-journey li:nth-child(odd):before{top:25px}
+ #home-view .home-journey button{gap:6px}
+ #home-view .home-tutorial{margin-top:6px}
+}

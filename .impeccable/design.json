@@ -35,6 +35,23 @@
       "selectedBackground": "#4942bc",
       "selectedText": "#ffffff",
       "scope": "My Reports and My Summary screen only; src/glass.css imported last."
+    },
+    "premiumHome": {
+      "scope": "#home-view",
+      "colors": {
+        "background": "#F8F7FF",
+        "lavender": "#EEE9FF",
+        "secondaryLavender": "#E4DCFF",
+        "primary": "#24169B",
+        "deep": "#100078",
+        "secondaryText": "#62658C"
+      },
+      "font": "Manrope",
+      "breakpoints": {
+        "hideDecorations": "1279px",
+        "mobile": "760px"
+      },
+      "reference": "references/healthstats-homepage-premium.png"
     }
   },
   "components": [

@@ -1,8 +1,9 @@
 # Style anchor
 
-Medium: flat vector logo artwork, preserving the supplied HealthStats mark.
-Palette: lavender accent #4942bc, purple ink #35328b, pale lavender app background #f6f5ff, white #ffffff.
-Light: subtle top-left highlights, no cast scene lighting.
-Materials: crisp smooth logo shapes on transparency; surrounding UI has lavender glass surfaces.
-Mood: calm, clear, polished.
-Never: cream logo background, unrelated symbols, additional text, neon effects, decorative particles.
+Home decorative art follows references/healthstats-homepage-premium.png.
+Medium: translucent 3D glass render for decorative ribbons; existing logo preserved.
+Palette: near-white #F8F7FF, lavender #EEE9FF and #E4DCFF, primary purple #24169B, deep purple #100078.
+Light: soft diffused upper-left studio lighting.
+Materials: flowing transparent lavender glass; soft matte translucent report paper in the interface.
+Mood: airy, calm, refined.
+Never: neon lighting, harsh borders, dark backdrop, extra text, replacement logos.

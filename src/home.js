@@ -49,6 +49,19 @@ function summaryPreview(completed = false) {
     ${completed ? `<span class="home-completion-check">${homeIcon('ready')}</span>` : ''}
   </div>`;
 }
+function premiumDecorations() {
+  const symbols = {
+    analytics: '<path d="M4 20h16M6 17v-5h3v5m3 0V8h3v9m3 0V4h3v13"/>',
+    heart: '<path d="M12 21 3 12C-2 4 8 0 12 7c4-7 14-3 9 5z"/>',
+    dna: '<path d="M6 3c0 8 12 10 12 18M18 3c0 8-12 10-12 18M7 5h10M8 9h8M8 15h8M7 19h10"/>',
+    longevity: '<path d="M12 21V11m0 6C3 17 2 11 3 7c5-1 9 3 9 7m0 0c0-8 4-11 9-11 1 7-3 12-9 12M7 11l5 6m5-9-5 6"/>',
+  };
+  return `<div class="home-premium-reports" aria-hidden="true">
+    <article class="home-floating-card home-floating-imaging"><header>${homeIcon('reports')}<strong>Imaging Report</strong></header><div class="home-imaging-thumb"><img src="/images/bone-minerals.png" alt="" width="70" height="90"></div><div class="home-paper-lines"><i></i><i></i></div></article>
+    <article class="home-floating-card home-floating-prescription"><header><span class="home-rx">Rx</span><strong>Prescription</strong></header><div class="home-paper-lines"><i></i><i></i><i></i></div></article>
+    <article class="home-floating-card home-floating-lab"><header>${homeIcon('reports')}<strong>Lab Report</strong></header><div class="home-paper-lines"><i></i><i></i></div><svg class="home-decor-trend" viewBox="0 0 180 55" fill="none"><path d="M5 44 34 29 61 34 90 20 116 26 148 13 175 5" stroke="currentColor" stroke-width="2"/>${[[5,44],[34,29],[90,20],[148,13],[175,5]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="3" fill="currentColor"/>`).join('')}</svg><div class="home-decor-results">${[['HbA1c','5.6'],['Vitamin D','28'],['Cholesterol','180']].map(([n,v])=>`<div><span>${n}</span><span>${v}</span><i></i></div>`).join('')}</div><small>Illustrative values</small></article>
+  </div><div class="home-premium-ribbons" aria-hidden="true"><img class="home-ribbon-art" src="/images/home-glass-ribbons.png" alt="" width="1024" height="1536"><div class="home-health-symbols">${Object.values(symbols).map(path=>`<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${path}</svg></span>`).join('')}</div></div>`;
+}
 export function mountHome(root) {
   const steps = [
     { icon: 'upload', label: 'Upload<br>your reports', phase: 'upload' },
@@ -63,7 +76,7 @@ export function mountHome(root) {
     <div class="home-stage" data-home-stage="select" hidden><div class="home-stage-copy"><h1>Click reports<br>for analysis</h1><p>Choose the reports you want to include.</p></div><div class="home-selection-demo"><div class="home-selection-heading"><h2>My Reports</h2><span>For Summary</span></div><div class="home-demo-report-list">${Array.from({ length: 6 }, (_, index) => `<label data-demo-report="${index + 1}"><span class="home-report-mini-icon">${homeIcon('reports')}</span><span>Test Report ${index + 1}</span><input type="checkbox" disabled aria-label="Test Report ${index + 1}"></label>`).join('')}</div><span class="home-demo-caption">Illustrative reports · 2, 3 and 5 selected</span></div></div>
     <div class="home-stage" data-home-stage="prepare" hidden><div class="home-stage-copy"><h1>Prepare summary</h1><p>Bring your selected reports<br>into one clear view.</p></div><div class="home-prepare-demo">${bloodReportsVisual()}<div class="home-demo-button-wrap"><button type="button" class="primary home-prepare-button" disabled>Prepare Summary</button><svg class="home-demo-pointer" viewBox="0 0 24 30" aria-hidden="true"><path d="M3 2v22l6-6 5 10 5-3-5-9h8z"/></svg></div><span class="home-demo-caption">In Summary · illustrative values</span></div></div>
     <div class="home-stage" data-home-stage="ready" hidden><div class="home-stage-copy"><h1>You are ready now!</h1><p>A clear, organised summary<br>for your next doctor conversation.</p></div><div>${summaryPreview(true)}<span class="home-demo-caption">An example of your completed summary</span></div></div>
-    <div class="home-resting" data-home-stage="settled"><div class="home-resting-copy">${introCopy}</div><ol class="home-journey" aria-label="Your report-to-summary journey">${steps.map((step, index) => `<li><button type="button" data-home-replay="${step.phase}" aria-label="Step ${index + 1}: ${step.label.replace(/<br>/g, ' ')}"><span class="home-step-icon">${homeIcon(step.icon)}</span><span class="home-step-number">${index + 1}</span><span class="home-step-label">${step.label}</span></button></li>`).join('')}</ol><button type="button" class="home-tutorial" id="home-tutorial">Show video tutorial</button><button type="button" class="primary home-begin" id="home-begin">Begin now</button></div>
+    <div class="home-resting" data-home-stage="settled">${premiumDecorations()}<div class="home-resting-copy">${introCopy}</div><ol class="home-journey" aria-label="Your report-to-summary journey">${steps.map((step, index) => `<li><button type="button" data-home-replay="${step.phase}" aria-label="Step ${index + 1}: ${step.label.replace(/<br>/g, ' ')}"><span class="home-step-icon">${homeIcon(step.icon)}</span><span class="home-step-number">${index + 1}</span><span class="home-step-label">${step.label}</span></button></li>`).join('')}</ol><button type="button" class="home-tutorial" id="home-tutorial">Show video tutorial</button><button type="button" class="primary home-begin" id="home-begin">Begin now <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></button></div>
   </section>`;
   const stages = [...root.querySelectorAll('[data-home-stage]')];
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
