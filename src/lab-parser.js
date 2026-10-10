@@ -21,7 +21,7 @@ export function rangeStatus(value,text) {
   return 'within';
 }
 function parseDate(value){
-  const match=value.match(/\b(\d{1,2})[\/-]([A-Za-z]{3}|\d{1,2})[\/-](\d{4})\b/);if(!match)return null;
+  const match=value.match(/\b(\d{1,2})(?:[\/-]|\s+)([A-Za-z]{3}|\d{1,2})(?:[\/-]|\s+)(\d{4})\b/);if(!match)return null;
   const day=Number(match[1]),month=months[match[2].toLowerCase()]??Number(match[2]),year=Number(match[3]);
   const date=new Date(Date.UTC(year,month-1,day));
   if(date.getUTCFullYear()!==year||date.getUTCMonth()!==month-1||date.getUTCDate()!==day)return null;
@@ -36,26 +36,29 @@ export function rowsFromItems(items){
  return rows.sort((a,b)=>b.y-a.y).map(r=>({...r,items:r.items.sort((a,b)=>a.transform[4]-b.transform[4]),text:clean(r.items.map(i=>i.str).join(' '))}));
 }
 function field(rows,label){
- for(const row of rows){const index=row.items.findIndex(i=>new RegExp(`^${label}\\s*:?$`,'i').test(clean(i.str)));if(index<0)continue;
-  const next=row.items[index+1];if(next)return clean(next.str).replace(/^:\s*/,'');}
+ for(const row of rows){
+  const index=row.items.findIndex(i=>new RegExp(`^${label}\\s*:?$`,'i').test(clean(i.str)));
+  if(index>=0){const next=row.items[index+1];if(next)return clean(next.str).replace(/^:\s*/,'').split('|')[0].trim();}
+  for(const item of row.items){const inline=clean(item.str).match(new RegExp(`^${label}\\s*:\\s*(.+)$`,'i'));if(inline)return inline[1].split('|')[0].trim();}
+ }
  return null;
 }
 export function parseReport(pages){
  const candidates=[],identities=[],dates=[],usedPages=new Set(),warnings=[],labNames=new Set();
  for(const page of pages){
-  const rows=rowsFromItems(page.items),patientName=field(rows,'Patient Name')??field(rows,'Name'),patientId=field(rows,'UHID/MR No')??field(rows,'Patient ID'),patientIdIssuer=field(rows,'UHID/MR No')?'apollo':field(rows,'Collection Date')?'tata-1mg':null,date=parseDate(field(rows,'Collected')??field(rows,'Collection Date')??'');
+  const rows=rowsFromItems(page.items),patientName=field(rows,'Patient Name')??field(rows,'Name')??field(rows,'Patient'),patientId=field(rows,'UHID/MR No')??field(rows,'Patient ID'),patientIdIssuer=field(rows,'UHID/MR No')?'apollo':field(rows,'Collection Date')?'tata-1mg':null,date=parseDate(field(rows,'Collected')??field(rows,'Collection Date')??field(rows,'Test date')??'');
   if(!date||!patientName)continue;
   if(rows.some(r=>/COMPLETE URINE EXAMINATION|URINE ANALYSIS|URINALYSIS/i.test(r.text)))continue;
   const semen=rows.some(r=>/\bSEMEN (?:ANALYSIS|EXAMINATION)|\bSPERM DNA FRAGMENTATION\b/i.test(r.text));
   if(semen&&rows.some(r=>/post[ -]?wash|pre[ -]?wash|washed sample|sperm preparation/i.test(r.text)))throw Error('Prepared or washed semen reports are not supported. Use an unprocessed semen analysis report.');
-  const headerAliases={'parameter':'Test Name','test':'Test Name','investigation':'Test Name','value':'Result','units':'Unit','reference range':'Bio. Ref. Interval','reference interval':'Bio. Ref. Interval'};
-  if(semen)for(const row of rows)if(row.items.some(i=>/^(result|value)$/i.test(clean(i.str)))&&row.items.some(i=>/^(unit|units)$/i.test(clean(i.str))))row.items=row.items.map(i=>({...i,str:headerAliases[clean(i.str).toLowerCase()]??i.str}));
+  const headerAliases={'parameter':'Test Name','test':'Test Name','investigation':'Test Name','value':'Result','units':'Unit','reference range':'Bio. Ref. Interval','reference interval':'Bio. Ref. Interval','illustrative reference':'Bio. Ref. Interval'};
+  for(const row of rows)if(row.items.some(i=>/^(result|value)$/i.test(clean(i.str)))&&row.items.some(i=>/^(unit|units)$/i.test(clean(i.str))))row.items=row.items.map(i=>({...i,str:headerAliases[clean(i.str).toLowerCase()]??i.str}));
   const headerIndex=rows.findIndex(r=>r.items.some(i=>/^Test Name$/i.test(clean(i.str)))&&r.items.some(i=>/^Result$/i.test(clean(i.str)))&&r.items.some(i=>/^Unit$/i.test(clean(i.str))));
   if(headerIndex<0)continue;
   const header=rows[headerIndex];
   const centres=['Test Name','Result','Unit','Bio. Ref. Interval','Method'].map(label=>{const i=header.items.find(i=>clean(i.str).toLowerCase()===label.toLowerCase());return i?i.transform[4]+i.width/2:null;});
-  if(centres.slice(0,4).some(v=>v===null)||(!semen&&centres[4]===null))continue;
-  if(semen&&centres[4]===null)centres[4]=centres[3]+200;
+  if(centres.slice(0,4).some(v=>v===null))continue;
+  if(centres[4]===null)centres[4]=Infinity;
   const bounds=centres.slice(1).map((value,i)=>(value+centres[i])/2);
   const cells=row=>{const out=['','','','',''];for(const i of row.items){const centre=i.transform[4]+i.width/2;const col=bounds.findIndex(b=>centre<b);const index=col<0?4:col;out[index]=clean(out[index]+' '+i.str);}return out;};
   let pageUsed=false;
