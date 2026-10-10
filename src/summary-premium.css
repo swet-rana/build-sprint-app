@@ -6,7 +6,7 @@
  #app:has(#summary-view:not([hidden]))>.topbar {max-width:1480px;width:100%;height:108px;padding-inline:48px;flex-shrink:0}
  #app:has(#summary-view:not([hidden]))>main {max-width:1480px;width:100%;flex:1;min-height:0;margin:12px auto calc(100px + env(safe-area-inset-bottom));padding:0 48px 28px;overflow-y:auto;overscroll-behavior-y:contain;scroll-padding-block:20px;scrollbar-width:thin;scrollbar-color:#d7d0f2 transparent}
  #app:has(#summary-view:not([hidden])) .intro {position:relative;min-height:144px;margin:0 0 24px;padding:12px 290px 12px 0;isolation:isolate}
- #app:has(#summary-view:not([hidden])) .intro::after {content:"";position:absolute;z-index:-1;right:0;top:-10px;width:250px;height:190px;background:url('/images/reports-floating-documents.svg') center/contain no-repeat;opacity:.48;pointer-events:none}
+ #app:has(#summary-view:not([hidden])) .intro::after {content:"";position:absolute;z-index:-1;right:0;top:-10px;width:250px;height:190px;background:url('/images/reports-floating-documents.svg?v=imaging') center/contain no-repeat;opacity:.48;pointer-events:none}
  #app:has(#summary-view:not([hidden])) .summary-title-with-art {gap:20px}
  #app:has(#summary-view:not([hidden])) .summary-heading-art {width:106px;height:118px}
  #app:has(#summary-view:not([hidden])) .intro #page-title {font-size:28px;line-height:1.2;color:#35328b;letter-spacing:-.035em;margin-bottom:12px;max-width:25ch;text-wrap:balance}
