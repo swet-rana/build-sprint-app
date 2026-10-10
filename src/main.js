@@ -10,6 +10,7 @@ import { mountUploads } from './uploads.js';
 import { mountAnalysis } from './analysis.js';
 import './glass.css';
 import './typography.css';
+import './summary-premium.css';
 installModuleReload();
 const markers=[
  {name:'White blood cells',short:'WBC',unit:'cells/µL',values:[7200,12400],range:[4000,11000],max:16000},
@@ -41,8 +42,8 @@ const home=mountHome(document.querySelector('#home-view'));
 const analysis=mountAnalysis(document.querySelector('#summary-view'),ready=>{
   summaryReady=ready;
   placePrintButton();
-});
-mountUploads(document.querySelector('#uploads-view'),(reports,ids)=>analysis.updateReports(reports,ids),()=>{
+},{onAddReports:()=>switchView('reports'),onRemoveReport:id=>uploads.removeFromAnalysis(id)});
+const uploads=mountUploads(document.querySelector('#uploads-view'),(reports,ids)=>analysis.updateReports(reports,ids),()=>{
  switchView('summary');
  const prepareButton=document.querySelector('#prepare-summary');
  prepareButton.focus({preventScroll:true});
@@ -61,8 +62,8 @@ for(const name of ['home','reports','summary','profile']) {
   home.setActive(view==='home');
   document.querySelector('.intro').hidden=view==='profile'||view==='home';
   document.title=`HealthStats · ${{home:'Home',reports:'My Reports',summary:'Summary',profile:'Profile'}[view]||'HealthStats'}`;
-  document.querySelector('#page-title').textContent=view==='reports'?'Bring your reports together.':'Your Health Summary, ready for your doctor.';
-  document.querySelector('#page-description').textContent=view==='sample'?'Two blood reports. One clear view of what changed.':view==='summary'?'Your uploaded reports, compared with their sources.':'Keep the originals ready for your next doctor visit.';
+  document.querySelector('#page-title').textContent=view==='reports'?'Bring your reports together.':view==='summary'?'Prepare your health summary':'Your Health Summary, ready for your doctor.';
+  document.querySelector('#page-description').textContent=view==='sample'?'Two blood reports. One clear view of what changed.':view==='summary'?'Compare your selected medical reports and prepare a clear summary for your doctor.':'Keep the originals ready for your next doctor visit.';
 }
 document.querySelector('#home-begin').addEventListener('click',()=>switchView('reports'));
 for(const name of ['home','reports','summary','profile']) document.querySelector(`#${name}-tab`).addEventListener('click',()=>switchView(name));

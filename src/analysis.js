@@ -1,7 +1,7 @@
 import { MAX_ANALYSIS_REPORTS, analysisCountError } from './analysis-rules.js';
 import { openReportViewer } from './report-viewer.js';
 import './summary.css';
-import { shortTestType } from './report-details.js';
+import { testDateLabel } from './report-details.js';
 import { summaryTests } from './summary-tests.js';
 import { HEALTH_CATEGORIES, testInCategory } from './health-categories.js';
 import { compareReportSeries, parseRange, rangeStatus } from './lab-parser.js';
@@ -23,13 +23,38 @@ function chart(marker,dates){
  const lines=observations.map((m,i)=>m&&i&&observations[i-1]?`<path d="M${x(i-1)} ${y(observations[i-1].value)} L${x(i)} ${y(m.value)}" fill="none" stroke="#176889" stroke-width="3"/>`:'').join('');
  return `<svg class="chart" viewBox="0 0 ${chartWidth} ${chartHeight}" role="img" aria-label="${escape(marker.name)}: ${observations.map((m,i)=>`${m?number(m.value):marker.missingLabels[i]} on ${dates[i]}`).join(', ')}, ${escape(marker.unit)}.">${same?`<rect x="22" y="${y(a.high)}" width="${chartWidth-44}" height="${y(a.low)-y(a.high)}" fill="#e6f0f1"/><text x="18" y="${y(a.high)+4}" text-anchor="end">${number(a.high)}</text><text x="18" y="${y(a.low)+4}" text-anchor="end">${number(a.low)}</text>`:''}${lines}${observations.map((m,i)=>m?`<circle cx="${x(i)}" cy="${y(m.value)}" r="5" class="result-point range-${rangeStatus(m.value,m.referenceText)}" fill="#176889"/><text x="${x(i)}" y="${y(m.value)-12}" text-anchor="middle" class="point-label result-value range-${rangeStatus(m.value,m.referenceText)}">${number(m.value)}</text>`:'').join('')}${dates.map((d,i)=>dates.length>4&&i!==0&&i!==dates.length-1?'':`<text x="${x(i)}" y="${dateY}" text-anchor="middle">${d}</text>`).join('')}</svg>`;
 }
-export function mountAnalysis(root,onReady){
- root.innerHTML=`<section class="analysis-controls"><h2>Reports selected for analysis</h2><form id="analysis-form"><div id="selected-analysis-reports"></div><button class="primary" id="prepare-summary" type="submit" disabled>Prepare summary</button></form><p id="analysis-status" role="status" aria-live="polite"></p></section><div id="real-summary"></div>`;
+const summaryIcon=(paths)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+const calendarIcon=summaryIcon('<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 11h16"/>');
+const labIcon=summaryIcon('<path d="M9 3h6m-5 0v7L5 21h14l-5-11V3M8 15h8"/>');
+const pdfIcon=summaryIcon('<path d="M5 3h9l5 5v13H5zM14 3v5h5M8 12h8M8 16h6"/>');
+const sizeLabel=n=>Number.isFinite(n)?n>=1024*1024?`${(n/(1024*1024)).toFixed(1)} MB`:`${Math.max(1,Math.round(n/1024))} KB`:'Size not added';
+export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=()=>{}}={}){
+ root.innerHTML=`<form id="analysis-form" class="summary-workspace"><section class="analysis-controls" aria-labelledby="selected-analysis-title"><div class="analysis-selection-heading"><h2 id="selected-analysis-title">Reports selected for analysis</h2><div class="analysis-selection-actions"><span id="analysis-selection-count">0 of 10 reports selected</span><button class="secondary" id="add-analysis-reports" type="button">${summaryIcon('<path d="M12 5v14M5 12h14"/>')}Add more reports</button></div></div><div id="selected-analysis-reports"></div></section><aside class="summary-preparation" aria-labelledby="preparation-title">${summaryIcon('<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z"/>')}<h2 id="preparation-title">Turn your reports into<br>a clear summary</h2><ul class="analysis-guide">${['Compare key markers across reports.','Highlight changes and trends.','Prepare a clear, doctor-friendly summary.','Keep findings connected to their original reports.'].map(text=>`<li>${summaryIcon('<path d="m6 12 4 4 8-8"/>')}<span>${text}</span></li>`).join('')}</ul><button class="primary" id="prepare-summary" type="submit" disabled>Prepare summary <span aria-hidden="true">→</span></button><p class="preparation-help">Select 2–10 reports from different dates.</p></aside></form><section class="analysis-notice" aria-label="Report information">${summaryIcon('<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/>')}<div><p id="analysis-status" role="status" aria-live="polite" hidden></p><p>Check this draft against the originals. Access stays tied to this browser until sign-in is available.</p></div><button type="button" class="secondary" id="retry-summary" hidden>Try again</button></section><div id="real-summary"></div>`;
  const button=root.querySelector('#prepare-summary'),status=root.querySelector('#analysis-status'),output=root.querySelector('#real-summary'),selectionList=root.querySelector('#selected-analysis-reports');
  let reports=[],reportIds=[],comparison=null,selected=new Set(),busy=false,activeCategory='all',selectionVersion=0;
+ const retry=root.querySelector('#retry-summary'),addReports=root.querySelector('#add-analysis-reports'),preparationHelp=root.querySelector('.preparation-help');
+ const thumbnails=new Map();
+ addReports.addEventListener('click',onAddReports);
+ selectionList.addEventListener('click',event=>{const remove=event.target.closest('[data-summary-remove]');if(remove&&!busy)onRemoveReport(remove.dataset.summaryRemove);});
  function canPrepare(){return reportIds.length>=2&&reportIds.length<=MAX_ANALYSIS_REPORTS&&reportIds.every(id=>reports.some(r=>r.id===id));}
  const site=import.meta.env.VITE_CONVEX_URL?.replace(/\.convex\.cloud\/?$/,'.convex.site');
- function message(text,error=false){status.textContent=text;status.classList.toggle('is-error',error);}
+ function message(text,error=false){status.textContent=text;status.hidden=!text;status.classList.toggle('is-error',error);retry.hidden=!error;}
+ function setBusyControls(){
+  button.disabled=busy||!canPrepare();retry.disabled=busy||!canPrepare();addReports.disabled=busy;
+  selectionList.querySelectorAll('[data-summary-remove]').forEach(b=>b.disabled=busy);
+  root.querySelector('#analysis-form').setAttribute('aria-busy',String(busy));
+ }
+ async function loadThumbnails(){
+  if(root.hidden)return;
+  for(const report of reports.filter(r=>reportIds.includes(r.id)&&r.contentType?.startsWith('image/'))){
+   if(!thumbnails.has(report.id))thumbnails.set(report.id,fetchReport(report).then(blob=>URL.createObjectURL(blob)).catch(()=>null));
+   const pending=thumbnails.get(report.id),url=await pending;
+   if(!reportIds.includes(report.id)||thumbnails.get(report.id)!==pending)continue;
+   const preview=[...selectionList.querySelectorAll('[data-summary-thumbnail]')].find(el=>el.dataset.summaryThumbnail===report.id);
+   if(url&&preview){const img=document.createElement('img');img.src=url;img.alt='';preview.replaceChildren(img);}
+  }
+ }
+ const visibility=new MutationObserver(()=>{if(!root.hidden)loadThumbnails();});visibility.observe(root,{attributes:true,attributeFilter:['hidden']});
  async function fetchReport(report){
   const response=await fetch(`${site}/reports/open`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionKey:localStorage.getItem('health-history-upload-session'),reportId:report.id}),signal:AbortSignal.timeout(60000)});
   if(!response.ok){const error=await response.json();throw Error(error.error||'Could not read the report. Try again.');}
@@ -76,7 +101,7 @@ export function mountAnalysis(root,onReady){
   const countError=analysisCountError(ids.length);if(countError){message(countError,true);return;}
   if(choices.some(r=>r?.duplicateOf&&ids.includes(reports.find(p=>p.serial===r.duplicateOf)?.id))){message('Untick duplicate reports before analyzing. Each report date should appear once.',true);return;}
   if(!canPrepare()||choices.some(r=>!r)||new Set(ids).size!==ids.length){message('Tick at least two different lab reports in My reports.',true);return;}
-  busy=true;button.disabled=true;button.textContent='Reading reports…';comparison=null;output.innerHTML='';onReady(false);
+  busy=true;setBusyControls();button.textContent='Reading reports…';comparison=null;output.innerHTML='';onReady(false);
   try{
    const {readLabReport}=await import('./report-reader.js');
    const parsed=[];
@@ -93,7 +118,7 @@ export function mountAnalysis(root,onReady){
    comparison=compareReportSeries(parsed);activeCategory='all';
    selected=new Set(preferred.map(prefix=>comparison.comparable.find(m=>m.key.split('|')[0]===prefix)?.key).filter(Boolean));
    for(const marker of comparison.comparable){if(selected.size>=6)break;selected.add(marker.key);}
-   render();const readingWarnings=comparison.reports.flatMap(r=>r.warnings).filter(w=>w.startsWith('Reading error'));message(`${choices.length} reports read. ${comparison.comparable.length} matching tests found. ${readingWarnings.length?'Reading error: some scanned pages could not be read and were excluded. See What was included and check the originals.':'Check values against their source pages.'}`,readingWarnings.length>0);onReady(true);
+   render();const readingWarnings=comparison.reports.flatMap(r=>r.warnings).filter(w=>w.startsWith('Reading error'));message(`${choices.length} reports read · ${comparison.comparable.length} matching tests found. ${readingWarnings.length?'Reading error: some scanned pages could not be read and were excluded. See What was included and check the originals.':'Check values against their original source reports.'}`,readingWarnings.length>0);onReady(true);
    if(!root.hidden){
     const heading=output.querySelector('#category-title');
     heading.setAttribute('tabindex','-1');
@@ -101,9 +126,10 @@ export function mountAnalysis(root,onReady){
     heading.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
    }
   }catch(error){message(error.name==='TimeoutError'?'A report took too long to download. Check your connection and try Prepare summary again.':error.message==='Failed to fetch'?'Could not read the report. Check your connection and try again.':error.message,true);}
-  finally{busy=false;button.disabled=!canPrepare();button.textContent='Prepare summary';}
+  finally{busy=false;setBusyControls();button.innerHTML='Prepare summary <span aria-hidden="true">→</span>';}
  }
  root.querySelector('#analysis-form').addEventListener('submit',event=>{event.preventDefault();prepare();});
+ retry.addEventListener('click',prepare);
  output.addEventListener('click',async event=>{
   const link=event.target.closest('[data-source]');if(!link||link.disabled)return;
   const report=reports.find(r=>r.id===link.dataset.source);if(!report)return;
@@ -117,8 +143,11 @@ export function mountAnalysis(root,onReady){
    message('Report selection changed. Prepare the summary when ready.');
   }
   const choices=reportIds.map(id=>reports.find(r=>r.id===id));
-  selectionList.innerHTML=choices.length?`<ul class="analysis-selected-list">${choices.map(r=>`<li><div class="selected-report-icon" role="img" aria-label="Report #${escape(r.serial)}"><img src="/images/numbered-report.png" alt="" width="80" height="80"><strong>${escape(r.serial)}</strong></div><div class="selected-report-details">${escape(r.details?.testType?shortTestType(r.details.testType):r.name)}<span>${escape(r.details?.labName||'')} · ${escape(r.details?.patientName||'')} · ${escape(r.details?.testDate||'Date not added')}${r.duplicateOf?` · Duplicate of report #${r.duplicateOf}`:''}</span></div></li>`).join('')}</ul>`:'<p>No reports selected. Tick the boxes in My reports to add them here.</p>';
-  button.disabled=busy||!canPrepare();
+  root.querySelector('#analysis-selection-count').textContent=`${choices.length} of ${MAX_ANALYSIS_REPORTS} reports selected`;
+  selectionList.innerHTML=choices.length?`<ul class="analysis-selected-list">${choices.map(r=>`<li><span class="selected-report-number" aria-label="Report #${escape(r.serial)}">${escape(r.serial)}</span><div class="selected-report-preview" ${r.contentType?.startsWith('image/')?`data-summary-thumbnail="${escape(r.id)}"`:''} aria-hidden="true">${pdfIcon}<span>${r.contentType==='application/pdf'?'PDF':'Photo'}</span></div><div class="selected-report-details"><strong title="${escape(r.name)}">${escape(r.name)}</strong><p>${calendarIcon}${escape(r.details?.testDate?testDateLabel(r.details.testDate):'Date not added')}</p><p>${labIcon}${escape(r.details?.labName||'Lab not added')}</p>${r.duplicateOf?`<p class="duplicate-note">Duplicate of report #${escape(r.duplicateOf)}</p>`:''}</div><span class="selected-report-file">${r.contentType==='application/pdf'?'PDF':'Image'} · ${sizeLabel(r.size)}</span><button type="button" class="remove-analysis-report" data-summary-remove="${escape(r.id)}" aria-label="Remove report #${escape(r.serial)} from selection">${summaryIcon('<path d="m6 6 12 12M18 6 6 18"/>')}</button></li>`).join('')}</ul>`:'<div class="summary-empty"><p>No reports selected</p><span>Choose at least two medical reports from My Reports to prepare a summary.</span></div>';
+  preparationHelp.textContent=choices.length<2?'Select at least two reports from different dates.':`Compare up to ${MAX_ANALYSIS_REPORTS} reports from different dates.`;
+  for(const [id,pending] of thumbnails){if(!reportIds.includes(id)){thumbnails.delete(id);pending.then(url=>{if(url)URL.revokeObjectURL(url);});}}
+  loadThumbnails();setBusyControls();
   if(reportIds.length>MAX_ANALYSIS_REPORTS)message(analysisCountError(reportIds.length),true);
   if(choices.length&&choices.length<2)message('Select at least two reports to compare.');
 

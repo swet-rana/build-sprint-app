@@ -289,4 +289,9 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
       return response.blob();
     }});
   });
+  return {removeFromAnalysis(id){
+    if(!analysisIds.delete(id))return;
+    list.querySelectorAll('[data-analysis-id]').forEach(input=>input.checked=analysisIds.has(input.dataset.analysisId));
+    publishSelection();
+  }};
 }

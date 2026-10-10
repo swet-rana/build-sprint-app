@@ -32,7 +32,7 @@ test('PDF cards stay unopened; central selection and private image previews work
   }]});
   try{
     const {mountUploads}=await import(`data:text/javascript;base64,${Buffer.from(bundled.outputFiles[0].text).toString('base64')}`);
-    const root=document.querySelector('#reports');mountUploads(root,(...args)=>selections.push(args),()=>summaries++);
+    const root=document.querySelector('#reports');const selection=mountUploads(root,(...args)=>selections.push(args),()=>summaries++);
     await new Promise(resolve=>setTimeout(resolve,60));
     assert.equal(root.querySelectorAll('[data-report-id]').length,2,'Both saved report cards must be rendered');
     assert.equal(downloads.length,0,`Reports load downloaded ${downloads.length} files`);
@@ -51,6 +51,11 @@ test('PDF cards stay unopened; central selection and private image previews work
     assert.equal(root.querySelector('#selected-report-count').textContent,'2 of 10 reports selected');
     root.querySelector('#move-to-summary').click();assert.equal(summaries,1);
     assert.deepEqual(selections.at(-1)[1],['pdf-1','photo-2']);
+    selection.removeFromAnalysis('photo-2');
+    assert.deepEqual(selections.at(-1)[1],['pdf-1'],'Removing from Summary publishes through the existing selection');
+    assert.deepEqual(JSON.parse(localStorage.getItem('health-history-analysis-reports')),['pdf-1']);
+    assert.equal(root.querySelector('[data-analysis-id="photo-2"]').checked,false);
+    assert.equal(root.querySelector('#move-to-summary').disabled,true);
     root.querySelector('#unselect-all-reports').click();assert.equal(selections.at(-1)[1].length,0);
     assert.equal(root.querySelector('.reports-selection-bar').hidden,true);
     assert.equal(root.querySelectorAll('[data-analysis-id]:checked').length,0);
