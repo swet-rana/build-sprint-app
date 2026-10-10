@@ -10,11 +10,12 @@ const reports = [
 ];
 test('PDF cards stay unopened; central selection and private image previews work', async () => {
   const dom = new JSDOM('<div id="reports"></div>', {url:'http://localhost:5173'});
-  const previous = Object.fromEntries(['window','document','localStorage','fetch'].map(key=>[key,globalThis[key]]));
-  Object.assign(globalThis,{window:dom.window,document:dom.window.document,localStorage:dom.window.localStorage});
-  const downloads=[],mutations=[],selections=[];let summaries=0;const previousObserver=globalThis.IntersectionObserver;
+  const previous = Object.fromEntries(['window','document','localStorage','fetch','FormData'].map(key=>[key,globalThis[key]]));
+  Object.assign(globalThis,{window:dom.window,document:dom.window.document,localStorage:dom.window.localStorage,FormData:dom.window.FormData});
+  const downloads=[],uploads=[],mutations=[],selections=[];let summaries=0;const previousObserver=globalThis.IntersectionObserver;
   globalThis.__reportHarness={reports,mutations};
   globalThis.fetch=async(url,options)=>{
+    if(String(url).endsWith('/reports/upload')){uploads.push(options.body.get('file').name);return Response.json({ok:true});}
     if(String(url).endsWith('/reports/open'))downloads.push(JSON.parse(options.body).reportId);
     return new Response(new Blob(['fictional file']),{status:200});
   };
@@ -69,6 +70,24 @@ test('PDF cards stay unopened; central selection and private image previews work
     root.querySelector('[data-clear-filters]').click();assert.equal(root.querySelectorAll('[data-report-id]').length,2);
     observer.callback(observer.targets.map(target=>({target,isIntersecting:true})));
     await new Promise(resolve=>setTimeout(resolve,25));assert.equal(downloads.length,2,'Cached thumbnails do not redownload when filters change');
+    const picker=root.querySelector('#report-files');
+    assert.equal(picker.multiple,true,'The native picker must allow multiple files');
+    const choose=files=>{Object.defineProperty(picker,'files',{value:files,configurable:true});picker.dispatchEvent(new window.Event('change',{bubbles:true}));};
+    const file=name=>new window.File(['fictional report'],name,{type:'application/pdf'});
+    choose([file('first.pdf'),file('second.pdf')]);
+    assert.equal(root.querySelectorAll('#upload-queue li').length,2);
+    assert.equal(root.querySelector('#upload-submit').textContent,'Upload 2 reports');
+    choose([file('third.pdf')]);
+    assert.equal(root.querySelectorAll('#upload-queue li').length,3,'Adding a file must preserve earlier choices');
+    choose([new window.File(['invalid'],'invalid.txt',{type:'text/plain'})]);
+    assert.equal(root.querySelectorAll('#upload-queue li').length,3,'An invalid choice must not discard valid reports');
+    root.querySelector('#upload-submit').click();
+    await new Promise(resolve=>setTimeout(resolve,30));
+    assert.deepEqual(uploads,['first.pdf','second.pdf','third.pdf'],'One upload submits all accumulated files');
+    assert.equal(root.querySelectorAll('#upload-queue li').length,0);
+    assert.match(root.querySelector('#upload-status').textContent,/3 reports uploaded/);
+    choose([file('clear-first.pdf'),file('clear-second.pdf')]);root.querySelector('#clear-selection').click();
+    assert.equal(root.querySelectorAll('#upload-queue li').length,0,'Clear selection still clears the entire pending queue');
     console.log('PROOF: PDF cards remain unopened; central summary preserves selected IDs; visible image thumbnails load privately once.');
   }finally{dom.window.close();Object.assign(globalThis,previous);delete globalThis.__reportHarness;globalThis.IntersectionObserver=previousObserver;}
 });

@@ -13,7 +13,7 @@ const sizeLabel = n => n >= 1024 * 1024 ? `${(n / (1024 * 1024)).toFixed(1)} MB`
 const documentIcon = '<svg width="24" height="28" viewBox="0 0 24 28" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 2h10l6 6v18H4zM14 2v6h6M8 14h8M8 19h8"/></svg>';
 
 export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
-  root.innerHTML = `<section class="upload-panel" aria-labelledby="upload-title"><div class="upload-heading"><h2 id="upload-title">Add your lab reports</h2><p>Start with two blood or semen reports from different dates. Upload clear copies with all pages included.</p></div><form id="upload-form"><div class="file-picker"><svg width="38" height="38" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 26V8m-7 7 7-7 7 7M8 25v8h24v-8"/></svg><div><label for="report-files">Choose reports</label><p id="file-help">PDF, JPG, PNG or WebP · up to 10 MB each</p></div><input id="report-files" type="file" accept="application/pdf,image/jpeg,image/png,image/webp,.pdf,.jpg,.jpeg,.png,.webp" multiple aria-describedby="file-help" /></div><ul id="upload-queue" class="upload-queue" aria-label="Selected reports"></ul><div id="upload-actions" class="upload-actions" hidden><button class="primary" type="submit" id="upload-submit">Upload reports</button><button class="secondary" type="button" id="clear-selection">Clear selection</button></div></form><p id="upload-status" class="upload-status" role="status" aria-live="polite"></p><div class="upload-note"><strong>Your reports stay separate from the sample.</strong><p>Your original files are saved. For now, access is tied to this browser. Clearing browser data loses access; sign-in will come later. Once two reports are saved, open My summary to compare them. Clear photos and scanned PDFs can be read too.</p></div></section><section class="saved-reports" aria-labelledby="saved-title"><div class="saved-heading"><h2 id="saved-title">Your uploaded reports</h2><span id="report-count-label"></span></div><div id="reports-list"><p class="loading-message">Prepare for conversation with your doctor</p></div></section>`;
+  root.innerHTML = `<section class="upload-panel" aria-labelledby="upload-title"><div class="upload-heading"><h2 id="upload-title">Add your lab reports</h2><p>Start with two blood or semen reports from different dates. Upload clear copies with all pages included.</p></div><form id="upload-form"><div class="file-picker"><svg width="38" height="38" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 26V8m-7 7 7-7 7 7M8 25v8h24v-8"/></svg><div><label for="report-files">Choose reports</label><p id="file-help">PDF, JPG, PNG or WebP · up to 10 MB each</p><p id="multiple-file-help">Choose several files at once, or add them one at a time before uploading.</p></div><input id="report-files" type="file" accept="application/pdf,image/jpeg,image/png,image/webp,.pdf,.jpg,.jpeg,.png,.webp" multiple aria-describedby="file-help multiple-file-help" /></div><ul id="upload-queue" class="upload-queue" aria-label="Selected reports"></ul><div id="upload-actions" class="upload-actions" hidden><button class="primary" type="submit" id="upload-submit">Upload reports</button><button class="secondary" type="button" id="clear-selection">Clear selection</button></div></form><p id="upload-status" class="upload-status" role="status" aria-live="polite"></p><div class="upload-note"><strong>Your reports stay separate from the sample.</strong><p>Your original files are saved. For now, access is tied to this browser. Clearing browser data loses access; sign-in will come later. Once two reports are saved, open My summary to compare them. Clear photos and scanned PDFs can be read too.</p></div></section><section class="saved-reports" aria-labelledby="saved-title"><div class="saved-heading"><h2 id="saved-title">Your uploaded reports</h2><span id="report-count-label"></span></div><div id="reports-list"><p class="loading-message">Prepare for conversation with your doctor</p></div></section>`;
   root.classList.add('premium-reports');
   const uploadPanel=root.querySelector('.upload-panel'), savedPanel=root.querySelector('.saved-reports');
   uploadPanel.id='add-reports-panel';uploadPanel.hidden=true;
@@ -78,6 +78,7 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
   function renderQueue() {
     queueEl.innerHTML = queue.map(item => `<li><div><strong>${escape(item.file.name)}</strong><span>${sizeLabel(item.file.size)}</span></div><span class="queue-state ${item.state==='error'?'is-error':''}">${escape(item.message || 'Ready to upload')}</span></li>`).join('');
     actions.hidden = queue.length === 0;
+    root.querySelector('label[for="report-files"]').textContent = queue.length ? 'Add more reports' : 'Choose reports';
     const pending = queue.filter(item => item.state !== 'saved').length;
     submit.textContent = busy ? 'Uploading…' : `Upload ${pending} ${pending===1?'report':'reports'}`;
     submit.disabled = busy || pending === 0 || !loaded;
@@ -199,11 +200,12 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
   input.addEventListener('change', () => {
     if (busy) return;
     const errors = [];
-    queue = Array.from(input.files).flatMap(file => {
+    const additions = Array.from(input.files).flatMap(file => {
       const error = fileError(file.size, file.type);
       if (error) { errors.push(`${file.name}: ${error}`); return []; }
       return [{file, uploadId:crypto.randomUUID(), state:'ready', message:''}];
     });
+    queue = [...queue.filter(item => item.state !== 'saved'), ...additions];
     input.value=''; renderQueue(); message(errors.join(' '), errors.length>0);
   });
   clear.addEventListener('click', () => { queue=[]; renderQueue(); message('Selection cleared. Uploaded reports are unchanged.'); });
