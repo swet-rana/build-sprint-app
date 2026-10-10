@@ -9,3 +9,5 @@ Type: existing Manrope. Desktop headline 38–56px, mobile 26–30px. Body 16–
 Layout: central headline max 800px; horizontal journey max 860px (760px at 1280–1450). Decorations hidden below 1280. Mobile two-column journey below 760. Home overrides scoped to its active view; other pages unchanged.
 Motion: report cluster floats 10px over 9 seconds; glow opacity changes over 24 seconds; hover lift 3–4px. All disabled with reduced-motion preference.
 Asset: public/images/home-glass-ribbons.png generated from the supplied reference using imagegen; transparent 3D glass medium, diffused upper-left lighting. Full generation prompt in home-glass-ribbons.prompt.txt.
+
+Illustration refinement: front report surface uses 94% white opacity with #514689 text; report title 14px, results 11px, sample note 9px. Back cards use 85% / 72% opacity. Ribbon keeps its source aspect ratio; a fade on the image itself begins at 65% of its height and reaches transparent at the lower edge.

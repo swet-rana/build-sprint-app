@@ -244,3 +244,14 @@ body:has(#home-view:not([hidden])){min-height:100vh}
  .home-resting-copy>p{font-size:19px;line-height:1.65}
  .home-journey{margin-top:38px}
 }
+/* Decorative report details stay readable; fade the image itself, not its slot. */
+.home-floating-lab{background:rgb(255 255 255 / 94%);color:#514689}
+.home-floating-lab header strong{font-size:14px}
+.home-decor-results>div{font-size:11px}
+.home-floating-lab small{color:#62658c;opacity:1;font-size:9px}
+.home-floating-imaging{opacity:.85}
+.home-floating-prescription{opacity:.72}
+.home-floating-lab .home-paper-lines i{background:#d9d1f4}
+@media(min-width:1280px){
+ .home-ribbon-art{position:absolute;top:0;right:0;width:100%;height:auto;object-fit:contain;opacity:.86;mask-image:linear-gradient(to bottom,#000 0%,#000 65%,rgba(0,0,0,.75) 80%,transparent 100%)}
+}
