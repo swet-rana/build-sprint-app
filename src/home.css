@@ -235,3 +235,12 @@ body:has(#home-view:not([hidden])){min-height:100vh}
  #home-view .home-journey button{gap:6px}
  #home-view .home-tutorial{margin-top:6px}
 }
+/* Reference comparison: give the artwork its natural proportions. */
+@media(min-width:1280px){
+ .home-premium-ribbons{width:clamp(330px,29vw,550px);right:-24px}
+ .home-ribbon-art{object-fit:contain;object-position:right center;mask-image:linear-gradient(to bottom,#000 90%,transparent)}
+ .home-health-symbols{right:13%;top:17%;gap:28px}
+ .home-premium-reports{top:34px}
+ .home-resting-copy>p{font-size:19px;line-height:1.65}
+ .home-journey{margin-top:38px}
+}
