@@ -1,3 +1,4 @@
+import './pdf-stream-compat.js';
 import './report-viewer.css';
 
 // Keep the underlying app mounted so selections and summary state survive Back.
