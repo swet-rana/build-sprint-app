@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {getDocument} from 'pdfjs-dist/legacy/build/pdf.mjs';
-import {parseReport,compareReports} from '../src/lab-parser.js';
+import {parseReport,compareReports,compareReportSeries} from '../src/lab-parser.js';
+import {testInCategory} from '../src/health-categories.js';
 async function pages(name){
  const task=getDocument({data:new Uint8Array(await fs.readFile(new URL(`./fixtures/${name}`,import.meta.url))),useSystemFonts:true});
  try{const pdf=await task.promise;const result=[];for(let page=1;page<=pdf.numPages;page++)result.push({page,items:(await(await pdf.getPage(page)).getTextContent()).items});return result;}finally{await task.destroy();}
@@ -18,6 +19,9 @@ test('reads both fictional fertility PDFs with inline identity, spaced dates and
  assert.equal(early.markers[0].referenceText,'Age-dependent');assert.equal(early.markers[0].status,undefined);
  assert(early.markers.every(m=>m.page===1));assert.equal(early.labName,'');
  const compared=compareReports(late,early);assert.equal(compared.comparable.length,6);
+ const series=compareReportSeries([early,late]);
+ assert.equal(series.comparable.filter(m=>testInCategory(m,'fertility')).length,6);
+ assert(testInCategory(series.comparable.find(m=>m.name==='AMH'),'fertility'));
  assert.equal(compared.comparable.find(m=>/prolactin/i.test(m.name)).change,-10);
  const invalid=await pages('fertility-sample-january.pdf');
  invalid[0].items=invalid[0].items.map(i=>({...i,str:i.str.replace('15 Jan 2026','31 Feb 2026')}));

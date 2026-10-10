@@ -40,7 +40,7 @@ export function categoriesForTest(marker){
  const electrolyte=/SODIUM|POTASSIUM|CHLORIDE|BICARBONATE|MAGNESIUM|CALCIUM|PHOSPHORUS/.test(name);
  add('electrolytes',electrolyte);add('kidney',electrolyte);
  add('hormones',/PROLACTIN|INHIBINB|FOLLICLESTIMULATING|LUTEINIZING|TESTOSTERONE|ESTRADIOL|OESTRADIOL|ESTROGEN|PROGESTERONE|ANTIMULLERIAN|AMH|BETAHCG/.test(name)||['fsh','lh'].includes(id));
- const fertilityHormone=/^(?:AMH|FSH|LH|TSH)$/.test(name)||['fsh','lh','tsh'].includes(id)||/ANTIM[UÜ]LLERIAN|FOLLICLESTIMULATING|LUTEINI[ZS]ING|ESTRADIOL|OESTRADIOL|PROGESTERONE|TESTOSTERONE|PROLACTIN|INHIBINB|THYROIDSTIMULATING/.test(name);
+ const fertilityHormone=/^(?:AMH|FSH|LH|TSH)$/.test(name)||['amh','fsh','lh','tsh'].includes(id)||/ANTIM[UÜ]LLERIAN|FOLLICLESTIMULATING|LUTEINI[ZS]ING|ESTRADIOL|OESTRADIOL|PROGESTERONE|TESTOSTERONE|PROLACTIN|INHIBINB|THYROIDSTIMULATING/.test(name);
  add('fertility',fertilityHormone);
  const lipids=/CHOLESTEROL|TRIGLYCERIDE|APOLIPOPROTEINB|APOB/.test(name)||(!/APOLIPOPROTEIN/.test(name)&&/LIPOPROTEINA/.test(name))||/^(?:LDL|HDL|NONHDL|LPA)$/.test(name);
  const glycaemia=id==='hba1c'||/GLUCOSE|HBA1C|GLYCATEDH[AE]*MOGLOBIN|GLYCOSYLATEDH[AE]*MOGLOBIN/.test(name);
