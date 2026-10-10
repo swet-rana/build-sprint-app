@@ -64,7 +64,7 @@ export async function openReportViewer({name, load, page = 1, sampleUrl}) {
     const blob = await load();
     if(closed) return;
     if(blob.type === 'application/pdf') {
-      const [{getDocument,GlobalWorkerOptions},{default:workerUrl}] = await Promise.all([import('pdfjs-dist'),import('pdfjs-dist/build/pdf.worker.min.mjs?url')]);
+      const [{getDocument,GlobalWorkerOptions},{default:workerUrl}] = await Promise.all([import('pdfjs-dist/legacy/build/pdf.mjs'),import('pdfjs-dist/legacy/build/pdf.worker.min.mjs?url')]);
       GlobalWorkerOptions.workerSrc = workerUrl;
       loadingTask = getDocument({data:new Uint8Array(await blob.arrayBuffer())});
       pdf = await loadingTask.promise;
