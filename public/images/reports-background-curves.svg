@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1000" viewBox="0 0 1440 1000" fill="none">
+ <defs>
+  <radialGradient id="orb"><stop stop-color="#EEE9FF"/><stop offset=".65" stop-color="#D9CFFA" stop-opacity=".65"/><stop offset="1" stop-color="#EEE9FF" stop-opacity=".15"/></radialGradient>
+  <linearGradient id="ribbon" x1="1250" y1="570" x2="1370" y2="980" gradientUnits="userSpaceOnUse"><stop stop-color="#E4DCFF" stop-opacity=".12"/><stop offset=".6" stop-color="#C9B7F9" stop-opacity=".3"/><stop offset="1" stop-color="#EEE9FF" stop-opacity=".1"/></linearGradient>
+ </defs>
+ <ellipse cx="-45" cy="165" rx="100" ry="89" fill="url(#orb)" stroke="white" stroke-opacity=".75" stroke-width="2"/>
+ <circle cx="51" cy="179" r="15" fill="url(#orb)"/>
+ <ellipse cx="1050" cy="-30" rx="254" ry="147" fill="url(#orb)" opacity=".33" stroke="white" stroke-opacity=".8" stroke-width="2"/>
+ <circle cx="779" cy="215" r="38" fill="#DDD1FB" fill-opacity=".24"/>
+ <path d="M1520 465C1338 518 1263 677 1075 803C884 932 564 986 365 1040H1520V465Z" fill="url(#ribbon)"/>
+ <path d="M1487 620C1296 645 1211 809 1009 902C814 992 431 951-32 1119" stroke="#C9B7F4" stroke-opacity=".34" stroke-width="3"/>
+ <path d="M1494 634C1298 684 1259 824 1023 922C807 1012 474 1001 317 1056" stroke="white" stroke-opacity=".63" stroke-width="2"/>
+ <path d="M-51 799C94 699 173 762 265 738" stroke="#CDBBF8" stroke-opacity=".25" stroke-width="3"/>
+</svg>

@@ -99,3 +99,7 @@ body:has(#uploads-view.premium-reports:not([hidden])){min-height:100vh;color:#17
  #app:has(#uploads-view:not([hidden]) .reports-selection-bar:not([hidden]))>main{padding-bottom:230px}
 }
 @media(prefers-reduced-motion:reduce){#uploads-view *,#uploads-view *::before{transition:none!important;animation:none!important}}
+body:has(#uploads-view.premium-reports:not([hidden])){isolation:isolate}
+/* Quiet paper-and-glass artwork from the Reports reference, behind real controls. */
+body:has(#uploads-view.premium-reports:not([hidden]))::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:url('/images/reports-floating-documents.svg'),url('/images/reports-background-curves.svg');background-repeat:no-repeat;background-size:300px 208px,100% 100%;background-position:calc(50% + 185px) 24px,center;opacity:.85}
+@media(max-width:760px){body:has(#uploads-view.premium-reports:not([hidden]))::before{background-image:url('/images/reports-background-curves.svg');background-size:auto 100%;background-position:center;opacity:.7}}
