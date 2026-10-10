@@ -63,13 +63,13 @@ export function mountHome(root) {
     <div class="home-stage" data-home-stage="select" hidden><div class="home-stage-copy"><h1>Click reports<br>for analysis</h1><p>Choose the reports you want to include.</p></div><div class="home-selection-demo"><div class="home-selection-heading"><h2>My Reports</h2><span>For Summary</span></div><div class="home-demo-report-list">${Array.from({ length: 6 }, (_, index) => `<label data-demo-report="${index + 1}"><span class="home-report-mini-icon">${homeIcon('reports')}</span><span>Test Report ${index + 1}</span><input type="checkbox" disabled aria-label="Test Report ${index + 1}"></label>`).join('')}</div><span class="home-demo-caption">Illustrative reports · 2, 3 and 5 selected</span></div></div>
     <div class="home-stage" data-home-stage="prepare" hidden><div class="home-stage-copy"><h1>Prepare summary</h1><p>Bring your selected reports<br>into one clear view.</p></div><div class="home-prepare-demo">${bloodReportsVisual()}<div class="home-demo-button-wrap"><button type="button" class="primary home-prepare-button" disabled>Prepare Summary</button><svg class="home-demo-pointer" viewBox="0 0 24 30" aria-hidden="true"><path d="M3 2v22l6-6 5 10 5-3-5-9h8z"/></svg></div><span class="home-demo-caption">In Summary · illustrative values</span></div></div>
     <div class="home-stage" data-home-stage="ready" hidden><div class="home-stage-copy"><h1>You are ready now!</h1><p>A clear, organised summary<br>for your next doctor conversation.</p></div><div>${summaryPreview(true)}<span class="home-demo-caption">An example of your completed summary</span></div></div>
-    <div class="home-resting" data-home-stage="settled"><div class="home-resting-copy">${introCopy}</div><ol class="home-journey" aria-label="Your report-to-summary journey">${steps.map((step, index) => `<li><button type="button" data-home-replay="${step.phase}" aria-label="Step ${index + 1}: ${step.label.replace(/<br>/g, ' ')}"><span class="home-step-icon">${homeIcon(step.icon)}</span><span class="home-step-number">${index + 1}</span><span class="home-step-label">${step.label}</span></button></li>`).join('')}</ol><button type="button" class="primary home-begin" id="home-begin">Begin now</button></div>
+    <div class="home-resting" data-home-stage="settled"><div class="home-resting-copy">${introCopy}</div><ol class="home-journey" aria-label="Your report-to-summary journey">${steps.map((step, index) => `<li><button type="button" data-home-replay="${step.phase}" aria-label="Step ${index + 1}: ${step.label.replace(/<br>/g, ' ')}"><span class="home-step-icon">${homeIcon(step.icon)}</span><span class="home-step-number">${index + 1}</span><span class="home-step-label">${step.label}</span></button></li>`).join('')}</ol><button type="button" class="home-tutorial" id="home-tutorial">Show video tutorial</button><button type="button" class="primary home-begin" id="home-begin">Begin now</button></div>
   </section>`;
   const stages = [...root.querySelectorAll('[data-home-stage]')];
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let completed = reducedMotion.matches;
   try { completed ||= localStorage.getItem(COMPLETED_KEY) === 'complete'; } catch { /* Home still works without browser storage. */ }
-  let elapsed = completed ? totalDuration : 0, frame = 0, lastTime = null, active = false, currentPhase = null, replayEnd = null, replayPhase = null, replayButton = null;
+  let elapsed = completed ? totalDuration : 0, frame = 0, lastTime = null, active = false, currentPhase = null, replayEnd = null, replayPhase = null, replayButton = null, tutorialReplay = false;
   function showPhase(id) {
     if (id === currentPhase) return;
     currentPhase = id;
@@ -83,6 +83,7 @@ export function mountHome(root) {
   function finish() {
     completed = true;
     replayEnd = null;
+    tutorialReplay = false;
     replayPhase = null;
     elapsed = totalDuration;
     showPhase('settled');
@@ -100,7 +101,7 @@ export function mountHome(root) {
     if (lastTime !== null) elapsed += now - lastTime;
     lastTime = now;
     if (elapsed >= (replayEnd ?? totalDuration)) { finish(); return; }
-    const phase = replayPhase ? { id: replayPhase.id, elapsed: elapsed - replayPhase.start } : homePhaseAt(elapsed);
+    const phase = replayPhase ? { id: replayPhase.id, elapsed: elapsed - replayPhase.start } : homePhaseAt(tutorialReplay ? elapsed * totalDuration / 10000 : elapsed);
     showPhase(phase.id);
     if (phase.id === 'select') {
       [2, 3, 5].forEach((number, index) => {
@@ -129,6 +130,7 @@ export function mountHome(root) {
     lastTime = null;
     completed = false;
     root.dataset.homeComplete = 'false';
+    tutorialReplay = false;
     const phase = button.dataset.homeReplay;
     const phaseIndex = HOME_PHASES.findIndex(item => item.id === phase);
     elapsed = HOME_PHASES.slice(0, phaseIndex).reduce((sum, item) => sum + item.duration, 0);
@@ -143,6 +145,24 @@ export function mountHome(root) {
     // A chosen replay stays available with reduced motion, without animated transitions.
     schedule();
   }));
+  root.querySelector('#home-tutorial').addEventListener('click', event => {
+    cancelAnimationFrame(frame);
+    frame = 0;
+    lastTime = null;
+    completed = false;
+    elapsed = 0;
+    tutorialReplay = true;
+    replayPhase = null;
+    replayEnd = 10000;
+    replayButton = event.currentTarget;
+    root.dataset.homeComplete = 'false';
+    root.querySelectorAll('[data-demo-report]').forEach(row => {
+      row.querySelector('input').checked = false;
+      row.classList.remove('is-selected');
+    });
+    showPhase('intro');
+    schedule();
+  });
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { cancelAnimationFrame(frame); frame = 0; lastTime = null; }
     else schedule();

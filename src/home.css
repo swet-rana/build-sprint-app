@@ -166,3 +166,8 @@ body:has(#home-view:not([hidden])){background:var(--home-ground);color:#171d4b}
  .home-journey{margin-top:36px}
  #home-view .home-begin{margin-top:20px}
 }
+
+#home-view .home-tutorial{display:block;margin:20px auto 0;min-height:44px;padding:10px 16px;background:transparent;color:var(--home-purple);font-size:12px;font-weight:600;text-decoration:underline;text-underline-offset:3px;border:0}
+#home-view .home-tutorial:hover{color:var(--home-secondary)}
+#home-view .home-tutorial:focus-visible{outline:3px solid var(--home-purple);outline-offset:3px}
+#home-view .home-tutorial + .home-begin{margin-top:4px}
