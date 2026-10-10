@@ -19,7 +19,7 @@
  <g opacity=".78" transform="translate(211 95) rotate(13 57 65)" filter="url(#shadow)">
   <rect width="116" height="136" rx="12" fill="url(#paper)" stroke="white"/>
   <path d="M16 25h12m-6-6v12" stroke="#BDA5ED" stroke-width="6" stroke-linecap="round"/>
-  <text x="37" y="28" font-family="Arial,sans-serif" font-size="9" fill="#9881D3">Prescription</text>
+  <text x="37" y="28" font-family="Arial,sans-serif" font-size="9" fill="#9881D3">Imaging Report</text>
   <path d="M19 52h78M19 71h64M19 90h74M19 109h51" stroke="#CFBFF1" stroke-width="5" stroke-linecap="round"/>
  </g>
  <g transform="translate(24 73) rotate(-15 29 30)" filter="url(#shadow)">
