@@ -8,11 +8,11 @@ const reports = [
   { id:'pdf-1',serial:1,name:'Fictional.pdf',contentType:'application/pdf',size:5000000 },
   { id:'photo-2',serial:2,name:'Fictional.jpg',contentType:'image/jpeg',size:80000 },
 ];
-test('loading Reports once downloads zero files; only Open report downloads a file', async () => {
+test('PDF cards stay unopened; central selection and private image previews work', async () => {
   const dom = new JSDOM('<div id="reports"></div>', {url:'http://localhost:5173'});
   const previous = Object.fromEntries(['window','document','localStorage','fetch'].map(key=>[key,globalThis[key]]));
   Object.assign(globalThis,{window:dom.window,document:dom.window.document,localStorage:dom.window.localStorage});
-  const downloads=[],mutations=[],selections=[];
+  const downloads=[],mutations=[],selections=[];let summaries=0;const previousObserver=globalThis.IntersectionObserver;
   globalThis.__reportHarness={reports,mutations};
   globalThis.fetch=async(url,options)=>{
     if(String(url).endsWith('/reports/open'))downloads.push(JSON.parse(options.body).reportId);
@@ -31,7 +31,7 @@ test('loading Reports once downloads zero files; only Open report downloads a fi
   }]});
   try{
     const {mountUploads}=await import(`data:text/javascript;base64,${Buffer.from(bundled.outputFiles[0].text).toString('base64')}`);
-    const root=document.querySelector('#reports');mountUploads(root,(...args)=>selections.push(args));
+    const root=document.querySelector('#reports');mountUploads(root,(...args)=>selections.push(args),()=>summaries++);
     await new Promise(resolve=>setTimeout(resolve,60));
     assert.equal(root.querySelectorAll('[data-report-id]').length,2,'Both saved report cards must be rendered');
     assert.equal(downloads.length,0,`Reports load downloaded ${downloads.length} files`);
@@ -43,9 +43,32 @@ test('loading Reports once downloads zero files; only Open report downloads a fi
     await new Promise(resolve=>setTimeout(resolve,20));
     assert.equal(downloads.length,0,'Search/render and For summary selection must not download files');
     assert(selections.at(-1)[1].length===1,'For summary still publishes the chosen report');
+    assert.equal(root.querySelectorAll('#move-to-summary').length,1,'There is just one summary action');
+    assert.equal(root.querySelector('.reports-selection-bar').hidden,false);
+    assert.equal(root.querySelector('#move-to-summary').disabled,true,'One report cannot be compared');
+    const second=root.querySelector('[data-analysis-id="photo-2"]');second.checked=true;second.dispatchEvent(new window.Event('change',{bubbles:true}));
+    assert.equal(root.querySelector('#selected-report-count').textContent,'2 of 10 reports selected');
+    root.querySelector('#move-to-summary').click();assert.equal(summaries,1);
+    assert.deepEqual(selections.at(-1)[1],['pdf-1','photo-2']);
+    root.querySelector('#unselect-all-reports').click();assert.equal(selections.at(-1)[1].length,0);
+    assert.equal(root.querySelector('.reports-selection-bar').hidden,true);
+    assert.equal(root.querySelectorAll('[data-analysis-id]:checked').length,0);
     root.querySelector('[data-report-id="pdf-1"]').click();
     await new Promise(resolve=>setTimeout(resolve,20));
     assert.deepEqual(downloads,['pdf-1'],'Open report must download just the clicked file');
-    console.log('PROOF: initial Reports load = 0 file downloads; search + For summary = 0; Open report = 1.');
-  }finally{dom.window.close();Object.assign(globalThis,previous);delete globalThis.__reportHarness;}
+    let observer;
+    globalThis.IntersectionObserver=class{constructor(callback){this.callback=callback;this.targets=[];observer=this;}observe(target){this.targets.push(target);}unobserve(){}disconnect(){this.targets=[];}};
+    root.querySelector('[data-report-filter="image"]').click();
+    assert.equal(root.querySelectorAll('[data-report-id]').length,1);
+    observer.callback(observer.targets.map(target=>({target,isIntersecting:true})));
+    await new Promise(resolve=>setTimeout(resolve,25));
+    assert.deepEqual(downloads,['pdf-1','photo-2'],'Only the visible image is loaded for its thumbnail');
+    assert.equal(root.querySelectorAll('.report-preview img').length,1);
+    root.querySelector('#search-reports').value='No match';root.querySelector('#search-reports').dispatchEvent(new window.Event('input',{bubbles:true}));
+    assert.equal(root.querySelector('.reports-empty h3').textContent,'No matching reports');
+    root.querySelector('[data-clear-filters]').click();assert.equal(root.querySelectorAll('[data-report-id]').length,2);
+    observer.callback(observer.targets.map(target=>({target,isIntersecting:true})));
+    await new Promise(resolve=>setTimeout(resolve,25));assert.equal(downloads.length,2,'Cached thumbnails do not redownload when filters change');
+    console.log('PROOF: PDF cards remain unopened; central summary preserves selected IDs; visible image thumbnails load privately once.');
+  }finally{dom.window.close();Object.assign(globalThis,previous);delete globalThis.__reportHarness;globalThis.IntersectionObserver=previousObserver;}
 });

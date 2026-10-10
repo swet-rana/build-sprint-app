@@ -3,6 +3,7 @@ import { MAX_ANALYSIS_REPORTS } from './analysis-rules.js';
 import { openReportViewer } from './report-viewer.js';
 import { ConvexClient } from 'convex/browser';
 import './reports.css';
+import './reports-premium.css';
 import { api } from '../convex/_generated/api';
 import { fileError } from '../convex/fileRules.js';
 import { numberReports, sortReports } from './report-list.js';
@@ -16,11 +17,21 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
   root.classList.add('premium-reports');
   const uploadPanel=root.querySelector('.upload-panel'), savedPanel=root.querySelector('.saved-reports');
   uploadPanel.id='add-reports-panel';uploadPanel.hidden=true;
-  savedPanel.querySelector('.saved-heading').innerHTML=`<div class="reports-title-with-art"><img class="reports-heading-art" src="/images/reports-summary.png" alt="" width="88" height="88" decoding="async"><h1 id="saved-title">My reports</h1><button class="primary reports-summary-action" type="button" id="move-to-summary" hidden>Move to summary page</button></div><div class="report-upload-heading"><button class="primary premium-upload" type="button" id="show-upload" aria-expanded="false" aria-controls="add-reports-panel"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5M4 15v6h16v-6"/></svg>Upload report</button><p id="report-count-label"></p></div>`;
+  savedPanel.querySelector('.saved-heading').innerHTML=`<div class="reports-title-with-art"><img class="reports-heading-art" src="/images/reports-summary.png" alt="" width="88" height="88" decoding="async"><div><h1 id="saved-title">My reports</h1><p>All your health records, in one place.</p></div></div><div class="report-upload-heading"><button class="primary premium-upload" type="button" id="show-upload" aria-expanded="false" aria-controls="add-reports-panel"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5M4 15v6h16v-6"/></svg>Upload report</button><p id="report-count-label"></p></div>`;
   const toolbar=document.createElement('div');toolbar.className='reports-toolbar';
-  toolbar.innerHTML=`<label class="report-search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><span class="sr-only">Search reports</span><input id="search-reports" type="search" placeholder="Search by report type, lab or PDF / photo" autocomplete="off"></label><div class="report-arrange-row"><div class="report-filters" aria-label="Filter reports"><button type="button" data-report-filter="all" aria-pressed="true">All reports</button><button type="button" data-report-filter="pdf" aria-pressed="false">PDF</button><button type="button" data-report-filter="image" aria-pressed="false">Image</button></div><button class="secondary" type="button" id="unselect-all-reports" disabled>Unselect all</button><label class="report-sort">Sort by<select id="sort-reports"><option value="upload-newest">Upload date · newest first</option><option value="upload-oldest">Upload date · oldest first</option><option value="report-newest">Report date · newest first</option><option value="report-oldest">Report date · oldest first</option></select></label></div>`;
+  toolbar.innerHTML=`<label class="report-search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><span class="sr-only">Search reports</span><input id="search-reports" type="search" placeholder="Search by report type, lab or PDF / photo" autocomplete="off"></label><div class="report-arrange-row"><div class="report-filters" aria-label="Filter reports"><button type="button" data-report-filter="all" aria-pressed="true">All reports</button><button type="button" data-report-filter="pdf" aria-pressed="false">PDF</button><button type="button" data-report-filter="image" aria-pressed="false">Image</button></div><label class="report-sort">Sort by<select id="sort-reports"><option value="upload-newest">Upload date · newest first</option><option value="upload-oldest">Upload date · oldest first</option><option value="report-newest">Report date · newest first</option><option value="report-oldest">Report date · oldest first</option></select></label></div>`;
   savedPanel.querySelector('.saved-heading').after(toolbar);
   toolbar.after(uploadPanel);
+  const selectionBar=document.createElement('div');selectionBar.className='reports-selection-bar';selectionBar.hidden=true;
+  selectionBar.innerHTML='<span id="selected-report-count" role="status"></span><button class="secondary" type="button" id="unselect-all-reports">Unselect all</button><button class="primary reports-summary-action" type="button" id="move-to-summary">Move to summary page <span aria-hidden="true">→</span></button>';
+  root.querySelector('#reports-list').before(selectionBar);
+  root.addEventListener('click',event=>{
+    if(event.target.closest('[data-show-upload]'))root.querySelector('#show-upload').click();
+    if(event.target.closest('[data-clear-filters]')){
+      searchTerm='';reportFilter='all';root.querySelector('#search-reports').value='';
+      toolbar.querySelectorAll('[data-report-filter]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.reportFilter==='all')));renderReports();
+    }
+  });
   root.prepend(savedPanel);
   root.querySelector('.saved-heading').after(root.querySelector('#upload-status'));
   root.querySelector('#show-upload').addEventListener('click',event=>{
@@ -53,12 +64,12 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
   });
   function updateSummaryActions(){
     root.querySelector('#unselect-all-reports').disabled=analysisIds.size===0;
-    const selected=[...analysisIds].filter(id=>saved.some(report=>report.id===id));
-    const latest=selected.length>=2?selected.at(-1):null;
-    root.querySelectorAll('[data-summary-id]').forEach(button=>button.hidden=button.dataset.summaryId!==latest);
+    selectionBar.hidden=analysisIds.size===0;
+    root.querySelector('#selected-report-count').textContent=`${analysisIds.size} of ${MAX_ANALYSIS_REPORTS} reports selected`;
+    const proceed=root.querySelector('#move-to-summary');proceed.disabled=analysisIds.size<2;
+    proceed.title=analysisIds.size<2?'Select at least two reports to compare':'';
   }
-  root.addEventListener('click',event=>{if(event.target.closest('[data-summary-id]')&&analysisIds.size>=2)onSummary();});
-  function publishSelection(){updateSummaryActions();root.querySelector('#move-to-summary').hidden=analysisIds.size<2;localStorage.setItem('health-history-analysis-reports',JSON.stringify([...analysisIds]));onReports(numberReports(saved),[...analysisIds]);}
+  function publishSelection(){updateSummaryActions();localStorage.setItem('health-history-analysis-reports',JSON.stringify([...analysisIds]));onReports(numberReports(saved),[...analysisIds]);}
   const readingErrors=new Map();
   const trashPages = [], trashSubscriptions = [];
   const url = import.meta.env.VITE_CONVEX_URL;
@@ -73,10 +84,25 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
     input.disabled = busy || !loaded;
     clear.disabled = busy;
   }
+  const thumbnailCache=new Map();let thumbnailObserver;
+  function loadVisibleThumbnails(){
+    thumbnailObserver?.disconnect();
+    if(typeof IntersectionObserver==='undefined')return;
+    thumbnailObserver=new IntersectionObserver(entries=>{
+      entries.filter(entry=>entry.isIntersecting).forEach(({target})=>{
+        thumbnailObserver.unobserve(target);
+        const reportId=target.dataset.thumbnailId;
+        let promise=thumbnailCache.get(reportId);
+        if(!promise){promise=fetch(`${site}/reports/open`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionKey,reportId}),signal:AbortSignal.timeout(60000)}).then(response=>{if(!response.ok)throw Error('Preview unavailable');return response.blob();}).then(blob=>URL.createObjectURL(blob)).catch(()=>null);thumbnailCache.set(reportId,promise);}
+        promise.then(url=>{if(url&&target.isConnected){const image=document.createElement('img');image.src=url;image.alt='';image.decoding='async';target.replaceChildren(image);}});
+      });
+    },{rootMargin:'100px'});
+    list.querySelectorAll('[data-thumbnail-id]').forEach(target=>thumbnailObserver.observe(target));
+  }
   function renderReports() {
-    root.querySelector('#report-count-label').textContent = `${saved.length} ${saved.length===1?'report':'reports'} saved · select up to 10 for analysis`;
+    root.querySelector('#report-count-label').textContent = `${saved.length} ${saved.length===1?'report':'reports'} saved · Select up to 10 for analysis`;
     if (!saved.length) {
-      list.innerHTML = `<div class="reports-empty">${documentIcon}<div><h3>No reports uploaded yet</h3><p>Choose your first reports above. They’ll appear here once saved.</p></div></div>`;
+      list.innerHTML = `<div class="reports-empty">${documentIcon}<div><h3>No reports yet</h3><p>Upload your first medical report to start building your health history.</p><button class="primary" type="button" data-show-upload>Upload report</button></div></div>`;
       return;
     }
     if (editingId) return;
@@ -88,10 +114,11 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
     });
     list.innerHTML = visible.length ? `<ul class="report-rows premium-grid">${visible.map(report => {
       const d = report.details || emptyDetails(), type=shortTestType(d.testType) || 'Medical report';
-      return `<li class="premium-report-card"><div class="card-topline"><span class="report-number">Report #${report.serial}</span><details class="report-menu" data-report-menu="${report.id}" ${openMenus.has(report.id)?'open':''}><summary aria-label="Actions for report #${report.serial}"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></summary><div><button class="secondary" type="button" data-edit-id="${report.id}" aria-label="Edit details for report #${report.serial}">Edit details</button><button class="secondary report-delete" type="button" ${reportControlsReady ? '' : 'disabled'} data-delete-id="${report.id}" aria-label="Delete report #${report.serial}">Delete report</button></div></details></div>${readingErrors.has(report.id)?`<p class="report-reading-error" role="status">Reading error: ${escape(readingErrors.get(report.id))}</p>`:''}${report.duplicateOf ? `<p class="duplicate-note">Duplicate of report #${report.duplicateOf}</p>` : ''}<div class="card-report-content"><div class="report-preview" aria-hidden="true">${documentIcon}<span>${report.contentType==='application/pdf'?'PDF':'Photo'}</span></div><label class="report-analysis-check"><input type="checkbox" data-analysis-id="${report.id}" aria-label="Select report #${report.serial} for analysis" ${analysisIds.has(report.id)?'checked':''}><span>For summary</span></label><div class="report-details"><h2>${escape(type)}</h2><p class="report-lab">${escape(d.labName || 'Lab not added')}</p><p class="report-date"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 11h16"/></svg>${escape(d.testDate?testDateLabel(d.testDate):'Test date not added')}</p><p class="report-person"><span>For</span> ${escape(d.patientName || 'Name not added')}</p><span class="report-file-badge">${documentIcon}${report.contentType==='application/pdf'?'PDF':'Photo'} · ${sizeLabel(report.size)}</span></div></div><p class="report-filename" title="${escape(report.name)}">${escape(report.name)}</p><div class="report-edit-slot"></div><div class="report-card-actions"><button class="report-open primary" type="button" data-report-id="${report.id}" aria-label="Open report #${report.serial}">Open report</button><button class="report-summary-action" type="button" data-summary-id="${report.id}" hidden>Move to summary page</button></div></li>`;
-    }).join('')}</ul>` : '<div class="reports-empty"><p>No reports match. Try another search or choose All reports.</p></div>';
+      return `<li class="premium-report-card"><div class="card-topline"><div class="card-identity"><span class="report-number">Report #${report.serial}</span><span class="report-kind-badge">${report.contentType==='application/pdf'?'PDF':'Image'}</span></div><label class="report-analysis-check"><input type="checkbox" data-analysis-id="${report.id}" aria-label="Select report #${report.serial} for analysis" ${analysisIds.has(report.id)?'checked':''}><span>For summary</span></label><details class="report-menu" data-report-menu="${report.id}" ${openMenus.has(report.id)?'open':''}><summary aria-label="Actions for report #${report.serial}"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></summary><div><button class="secondary" type="button" data-edit-id="${report.id}" aria-label="Edit details for report #${report.serial}">Edit details</button><button class="secondary report-delete" type="button" ${reportControlsReady ? '' : 'disabled'} data-delete-id="${report.id}" aria-label="Delete report #${report.serial}">Delete report</button></div></details></div>${Number.isFinite(report.uploadedAt)?`<p class="report-uploaded-date">Uploaded on ${escape(new Date(report.uploadedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}))}</p>`:''}${readingErrors.has(report.id)?`<p class="report-reading-error" role="status">Reading error: ${escape(readingErrors.get(report.id))}</p>`:''}${report.duplicateOf ? `<p class="duplicate-note">Duplicate of report #${report.duplicateOf}</p>` : ''}<div class="card-report-content"><div class="report-preview" ${report.contentType.startsWith('image/')?`data-thumbnail-id="${report.id}"`:''} aria-hidden="true">${documentIcon}<span>${report.contentType==='application/pdf'?'PDF':'Photo'}</span></div><div class="report-details"><h2>${escape(type)}</h2><p class="report-lab"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 21h14M9 3h6m-5 0v7L5 21h14l-5-11V3M8 15h8"/></svg>${escape(d.labName || 'Lab not added')}</p><p class="report-date"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 11h16"/></svg>${escape(d.testDate?testDateLabel(d.testDate):'Test date not added')}</p><p class="report-person"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="7" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg> ${escape(d.patientName || 'Name not added')}</p><span class="report-file-badge">${documentIcon}${report.contentType==='application/pdf'?'PDF':'Photo'} · ${sizeLabel(report.size)}</span></div></div><p class="report-filename" title="${escape(report.name)}">${escape(report.name)}</p>${(!d.labName||!d.patientName||!d.testDate)?`<button class="report-add-details" type="button" data-edit-id="${report.id}" aria-label="Add missing details for report #${report.serial}">Add missing details</button>`:''}<div class="report-edit-slot"></div><div class="report-card-actions"><button class="report-open primary" type="button" data-report-id="${report.id}" aria-label="Open report #${report.serial}">Open report <span aria-hidden="true">→</span></button></div></li>`;
+    }).join('')}</ul>` : '<div class="reports-empty"><div><h3>No matching reports</h3><p>Try a different search or filter.</p><button type="button" class="secondary" data-clear-filters>Clear filters</button></div></div>';
     updateSummaryActions();
-    list.innerHTML += `<p class="stored-note" id="details-status" role="status">Check report details against the originals. Access stays tied to this browser until sign-in is available.</p>`;
+    list.innerHTML += `<p class="stored-note" id="details-status" role="status"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v2"/></svg><span>Check report details against the originals. Access stays tied to this browser until sign-in is available.</span></p>`;
+    loadVisibleThumbnails();
   }
   list.addEventListener('change',event=>{
     const input=event.target.closest('[data-analysis-id]');if(!input)return;
