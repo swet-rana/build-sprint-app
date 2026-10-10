@@ -24,7 +24,7 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
   toolbar.after(uploadPanel);
   const selectionBar=document.createElement('div');selectionBar.className='reports-selection-bar';selectionBar.hidden=true;
   selectionBar.innerHTML='<span id="selected-report-count" role="status"></span><button class="secondary" type="button" id="unselect-all-reports">Unselect all</button><button class="primary reports-summary-action" type="button" id="move-to-summary">Move to summary page <span aria-hidden="true">→</span></button>';
-  root.querySelector('#reports-list').before(selectionBar);
+  toolbar.after(selectionBar);
   root.addEventListener('click',event=>{
     if(event.target.closest('[data-show-upload]'))root.querySelector('#show-upload').click();
     if(event.target.closest('[data-clear-filters]')){

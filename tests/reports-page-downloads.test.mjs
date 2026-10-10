@@ -70,6 +70,8 @@ test('PDF cards stay unopened; central selection and private image previews work
     root.querySelector('[data-clear-filters]').click();assert.equal(root.querySelectorAll('[data-report-id]').length,2);
     observer.callback(observer.targets.map(target=>({target,isIntersecting:true})));
     await new Promise(resolve=>setTimeout(resolve,25));assert.equal(downloads.length,2,'Cached thumbnails do not redownload when filters change');
+    root.querySelector('#show-upload').click();
+    assert.equal(root.querySelector('.reports-selection-bar').nextElementSibling.id,'add-reports-panel','The summary action stays above the expanded upload form');
     const picker=root.querySelector('#report-files');
     assert.equal(picker.multiple,true,'The native picker must allow multiple files');
     const choose=files=>{Object.defineProperty(picker,'files',{value:files,configurable:true});picker.dispatchEvent(new window.Event('change',{bubbles:true}));};

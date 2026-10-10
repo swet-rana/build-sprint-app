@@ -140,3 +140,5 @@ body:has(#uploads-view.premium-reports:not([hidden]))::before{content:'';positio
 }
 
 @media(max-width:600px){#uploads-view #saved-title{font-size:25px}}
+
+@media(min-width:761px){#uploads-view .reports-selection-bar{position:sticky;top:12px;z-index:20;box-shadow:0 5px 20px rgb(49 32 110 / 10%)}}
