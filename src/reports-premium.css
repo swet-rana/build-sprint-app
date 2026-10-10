@@ -106,7 +106,6 @@ body:has(#uploads-view.premium-reports:not([hidden]))::before{content:'';positio
 @media(min-width:1024px){
  #app:has(#uploads-view:not([hidden]))>main{max-width:1440px;padding-inline:48px}
  #app:has(#uploads-view:not([hidden])) .topbar{max-width:1440px;padding-inline:48px}
- #app:has(#uploads-view:not([hidden])) .view-tabs{position:absolute;top:26px;bottom:auto;width:480px}
  #uploads-view .reports-title-with-art p{font-size:15px}
  #uploads-view .reports-heading-art{width:72px;height:80px}
  #uploads-view.premium-reports #show-upload{font-size:16px;padding:14px 28px;min-height:52px}
