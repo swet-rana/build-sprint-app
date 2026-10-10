@@ -1,7 +1,9 @@
 /* Summary-only extension of the Home and My Reports visual system. */
 @media screen {
  body:has(#summary-view:not([hidden])) {min-height:100vh;background:radial-gradient(ellipse at 48% 25%,#fff 0%,#f8f7ff 52%,transparent 85%),radial-gradient(ellipse at 0 35%,#eee9ff,transparent 65%),radial-gradient(ellipse at 100% 70%,#e4dcff,transparent 65%),#f8f7ff;background-attachment:fixed;color:#17145c;--blue:#493dbb;--muted:#62658c}
- body:has(#summary-view:not([hidden])) {height:100dvh;overflow:hidden}
+ body:has(#summary-view:not([hidden])) {height:100dvh;overflow:hidden;isolation:isolate}
+ body:has(#summary-view:not([hidden]))::before {content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:url('/images/reports-background-curves.svg') center/100% 100% no-repeat;opacity:.85}
+ @media(max-width:760px) {body:has(#summary-view:not([hidden]))::before {background-size:auto 100%;opacity:.7}}
  #app:has(#summary-view:not([hidden])) {display:flex;flex-direction:column;height:100dvh;overflow:hidden}
  #app:has(#summary-view:not([hidden]))>.topbar {max-width:1480px;width:100%;height:108px;padding-inline:48px;flex-shrink:0}
  #app:has(#summary-view:not([hidden]))>main {max-width:1480px;width:100%;flex:1;min-height:0;margin:12px auto calc(100px + env(safe-area-inset-bottom));padding:0 48px 28px;overflow-y:auto;overscroll-behavior-y:contain;scroll-padding-block:20px;scrollbar-width:thin;scrollbar-color:#d7d0f2 transparent}
