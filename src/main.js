@@ -55,13 +55,10 @@ const home=mountHome(document.querySelector('#home-view'),()=>{
  const scrollTarget=selectionBar&&!selectionBar.hidden&&!window.matchMedia('(max-width: 760px)').matches?selectionBar:reportsList;
  scrollTarget.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
 },goToPrepareSummary,()=>{
- const heading=document.querySelector('#summary-view #category-title');
- if(!summaryReady||!heading)return false;
  switchView('summary');
- heading.setAttribute('tabindex','-1');
- heading.focus({preventScroll:true});
- heading.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
- return true;
+ const target=document.querySelector(summaryReady?'#print':'#prepare-summary');
+ target.focus({preventScroll:true});
+ target.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'center'});
 });
 const analysis=mountAnalysis(document.querySelector('#summary-view'),ready=>{
   summaryReady=ready;
