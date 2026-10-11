@@ -10,8 +10,8 @@
  #app:has(#summary-view:not([hidden])) .intro {position:relative;min-height:144px;margin:0 0 24px;padding:12px 290px 12px 0;isolation:isolate}
  #app:has(#summary-view:not([hidden])) .intro::after {content:"";position:absolute;z-index:-1;right:0;top:-10px;width:250px;height:190px;background:url('/images/reports-floating-documents.svg?v=imaging') center/contain no-repeat;opacity:.48;pointer-events:none}
  #app:has(#summary-view:not([hidden])) .summary-title-with-art {gap:20px}
- #app:has(#summary-view:not([hidden])) .summary-heading-art {width:106px;height:118px}
- #app:has(#summary-view:not([hidden])) .intro #page-title {font-size:28px;line-height:1.2;color:#35328b;letter-spacing:-.035em;margin-bottom:12px;max-width:25ch;text-wrap:balance}
+ #app:has(#summary-view:not([hidden])) .summary-heading-art {width:130px;height:146px}
+ #app:has(#summary-view:not([hidden])) .intro #page-title {font-size:28px;line-height:1.2;color:#35328b;letter-spacing:-.035em;margin-bottom:3px;max-width:25ch;text-wrap:balance}
  #app:has(#summary-view:not([hidden])) .intro #page-description {font-size:16px;line-height:1.65;color:#62658c;max-width:62ch}
  #app #summary-view {padding:0;background:transparent;border:0;border-radius:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;color:#17145c;--muted:#62658c;--blue:#493dbb}
  #app #summary-view .summary-workspace {display:grid;grid-template-columns:minmax(0,1.85fr) minmax(0,1fr);gap:24px;align-items:stretch;margin:0}
@@ -90,9 +90,9 @@
   #app:has(#summary-view:not([hidden]))>main {margin-top:12px;margin-bottom:calc(96px + env(safe-area-inset-bottom));padding-inline:16px;padding-bottom:24px}
   #app:has(#summary-view:not([hidden])) .intro {min-height:0;padding:0;margin-bottom:24px}
   #app:has(#summary-view:not([hidden])) .intro::after {display:none}
-  #app:has(#summary-view:not([hidden])) .summary-title-with-art {align-items:flex-start;gap:12px}
-  #app:has(#summary-view:not([hidden])) .summary-heading-art {width:54px;height:64px}
-  #app:has(#summary-view:not([hidden])) .intro #page-title {font-size:28px;line-height:1.2;margin-bottom:10px}
+  #app:has(#summary-view:not([hidden])) .summary-title-with-art {align-items:center;gap:10px}
+  #app:has(#summary-view:not([hidden])) .summary-heading-art {width:82px;height:100px}
+  #app:has(#summary-view:not([hidden])) .intro #page-title {font-size:28px;line-height:1.2;margin-bottom:3px}
   #app:has(#summary-view:not([hidden])) .intro #page-description {font-size:13px;line-height:1.65}
   #app #summary-view .summary-workspace {grid-template-columns:1fr;gap:16px}
   #app #summary-view .analysis-controls,#app #summary-view .summary-preparation {padding:20px 16px;border-radius:20px}
