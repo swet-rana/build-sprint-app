@@ -38,7 +38,14 @@ function placePrintButton(){
 }
 
 let currentView='home', summaryReady=false;
-const home=mountHome(document.querySelector('#home-view'));
+const home=mountHome(document.querySelector('#home-view'),()=>{
+ switchView('reports');
+ const uploadButton=document.querySelector('#show-upload');
+ if(uploadButton.getAttribute('aria-expanded')!=='true')uploadButton.click();
+ const fileInput=document.querySelector('#report-files');
+ fileInput.focus({preventScroll:true});
+ fileInput.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'center'});
+});
 const analysis=mountAnalysis(document.querySelector('#summary-view'),ready=>{
   summaryReady=ready;
   placePrintButton();
