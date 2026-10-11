@@ -45,6 +45,13 @@ const home=mountHome(document.querySelector('#home-view'),()=>{
  const fileInput=document.querySelector('#report-files');
  fileInput.focus({preventScroll:true});
  fileInput.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'center'});
+},()=>{
+ switchView('reports');
+ const uploadButton=document.querySelector('#show-upload');
+ if(uploadButton.getAttribute('aria-expanded')==='true')uploadButton.click();
+ const reportsList=document.querySelector('#reports-list');
+ reportsList.querySelector('[data-analysis-id]')?.focus({preventScroll:true});
+ reportsList.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
 });
 const analysis=mountAnalysis(document.querySelector('#summary-view'),ready=>{
   summaryReady=ready;
