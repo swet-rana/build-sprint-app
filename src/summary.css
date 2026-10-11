@@ -148,7 +148,7 @@ body:has(#summary-view:not([hidden])){background:#f6f5ff;color:#171d4b;--blue:#4
 #summary-view .summary-print-actions{display:flex;flex-direction:column-reverse;align-items:flex-end;gap:12px}
 @media print{#summary-view .summary-print-actions #print{display:none!important}}
 
-#app #summary-view .analysis-selected-list strong{font-weight:700!important}
+#app #summary-view .analysis-selected-list strong{font-weight:var(--weight-card)!important}
 
 #summary-view .analysis-selected-list li{display:flex;align-items:center;gap:12px}
 #summary-view .selected-report-icon{position:relative;flex:0 0 80px;width:80px;height:80px}

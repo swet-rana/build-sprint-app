@@ -1,9 +1,45 @@
-/* Shared font rule for app text, forms, charts and print. */
-:root{font-family:Manrope,Helvetica,Arial,sans-serif;font-weight:400}
-body,#app,#app *, .original-viewer,.original-viewer *{font-family:Manrope,Helvetica,Arial,sans-serif!important;font-weight:400!important}
-
-#app:has(#summary-view:not([hidden])) #page-title{font-weight:700!important}
-#app .premium-reports #saved-title{font-weight:700!important}
-#app #profile-title{font-weight:700!important}
-#app #summary-view .analysis-controls h2{font-weight:700!important}
-#app .reports-guide strong{font-weight:700!important}
+/* Adapters to the shared system in public/typography.css. Typography alone
+   overrides old component rules; colours and layouts stay in their own files. */
+body,#app,.original-viewer{font-family:var(--font-body)!important;font-size:var(--type-body);font-weight:var(--weight-body);line-height:1.6}
+#app *,.original-viewer *{font-family:inherit}
+@media screen{
+ #app h1,#app #page-title,#app #home-view h1,#app #saved-title,#app #profile-title,.original-viewer h1{font-family:var(--font-primary)!important;font-size:var(--type-h1)!important;font-weight:var(--weight-heading)!important;line-height:1.2!important;letter-spacing:-.03em!important}
+ #app h2,#app #preparation-title{font-family:var(--font-primary)!important;font-size:var(--type-h2)!important;font-weight:var(--weight-heading)!important;line-height:1.25!important}
+ #app h3,#app h4,#app .report-details h2{font-family:var(--font-primary)!important;font-size:var(--type-h3)!important;font-weight:var(--weight-card)!important;line-height:1.3!important}
+ #app #category-title,#app .section-heading h3,#app .reading-coverage h3,#app .specimen-heading{font-family:var(--font-primary)!important;font-size:var(--type-h2)!important;font-weight:var(--weight-heading)!important;line-height:1.25!important}
+ #app p,#app .analysis-guide li,#app .profile-details,#app .test-options label,#app .summary-review,#app .reports-empty{font-size:var(--type-body)!important;font-weight:var(--weight-body);line-height:1.6!important}
+ #app input,#app select,#app textarea{font-family:var(--font-body)!important;font-size:var(--type-body)!important;font-weight:var(--weight-body);line-height:1.6!important}
+ #app button,#app summary,#app .file-picker label,.original-viewer button{font-family:var(--font-primary)!important;font-size:var(--type-button)!important;font-weight:var(--weight-button)!important;line-height:1.5!important}
+ #app button *,.original-viewer button *{font-family:inherit}
+ #app .view-tabs button{font-family:var(--font-primary)!important;font-size:var(--type-navigation)!important;font-weight:var(--weight-navigation)!important;line-height:1.5!important}
+ #app .view-tabs button span{font-family:inherit;font-size:inherit;font-weight:inherit}
+ #app .home-step-label{font-family:var(--font-primary);font-size:var(--type-navigation);font-weight:var(--weight-navigation);line-height:1.5}
+ #app .health-category strong{font-family:var(--font-primary);font-size:var(--type-button)!important;font-weight:var(--weight-card)!important;line-height:1.3}
+ #app .health-category span{font-family:var(--font-body);font-size:var(--type-secondary)!important;font-weight:var(--weight-body);line-height:1.5}
+ #app .report-details p,#app .report-filename,#app .report-uploaded-date,#app #report-count-label,#app #selected-report-count,#app .report-analysis-check,#app .report-kind-badge,#app .report-file-badge,#app .report-sort,
+ #app .selected-report-details p,#app .selected-report-file,#app #analysis-selection-count,#app .preparation-help,#app .analysis-notice p:not(#analysis-status),
+ #app .stored-note,#app .upload-note,#app .upload-note p,#app .file-picker p,#app .upload-queue span,#app .profile-form .password-help,#app .profile-email-divider,
+ #app .summary-heading p,#app .context,#app .legend,#app .marker-heading>span,#app .values span,#app .change span,#app .summary-footer p,#app .app-footer,#app .chart text,#app .table-scroll small,.original-viewer .viewer-controls{
+  font-family:var(--font-body)!important;font-size:var(--type-secondary)!important;font-weight:var(--weight-body);line-height:1.5!important;
+ }
+ #app .selected-report-details strong{font-family:var(--font-primary);font-size:var(--type-button);font-weight:var(--weight-card)!important;line-height:1.5}
+ #app .report-number{font-family:var(--font-primary);font-size:var(--type-button)!important;font-weight:var(--weight-card)!important;line-height:1.5}
+ #app .result-value{font-variant-numeric:tabular-nums}
+ #app .home-resting-copy h1{max-width:none}
+ .original-viewer h1{overflow-wrap:anywhere}
+ @media(max-width:760px){
+  /* Safari zooms inputs below 16px; retain readable fields without page zoom. */
+  #app input:not([type=checkbox]):not([type=file]),#app select,#app textarea{font-size:16px!important}
+  #app .view-tabs button{white-space:nowrap}
+  /* Larger readable type must fit the existing narrow summary cards. */
+  #app .real-summary-paper .summary-heading{flex-wrap:wrap}
+  #app .real-summary-paper .summary-heading>div{min-width:0;max-width:100%}
+  #app .real-summary-paper .markers{grid-template-columns:minmax(0,1fr)}
+  #app .real-summary-paper .marker-heading{flex-wrap:wrap}
+ }
+}
+@media print{
+ body,#app,.original-viewer{font-family:var(--font-body)!important}
+ #app h1,#app h2,#app h3,#app h4{font-family:var(--font-primary)!important;font-weight:var(--weight-heading)!important}
+ #app .chart text{font-family:var(--font-body)!important}
+}

@@ -1,6 +1,4 @@
 import { installModuleReload } from './module-reload.js';
-import '@fontsource/manrope/400.css';
-import '@fontsource/manrope/700.css';
 import { mountProfile } from './profile.jsx';
 import { mountHome, homeIcon } from './home.js';
 const healthStatsLogo = '/images/healthstats-logo-lavender.png';

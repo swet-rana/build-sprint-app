@@ -1,0 +1,21 @@
+/* Shared type system; both fonts are served locally by HealthStats. */
+@font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:200 800;font-display:optional;src:url('/fonts/plus-jakarta-sans-latin-variable.woff2') format('woff2')}
+@font-face{font-family:Inter;font-style:normal;font-weight:100 900;font-display:optional;src:url('/fonts/inter-latin-variable.woff2') format('woff2')}
+:root{
+ --font-primary:'Plus Jakarta Sans',Arial,sans-serif;
+ --font-body:Inter,Arial,sans-serif;
+ --type-h1:40px;--type-h2:30px;--type-h3:22px;
+ --type-body:16px;--type-secondary:14px;--type-button:15px;--type-navigation:15px;
+ --weight-heading:700;--weight-card:600;--weight-body:400;--weight-button:600;--weight-navigation:500;
+ font-family:var(--font-body);font-synthesis:none;
+}
+@media(max-width:760px){:root{--type-h1:30px;--type-h2:24px;--type-h3:20px;--type-body:15px;--type-secondary:13px;--type-button:14px;--type-navigation:14px}}
+body{font-family:var(--font-body);font-size:var(--type-body);font-weight:var(--weight-body);line-height:1.6}
+h1,h2,h3,h4,h5,h6{font-family:var(--font-primary)}
+h1{font-size:var(--type-h1);font-weight:var(--weight-heading);line-height:1.2;letter-spacing:-.03em}
+h2{font-size:var(--type-h2);font-weight:var(--weight-heading);line-height:1.25}
+h3,h4{font-size:var(--type-h3);font-weight:var(--weight-card);line-height:1.3}
+button,summary{font-family:var(--font-primary);font-size:var(--type-button);font-weight:var(--weight-button);line-height:1.5}
+input,select,textarea{font-family:var(--font-body);font-size:var(--type-body);line-height:1.6}
+strong,b{font-weight:var(--weight-card)}
+small{font-size:var(--type-secondary);line-height:1.5}
