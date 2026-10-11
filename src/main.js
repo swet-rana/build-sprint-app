@@ -67,6 +67,12 @@ function goToPrepareSummary(){
 }
 function switchView(view) {
   currentView=view;
+  const logo=document.querySelector('.brand .healthstats-logo');
+  if(view==='home'&&!document.querySelector('.homepage-logo')) {
+    logo.outerHTML='<picture class="homepage-logo"><source media="(prefers-reduced-motion: reduce)" srcset="/images/healthstats-logo-animated-still.png"><img class="healthstats-logo" src="/images/healthstats-logo-animated.gif" alt="HealthStats — Track. Compare. Move forward." width="510" height="343"></picture>';
+  } else if(view!=='home'&&document.querySelector('.homepage-logo')) {
+    document.querySelector('.homepage-logo').outerHTML=animatedLogo();
+  }
   document.querySelector('#home-begin').addEventListener('click',()=>switchView('reports'));
 for(const name of ['home','reports','summary','profile']) {
     document.querySelector(`#${name==='reports'?'uploads':name}-view`).hidden=name!==view;
