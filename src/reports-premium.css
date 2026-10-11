@@ -145,3 +145,10 @@ body:has(#uploads-view.premium-reports:not([hidden]))::before{content:'';positio
 @media(max-width:600px){#uploads-view #saved-title{font-size:25px}}
 
 @media(min-width:761px){#uploads-view .reports-selection-bar{position:sticky;top:12px;z-index:20;box-shadow:0 5px 20px rgb(49 32 110 / 10%)}}
+
+/* Clear file-format illustrations beside report details. */
+#uploads-view .report-preview>.report-format-icon{width:52px;height:62px;color:#493dbb;filter:drop-shadow(0 3px 3px rgb(23 20 92 / 10%))}
+@media(max-width:760px){#uploads-view .report-preview>.report-format-icon{width:40px;height:48px}}
+
+#uploads-view .report-preview.has-thumbnail{position:relative}
+#uploads-view .report-preview.has-thumbnail>.report-format-icon{position:absolute;right:4px;bottom:4px;width:25px;height:30px;padding:2px;background:white;border-radius:5px}
