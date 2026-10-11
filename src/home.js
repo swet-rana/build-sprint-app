@@ -50,17 +50,12 @@ function summaryPreview(completed = false) {
   </div>`;
 }
 function premiumDecorations() {
-  const symbols = {
-    analytics: '<path d="M4 20h16M6 17v-5h3v5m3 0V8h3v9m3 0V4h3v13"/>',
-    heart: '<path d="M12 21 3 12C-2 4 8 0 12 7c4-7 14-3 9 5z"/>',
-    dna: '<path d="M6 3c0 8 12 10 12 18M18 3c0 8-12 10-12 18M7 5h10M8 9h8M8 15h8M7 19h10"/>',
-    longevity: '<path d="M12 21V11m0 6C3 17 2 11 3 7c5-1 9 3 9 7m0 0c0-8 4-11 9-11 1 7-3 12-9 12M7 11l5 6m5-9-5 6"/>',
-  };
+  const symbols = ['storage', 'tick', 'trend', 'thumb'];
   return `<div class="home-premium-reports" aria-hidden="true">
     <article class="home-floating-card home-floating-imaging"><header>${homeIcon('reports')}<strong>Imaging Report</strong></header><div class="home-imaging-thumb"><img src="/images/bone-minerals.png" alt="" width="70" height="90"></div><div class="home-paper-lines"><i></i><i></i></div></article>
     <article class="home-floating-card home-floating-prescription"><header><span class="home-rx">Rx</span><strong>Prescription</strong></header><div class="home-paper-lines"><i></i><i></i><i></i></div></article>
     <article class="home-floating-card home-floating-lab"><header>${homeIcon('reports')}<strong>Lab Report</strong></header><div class="home-paper-lines"><i></i><i></i></div><svg class="home-decor-trend" viewBox="0 0 180 55" fill="none"><path d="M5 44 34 29 61 34 90 20 116 26 148 13 175 5" stroke="currentColor" stroke-width="2"/>${[[5,44],[34,29],[90,20],[148,13],[175,5]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="3" fill="currentColor"/>`).join('')}</svg><div class="home-decor-results">${[['HbA1c','5.6'],['Vitamin D','28'],['Cholesterol','180']].map(([n,v])=>`<div><span>${n}</span><span>${v}</span><i></i></div>`).join('')}</div><small>Illustrative values</small></article>
-  </div><div class="home-premium-ribbons" aria-hidden="true"><img class="home-ribbon-art" src="/images/home-glass-ribbons.png" alt="" width="1024" height="1536"><div class="home-health-symbols">${Object.values(symbols).map(path=>`<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${path}</svg></span>`).join('')}</div></div>`;
+  </div><div class="home-premium-ribbons" aria-hidden="true"><img class="home-ribbon-art" src="/images/home-glass-ribbons.png" alt="" width="1024" height="1536"><div class="home-health-symbols">${symbols.map(name=>`<span><picture><source media="(prefers-reduced-motion: reduce)" srcset="/images/home-${name}-still.png"><img src="/images/home-${name}.gif" alt="" width="96" height="96"></picture></span>`).join('')}</div></div>`;
 }
 export function mountHome(root, onUploadReports = null, onSelectReports = null, onPrepareSummary = null, onReadySummary = null) {
   const steps = [
