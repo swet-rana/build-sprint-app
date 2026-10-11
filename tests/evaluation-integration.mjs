@@ -16,14 +16,18 @@ for(const name of ['january','july']){
 const output=JSON.parse(await readFile(new URL('./fixtures/fertility-summary.expected.json',import.meta.url)));
 for(const kind of ['report-reading','summary']){
  const ids=kind==='report-reading'?[reportIds[0]]:reportIds;
- const runId=await client.mutation(api.evaluations.begin,{sessionKey,kind,reportIds:ids,engine:'isolated integration test v1'});
+ const runKey=randomUUID(),args={sessionKey,kind,reportIds:ids,engine:'isolated integration test v1',runKey};
+ const runId=await client.mutation(api.evaluations.begin,args);
+ assert.equal(await client.mutation(api.evaluations.begin,args),runId,'Retried begin must reuse the record');
  assert.equal((await client.query(api.evaluations.get,{sessionKey,runId})).status,'running');
  await client.action(api.evaluations.finish,{sessionKey,runId,outputJson:JSON.stringify(output)});
  const saved=await client.query(api.evaluations.get,{sessionKey,runId});assert.equal(saved.status,'succeeded');assert.deepEqual(saved.reportIds,ids);assert(saved.finishedAt>=saved.startedAt);assert(saved.outputUrl);
+ await client.action(api.evaluations.finish,{sessionKey,runId,outputJson:JSON.stringify({incorrect:'A retry must not overwrite a completed output'})});
+ assert.equal((await client.query(api.evaluations.get,{sessionKey,runId})).outputUrl,saved.outputUrl);
  assert.deepEqual(await(await fetch(saved.outputUrl)).json(),output);
  assert.equal(await client.query(api.evaluations.get,{sessionKey:otherSession,runId}),null);
  await assert.rejects(client.action(api.evaluations.finish,{sessionKey:otherSession,runId,error:'Forbidden'}));
- console.log(`${kind}: Convex saved input report IDs and complete output; another session cannot access the record.`);
+ console.log(`${kind}: Convex saved full output; retries reused the record and preserved its output; another session cannot access it.`);
 }
 const failed=await client.mutation(api.evaluations.begin,{sessionKey,kind:'report-reading',reportIds:[reportIds[0]],engine:'isolated integration test v1'});
 await client.action(api.evaluations.finish,{sessionKey,runId:failed,error:'Unreadable sample'});

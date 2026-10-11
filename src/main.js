@@ -1,3 +1,4 @@
+import { evaluationLogger } from './evaluation-log.js';
 import { installModuleReload } from './module-reload.js';
 import { mountProfile } from './profile.jsx';
 import { mountHome, homeIcon } from './home.js';
@@ -12,6 +13,7 @@ import './typography.css';
 import './summary-premium.css';
 import './page-heading.css';
 installModuleReload();
+evaluationLogger();
 const markers=[
  {name:'White blood cells',short:'WBC',unit:'cells/µL',values:[7200,12400],range:[4000,11000],max:16000},
  {name:'C-reactive protein',short:'CRP',unit:'mg/L',values:[2.1,18.6],range:[0,5],max:25}
