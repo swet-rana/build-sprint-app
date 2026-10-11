@@ -161,4 +161,4 @@ body:has(#summary-view:not([hidden])){background:#f6f5ff;color:#171d4b;--blue:#4
 #summary-view .chart .result-point.trend-normal-transition{fill:#239b58}
 @media print{#summary-view .chart .result-point{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
 
-#app #summary-view .chart .range-axis-label{font-size:10px!important}
+#app #summary-view .chart .range-axis-label{font-size:var(--type-secondary)!important}

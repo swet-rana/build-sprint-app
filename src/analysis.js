@@ -26,7 +26,7 @@ function chart(marker,dates){
  const dateY=Math.max(...values.map(y),...(same?[y(a.low)]:[]))+24;
  const chartHeight=dateY+12;
  const lines=observations.map((m,i)=>m&&i&&observations[i-1]?`<path d="M${x(i-1)} ${y(observations[i-1].value)} L${x(i)} ${y(m.value)}" fill="none" stroke="#176889" stroke-width="3"/>`:'').join('');
- return `<svg class="chart" viewBox="0 0 ${chartWidth} ${chartHeight}" role="img" aria-label="${escape(marker.name)}: ${observations.map((m,i)=>`${m?number(m.value):marker.missingLabels[i]} on ${dates[i]}`).join(', ')}, ${escape(marker.unit)}.">${glossDefs}${same?`<rect x="38" y="${y(a.high)}" width="${chartWidth-60}" height="${y(a.low)-y(a.high)}" fill="#e6f0f1"/><text class="range-axis-label" x="34" y="${y(a.high)+3}" text-anchor="end">${number(a.high)}</text><text class="range-axis-label" x="34" y="${y(a.low)+3}" text-anchor="end">${number(a.low)}</text>`:''}${lines}${observations.map((m,i)=>m?`<ellipse cx="${x(i)}" cy="${y(m.value)+5}" rx="5" ry="2" fill="#17145c" opacity=".15"/><circle cx="${x(i)}" cy="${y(m.value)}" r="6" class="result-point trend-${pointStates[i]} range-${rangeStatus(m.value,m.referenceText)}" style="fill:url(#${glossId}-${pointStates[i]})"/><ellipse cx="${x(i)-1.8}" cy="${y(m.value)-2.5}" rx="2.4" ry="1.4" fill="#fff" opacity=".72"/><text x="${x(i)}" y="${y(m.value)-12}" text-anchor="middle" class="point-label result-value range-${rangeStatus(m.value,m.referenceText)}">${number(m.value)}</text>`:'').join('')}${dates.map((d,i)=>dates.length>4&&i!==0&&i!==dates.length-1?'':`<text x="${x(i)}" y="${dateY}" text-anchor="middle">${d}</text>`).join('')}</svg>`;
+ return `<svg class="chart" viewBox="0 0 ${chartWidth} ${chartHeight}" role="img" aria-label="${escape(marker.name)}: ${observations.map((m,i)=>`${m?number(m.value):marker.missingLabels[i]} on ${dates[i]}`).join(', ')}, ${escape(marker.unit)}.">${glossDefs}${same?`<rect class="reference-range-band" x="38" y="${y(a.high)}" width="${chartWidth-60}" height="${y(a.low)-y(a.high)}" fill="#e6f0f1"/><text class="range-axis-label" x="34" y="${y(a.high)+3}" text-anchor="end">${number(a.high)}</text><text class="range-axis-label" x="34" y="${y(a.low)+3}" text-anchor="end">${number(a.low)}</text>`:''}${lines}${observations.map((m,i)=>m?`<ellipse cx="${x(i)}" cy="${y(m.value)+5}" rx="5" ry="2" fill="#17145c" opacity=".15"/><circle cx="${x(i)}" cy="${y(m.value)}" r="6" class="result-point trend-${pointStates[i]} range-${rangeStatus(m.value,m.referenceText)}" style="fill:url(#${glossId}-${pointStates[i]})"/><ellipse cx="${x(i)-1.8}" cy="${y(m.value)-2.5}" rx="2.4" ry="1.4" fill="#fff" opacity=".72"/><text x="${x(i)}" y="${y(m.value)-12}" text-anchor="middle" class="point-label result-value range-${rangeStatus(m.value,m.referenceText)}">${number(m.value)}</text>`:'').join('')}${dates.map((d,i)=>dates.length>4&&i!==0&&i!==dates.length-1?'':`<text x="${x(i)}" y="${dateY}" text-anchor="middle">${d}</text>`).join('')}</svg>`;
 }
 const summaryIcon=(paths)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
 const calendarIcon=summaryIcon('<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 11h16"/>');
@@ -34,6 +34,20 @@ const labIcon=summaryIcon('<path d="M9 3h6m-5 0v7L5 21h14l-5-11V3M8 15h8"/>');
 const pdfIcon=summaryIcon('<path d="M5 3h9l5 5v13H5zM14 3v5h5M8 12h8M8 16h6"/>');
 const sizeLabel=n=>Number.isFinite(n)?n>=1024*1024?`${(n/(1024*1024)).toFixed(1)} MB`:`${Math.max(1,Math.round(n/1024))} KB`:'Size not added';
 export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=()=>{}}={}){
+ const rangeLabelsObserver=typeof ResizeObserver==='undefined'?null:new ResizeObserver(entries=>{
+  for(const {target:svg} of entries){
+   const scale=svg.getScreenCTM()?.a;
+   const reference=svg.closest('.marker')?.querySelector('.values span');
+   if(!scale||!reference)continue;
+   const labels=[...svg.querySelectorAll('.range-axis-label')];
+   const size=parseFloat(getComputedStyle(reference).fontSize)/scale;
+   labels.forEach(label=>label.style.setProperty('font-size',`${size}px`,'important'));
+   const labelRight=Math.max(34,...labels.map(label=>label.getComputedTextLength()+4));
+   labels.forEach(label=>label.setAttribute('x',labelRight));
+   const band=svg.querySelector('.reference-range-band');
+   if(band){band.setAttribute('x',labelRight+4);band.setAttribute('width',svg.viewBox.baseVal.width-labelRight-26);}
+  }
+ });
  root.innerHTML=`<form id="analysis-form" class="summary-workspace"><section class="analysis-controls" aria-labelledby="selected-analysis-title"><div class="analysis-selection-heading"><h2 id="selected-analysis-title">Reports selected for analysis</h2><div class="analysis-selection-actions"><span id="analysis-selection-count">0 of 10 reports selected</span><button class="secondary" id="add-analysis-reports" type="button">${summaryIcon('<path d="M12 5v14M5 12h14"/>')}Add more reports</button></div></div><div id="selected-analysis-reports"></div></section><aside class="summary-preparation" aria-labelledby="preparation-title">${summaryIcon('<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z"/>')}<h2 id="preparation-title">Turn your reports into<br>a clear summary</h2><ul class="analysis-guide">${['Compare key markers across reports.','Highlight changes and trends.','Prepare a clear, doctor-friendly summary.','Keep findings connected to their original reports.'].map(text=>`<li>${summaryIcon('<path d="m6 12 4 4 8-8"/>')}<span>${text}</span></li>`).join('')}</ul><button class="primary" id="prepare-summary" type="submit" disabled>Prepare summary <span aria-hidden="true">→</span></button><p class="preparation-help">Select 2–10 reports from different dates.</p></aside></form><section class="analysis-notice" aria-label="Report information">${summaryIcon('<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/>')}<div><p id="analysis-status" role="status" aria-live="polite" hidden></p><p>Check this draft against the originals. Access stays tied to this browser until sign-in is available.</p></div><button type="button" class="secondary" id="retry-summary" hidden>Try again</button></section><div id="real-summary"></div>`;
  const button=root.querySelector('#prepare-summary'),status=root.querySelector('#analysis-status'),output=root.querySelector('#real-summary'),selectionList=root.querySelector('#selected-analysis-reports');
  let reports=[],reportIds=[],comparison=null,selected=new Set(),busy=false,activeCategory='all',selectionVersion=0;
@@ -90,6 +104,8 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   }));
   onReady(markers.length>0);
   if(!markers.length)output.querySelector('.markers').innerHTML='<p>No tests selected. Choose a test above to add it to your summary.</p>';
+  rangeLabelsObserver?.disconnect();
+  output.querySelectorAll('.chart').forEach(svg=>rangeLabelsObserver?.observe(svg));
   output.querySelector('#select-no-tests').addEventListener('click',()=>{selected.clear();render();output.querySelector('.test-picker').open=true;output.querySelector('.test-picker summary').focus();output.querySelector('#selection-status').textContent='All tests cleared.';});
   output.querySelector('#scroll-to-lab-summary').addEventListener('click',()=>{
    const summary=output.querySelector('.real-summary-paper');
