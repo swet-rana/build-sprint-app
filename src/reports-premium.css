@@ -4,9 +4,10 @@ body:has(#uploads-view.premium-reports:not([hidden])){min-height:100vh;color:#17
 #uploads-view.premium-reports{--report-action:#493dbb;--report-ink:#17145c;--report-muted:#62658c;--report-border:#e7e3fa;background:transparent;border:0;box-shadow:none;backdrop-filter:none;padding:12px 0 32px}
 #uploads-view .saved-heading{display:flex;justify-content:space-between;gap:24px;align-items:center;margin-bottom:28px}
 #uploads-view .reports-title-with-art{flex-wrap:nowrap;gap:14px;min-width:0}
-#uploads-view .reports-heading-art{width:64px;height:72px}
+#uploads-view .reports-heading-art{width:96px;height:108px}
 #uploads-view #saved-title{font-family:Manrope,Helvetica,Arial,sans-serif!important;font-size:28px;line-height:1.2;color:#35328b;letter-spacing:-.035em;font-weight:700!important}
-#uploads-view .reports-title-with-art p{margin:8px 0 0;font-size:14px;color:#62658c}
+#uploads-view #saved-title{margin-bottom:0}
+#uploads-view .reports-title-with-art p{margin:3px 0 0;font-size:14px;color:#62658c}
 #uploads-view.premium-reports #show-upload{min-height:48px;background:#100078;color:#fff;border:0;border-radius:16px;padding:13px 24px;font-size:14px;box-shadow:0 7px 18px rgb(36 22 155 / 15%);transition:transform .2s,background .2s}
 #uploads-view #show-upload:hover{background:#24169b;transform:translateY(-2px)}
 #uploads-view .report-upload-heading #report-count-label{font-size:12px;color:#62658c;line-height:1.6}
@@ -67,9 +68,9 @@ body:has(#uploads-view.premium-reports:not([hidden])){min-height:100vh;color:#17
  #app:has(#uploads-view:not([hidden])) .topbar{height:108px}
  #uploads-view.premium-reports{padding:4px 0 24px}
  #uploads-view .saved-heading{display:block;margin-bottom:22px}
- #uploads-view .reports-heading-art{width:46px;height:54px}
+ #uploads-view .reports-heading-art{width:82px;height:100px}
  #uploads-view .reports-title-with-art{gap:10px}
- #uploads-view .reports-title-with-art p{font-size:12px;margin-top:6px}
+ #uploads-view .reports-title-with-art p{font-size:12px;margin-top:3px}
  #uploads-view .report-upload-heading{margin-top:18px;gap:8px}
  #uploads-view #show-upload{width:100%;border-radius:14px}
  #uploads-view .report-upload-heading #report-count-label{text-align:center;font-size:11px}
@@ -109,7 +110,7 @@ body:has(#uploads-view.premium-reports:not([hidden]))::before{content:'';positio
  #app:has(#uploads-view:not([hidden]))>main{max-width:1440px;padding-inline:48px}
  #app:has(#uploads-view:not([hidden])) .topbar{max-width:1440px;padding-inline:48px}
  #uploads-view .reports-title-with-art p{font-size:15px}
- #uploads-view .reports-heading-art{width:72px;height:80px}
+ #uploads-view .reports-heading-art{width:96px;height:108px}
  #uploads-view.premium-reports #show-upload{font-size:16px;padding:14px 28px;min-height:52px}
  #uploads-view .report-search input{font-size:16px}
  #uploads-view .report-number{font-size:17px}
