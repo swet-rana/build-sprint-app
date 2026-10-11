@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as evaluations from "../evaluations.js";
 import type * as fileRules from "../fileRules.js";
 import type * as http from "../http.js";
 import type * as originRules from "../originRules.js";
@@ -24,6 +25,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  evaluations: typeof evaluations;
   fileRules: typeof fileRules;
   http: typeof http;
   originRules: typeof originRules;

@@ -16,5 +16,12 @@ export default defineSchema({
     deleted: v.optional(v.boolean()),
     details: v.optional(v.object({ labName: v.string(), testType: v.string(), patientName: v.string(), testDate: v.string() })),
   }).index("by_session", ["sessionKey"]).index("by_session_upload", ["sessionKey", "uploadId"]).index("by_session_deleted", ["sessionKey", "deleted"]),
+  evaluationRuns: defineTable({
+    sessionKey:v.string(),kind:v.union(v.literal('report-reading'),v.literal('summary')),
+    reportIds:v.array(v.id('reports')),engine:v.string(),
+    inputs:v.array(v.object({reportId:v.id('reports'),storageId:v.id('_storage'),name:v.string(),contentType:v.string(),contentHash:v.union(v.string(),v.null())})),
+    status:v.union(v.literal('running'),v.literal('succeeded'),v.literal('failed')),
+    startedAt:v.number(),finishedAt:v.optional(v.number()),outputStorageId:v.optional(v.id('_storage')),error:v.optional(v.string()),
+  }).index('by_session',['sessionKey']),
   reportCounters: defineTable({sessionKey:v.string(),nextSerial:v.number()}).index("by_session",["sessionKey"]),
 });

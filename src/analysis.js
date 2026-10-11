@@ -1,3 +1,4 @@
+import { evaluationLogger } from './evaluation-log.js';
 import { MAX_ANALYSIS_REPORTS, analysisCountError } from './analysis-rules.js';
 import { openReportViewer } from './report-viewer.js';
 import './summary.css';
@@ -128,6 +129,8 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   if(choices.some(r=>r?.duplicateOf&&ids.includes(reports.find(p=>p.serial===r.duplicateOf)?.id))){message('Untick duplicate reports before analyzing. Each report date should appear once.',true);return;}
   if(!canPrepare()||choices.some(r=>!r)||new Set(ids).size!==ids.length){message('Tick at least two different lab reports in My reports.',true);return;}
   busy=true;setBusyControls();button.textContent='Reading reports…';comparison=null;output.innerHTML='';onReady(false);
+  const logger=evaluationLogger();
+  const summaryRun=await logger.begin('summary',ids,'HealthStats comparison and summary renderer v1');
   try{
    const {readLabReport}=await import('./report-reader.js');
    const parsed=[];
@@ -135,8 +138,9 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
     message(`Opening report ${i+1} of ${choices.length}…`);
     const blob=await fetchReport(choices[i]);
     let report;
-    try{report=await readLabReport(blob,(page,total,step)=>message(`Reading report ${i+1} of ${choices.length}: page ${page} of ${total}${step?` · ${step}`:''}…`),choices[i].contentType);}
-    catch(error){throw Error(`Reading error — report #${choices[i].serial}: ${error.message}`);}
+    const readingRun=await logger.begin('report-reading',[choices[i].id],'pdf.js 6.4.299 / Tesseract 6 / HealthStats parser v1');
+    try{report=await readLabReport(blob,(page,total,step)=>message(`Reading report ${i+1} of ${choices.length}: page ${page} of ${total}${step?` · ${step}`:''}…`),choices[i].contentType);await logger.finish(readingRun,report);}
+    catch(error){await logger.finish(readingRun,null,error);throw Error(`Reading error — report #${choices[i].serial}: ${error.message}`);}
     parsed.push({...report,id:choices[i].id,fileName:choices[i].name});
    }
    if(version!==selectionVersion)throw Error('Report selection changed. Prepare the summary again.');
@@ -144,14 +148,14 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
    comparison=compareReportSeries(parsed);activeCategory='all';
    selected=new Set(preferred.map(prefix=>comparison.comparable.find(m=>m.key.split('|')[0]===prefix)?.key).filter(Boolean));
    for(const marker of comparison.comparable){if(selected.size>=6)break;selected.add(marker.key);}
-   render();const readingWarnings=comparison.reports.flatMap(r=>r.warnings).filter(w=>w.startsWith('Reading error'));message(`${choices.length} reports read · ${comparison.comparable.length} matching tests found. ${readingWarnings.length?'Reading error: some scanned pages could not be read and were excluded. See What was included and check the originals.':'Check values against their original source reports.'}`,readingWarnings.length>0);onReady(true);
+   render();await logger.finish(summaryRun,{comparison,selectedTestKeys:[...selected],summaryHtml:output.querySelector('.real-summary-paper').outerHTML});const readingWarnings=comparison.reports.flatMap(r=>r.warnings).filter(w=>w.startsWith('Reading error'));message(`${choices.length} reports read · ${comparison.comparable.length} matching tests found. ${readingWarnings.length?'Reading error: some scanned pages could not be read and were excluded. See What was included and check the originals.':'Check values against their original source reports.'}`,readingWarnings.length>0);onReady(true);
    if(!root.hidden){
     const heading=output.querySelector('#category-title');
     heading.setAttribute('tabindex','-1');
     heading.focus({preventScroll:true});
     heading.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
    }
-  }catch(error){message(error.name==='TimeoutError'?'A report took too long to download. Check your connection and try Prepare summary again.':error.message==='Failed to fetch'?'Could not read the report. Check your connection and try again.':error.message,true);}
+  }catch(error){await logger.finish(summaryRun,null,error);message(error.name==='TimeoutError'?'A report took too long to download. Check your connection and try Prepare summary again.':error.message==='Failed to fetch'?'Could not read the report. Check your connection and try again.':error.message,true);}
   finally{busy=false;setBusyControls();button.innerHTML='Prepare summary <span aria-hidden="true">→</span>';}
  }
  root.querySelector('#analysis-form').addEventListener('submit',event=>{event.preventDefault();prepare();});
