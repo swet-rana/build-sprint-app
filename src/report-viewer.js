@@ -8,7 +8,7 @@ export async function openReportViewer({name, load, page = 1, sourceTop, sourceN
   const viewer = document.createElement('section');
   viewer.className = 'original-viewer';
   viewer.setAttribute('aria-label', 'Original report');
-  viewer.innerHTML = `<header><button type="button" class="viewer-back">← Back</button><h1></h1></header><div class="viewer-controls" hidden><button type="button" data-prev>Previous page</button><span aria-live="polite"></span><button type="button" data-next>Next page</button></div><p class="viewer-status" role="status">Opening your report…</p><div class="viewer-document"></div>`;
+  viewer.innerHTML = `<header><button type="button" class="viewer-back" aria-label="Back to HealthStats">← Back to HealthStats</button><h1></h1></header><div class="viewer-controls" hidden><button type="button" data-prev>Previous page</button><span aria-live="polite"></span><button type="button" data-next>Next page</button></div><p class="viewer-status" role="status">Opening your report…</p><div class="viewer-document"></div>`;
   viewer.querySelector('h1').textContent = name;
   const content = viewer.querySelector('.viewer-document'), status = viewer.querySelector('.viewer-status');
   const controls = viewer.querySelector('.viewer-controls');
