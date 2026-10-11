@@ -1,0 +1,121 @@
+{
+  "patient": "Sample Patient",
+  "dates": "15 Jan 2026 – 15 Jul 2026",
+  "reports": 2,
+  "markers": [
+    {
+      "name": "Semen volume",
+      "values": [
+        "2.5",
+        "2.5"
+      ],
+      "unit": "mL",
+      "reference": "1.4-6",
+      "change": "No measured change",
+      "latest": "Within this report’s range",
+      "pointStates": [
+        "neutral",
+        "neutral"
+      ],
+      "pages": [
+        "1",
+        "1"
+      ]
+    },
+    {
+      "name": "Sperm concentration",
+      "values": [
+        "12",
+        "24"
+      ],
+      "unit": "million/mL",
+      "reference": "16-200",
+      "change": "Increased by 12 million/mL",
+      "latest": "Within this report’s range",
+      "pointStates": [
+        "out-of-range",
+        "normal-transition"
+      ],
+      "pages": [
+        "1",
+        "1"
+      ]
+    },
+    {
+      "name": "Total sperm count",
+      "values": [
+        "30",
+        "60"
+      ],
+      "unit": "million/ejaculate",
+      "reference": "39-500",
+      "change": "Increased by 30 million/ejaculate",
+      "latest": "Within this report’s range",
+      "pointStates": [
+        "out-of-range",
+        "normal-transition"
+      ],
+      "pages": [
+        "1",
+        "1"
+      ]
+    },
+    {
+      "name": "Total sperm motility",
+      "values": [
+        "45",
+        "38"
+      ],
+      "unit": "%",
+      "reference": "42-100",
+      "change": "Decreased by 7 %",
+      "latest": "Below this report’s range",
+      "pointStates": [
+        "normal-transition",
+        "out-of-range"
+      ],
+      "pages": [
+        "1",
+        "1"
+      ]
+    },
+    {
+      "name": "Progressive sperm motility",
+      "values": [
+        "31",
+        "31"
+      ],
+      "unit": "%",
+      "reference": "30-100",
+      "change": "No measured change",
+      "latest": "Within this report’s range",
+      "pointStates": [
+        "neutral",
+        "neutral"
+      ],
+      "pages": [
+        "1",
+        "1"
+      ]
+    },
+    {
+      "name": "Normal sperm forms",
+      "values": [
+        "5",
+        "5"
+      ],
+      "unit": "%",
+      "reference": "4-100",
+      "change": "No measured change",
+      "latest": "Within this report’s range",
+      "pointStates": [
+        "neutral",
+        "neutral"
+      ],
+      "pages": [
+        "1",
+        "1"
+      ]
+    }
+  ]
+}

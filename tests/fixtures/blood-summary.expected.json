@@ -1,0 +1,61 @@
+{
+  "patient": "Sample Patient",
+  "dates": "15 Jan 2026 – 15 Jul 2026",
+  "reports": 2,
+  "markers": [
+    {
+      "name": "Haemoglobin",
+      "values": [
+        "12.5",
+        "13.2"
+      ],
+      "unit": "g/dL",
+      "reference": "12-15",
+      "change": "Increased by 0.7 g/dL",
+      "latest": "Within this report’s range",
+      "pointStates": [
+        "neutral",
+        "neutral"
+      ],
+      "pages": [
+        "2",
+        "1"
+      ]
+    },
+    {
+      "name": "C-reactive protein",
+      "values": [
+        "6",
+        "3"
+      ],
+      "unit": "mg/L",
+      "reference": "0-5",
+      "change": "Decreased by 3 mg/L",
+      "latest": "Within this report’s range",
+      "pointStates": [
+        "out-of-range",
+        "normal-transition"
+      ],
+      "pages": [
+        "2",
+        "1"
+      ]
+    },
+    {
+      "name": "Vitamin D",
+      "values": [
+        null,
+        "24"
+      ],
+      "unit": "ng/mL",
+      "reference": "20-50",
+      "change": "One recorded value; no measured change can be calculated",
+      "latest": "Within this report’s range",
+      "pointStates": [],
+      "pages": [
+        null,
+        "1"
+      ]
+    }
+  ]
+}

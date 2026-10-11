@@ -8,12 +8,14 @@ Each record keeps the browser session, original report IDs, original storage IDs
 
 ## Checks
 
-- `npm test`: expected finished summary from the fictional fertility PDFs; logging payload/error/outage checks; existing reading and comparison checks.
+- `npm test`: expected finished summaries from fictional fertility, blood and semen PDFs; logging payload/error/outage checks; existing reading and comparison checks.
 - `npm run check`: backend type checking.
 - `EVALUATION_TEST_CONVEX_URL=https://YOUR-DEPLOYMENT.convex.cloud node tests/evaluation-integration.mjs`: explicit live storage/access check. Uploads fictional PDFs in an isolated session, verifies full output retrieval, rejects other sessions, checks saved errors, then moves those fictional uploads to that session's trash. This tests logging transport; the finished-summary test separately runs actual PDF reading and rendering.
 
-Expected finished results: `tests/fixtures/fertility-summary.expected.json`.
+Expected finished results: `tests/fixtures/{fertility,blood,semen}-summary.expected.json`.
+Sample PDFs: `tests/fixtures/{fertility,blood,semen}-sample-{january,july}.pdf`.
+Recreate the blood and semen fixtures with `scripts/create-summary-eval-fixtures.py` in a tooling environment with reportlab installed (no app dependency added).
 Finished summary check: `tests/finished-summary.test.mjs`.
 Logging checks: `tests/evaluation-log.test.mjs` and `tests/evaluation-integration.mjs`.
 
-Coverage currently includes one paired fertility summary. This does not prove correctness for every report format or clinical situation.
+Coverage includes paired fertility, blood and semen summaries, a missing blood result, different physical source pages, and both directions of normal-range transitions. This does not prove correctness for every report format or clinical situation.
