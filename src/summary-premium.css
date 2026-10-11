@@ -125,3 +125,14 @@
  @media (prefers-reduced-motion:reduce) {#app #summary-view button,#app #summary-view .analysis-selected-list li {transition:none!important;transform:none!important}}
 }
 @media print {.summary-workspace,.analysis-notice {display:none!important}}
+
+@media screen {
+ #summary-view .test-picker-navigation{position:relative}
+ #summary-view .test-picker-navigation .test-picker>summary{padding-right:60px;min-height:44px}
+ #summary-view .summary-scroll-down{position:absolute;right:12px;top:8px;min-width:44px;min-height:44px;padding:8px 12px;border-radius:50%;background:#eee9ff;border:1px solid #e7e3fa;color:#100078;display:flex;align-items:center;justify-content:center;transition:background .2s,transform .2s}
+ #summary-view .summary-scroll-down:hover{background:#e4dcff;transform:translateY(2px)}
+ #summary-view .summary-scroll-down span{font-size:24px;line-height:1}
+ #summary-view .real-summary-paper{scroll-margin-top:20px}
+ @media(prefers-reduced-motion:reduce){#summary-view .summary-scroll-down{transition:none}}
+}
+@media print{.summary-scroll-down{display:none!important}}
