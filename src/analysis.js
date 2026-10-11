@@ -1,6 +1,7 @@
 import { MAX_ANALYSIS_REPORTS, analysisCountError } from './analysis-rules.js';
 import { openReportViewer } from './report-viewer.js';
 import './summary.css';
+import { trendPointStates } from './trend-point-states.js';
 import { testDateLabel } from './report-details.js';
 import { summaryTests } from './summary-tests.js';
 import { HEALTH_CATEGORIES, testInCategory } from './health-categories.js';
@@ -12,6 +13,7 @@ const preferred=['wbc','haemoglobin','esr','tsh','vitamin-d','vitamin-b12'];
 const statusLabel={above:'Above this report’s range',below:'Below this report’s range',within:'Within this report’s range',unknown:'See source for interpretation'};
 function chart(marker,dates){
  const observations=marker.observations;
+ const pointStates=trendPointStates(observations);
  const ranges=observations.map(m=>m?parseRange(m.referenceText):null);
  const a=ranges[0],same=a&&a.low!==null&&a.high!==null&&ranges.every(r=>r&&JSON.stringify(r)===JSON.stringify(a));
  const values=observations.filter(Boolean).map(m=>m.value),bounds=same?[a.low,a.high]:[];
@@ -21,7 +23,7 @@ function chart(marker,dates){
  const dateY=Math.max(...values.map(y),...(same?[y(a.low)]:[]))+24;
  const chartHeight=dateY+12;
  const lines=observations.map((m,i)=>m&&i&&observations[i-1]?`<path d="M${x(i-1)} ${y(observations[i-1].value)} L${x(i)} ${y(m.value)}" fill="none" stroke="#176889" stroke-width="3"/>`:'').join('');
- return `<svg class="chart" viewBox="0 0 ${chartWidth} ${chartHeight}" role="img" aria-label="${escape(marker.name)}: ${observations.map((m,i)=>`${m?number(m.value):marker.missingLabels[i]} on ${dates[i]}`).join(', ')}, ${escape(marker.unit)}.">${same?`<rect x="22" y="${y(a.high)}" width="${chartWidth-44}" height="${y(a.low)-y(a.high)}" fill="#e6f0f1"/><text x="18" y="${y(a.high)+4}" text-anchor="end">${number(a.high)}</text><text x="18" y="${y(a.low)+4}" text-anchor="end">${number(a.low)}</text>`:''}${lines}${observations.map((m,i)=>m?`<circle cx="${x(i)}" cy="${y(m.value)}" r="5" class="result-point range-${rangeStatus(m.value,m.referenceText)}" fill="#176889"/><text x="${x(i)}" y="${y(m.value)-12}" text-anchor="middle" class="point-label result-value range-${rangeStatus(m.value,m.referenceText)}">${number(m.value)}</text>`:'').join('')}${dates.map((d,i)=>dates.length>4&&i!==0&&i!==dates.length-1?'':`<text x="${x(i)}" y="${dateY}" text-anchor="middle">${d}</text>`).join('')}</svg>`;
+ return `<svg class="chart" viewBox="0 0 ${chartWidth} ${chartHeight}" role="img" aria-label="${escape(marker.name)}: ${observations.map((m,i)=>`${m?number(m.value):marker.missingLabels[i]} on ${dates[i]}`).join(', ')}, ${escape(marker.unit)}.">${same?`<rect x="22" y="${y(a.high)}" width="${chartWidth-44}" height="${y(a.low)-y(a.high)}" fill="#e6f0f1"/><text x="18" y="${y(a.high)+4}" text-anchor="end">${number(a.high)}</text><text x="18" y="${y(a.low)+4}" text-anchor="end">${number(a.low)}</text>`:''}${lines}${observations.map((m,i)=>m?`<circle cx="${x(i)}" cy="${y(m.value)}" r="5" class="result-point trend-${pointStates[i]} range-${rangeStatus(m.value,m.referenceText)}" fill="#176889"/><text x="${x(i)}" y="${y(m.value)-12}" text-anchor="middle" class="point-label result-value range-${rangeStatus(m.value,m.referenceText)}">${number(m.value)}</text>`:'').join('')}${dates.map((d,i)=>dates.length>4&&i!==0&&i!==dates.length-1?'':`<text x="${x(i)}" y="${dateY}" text-anchor="middle">${d}</text>`).join('')}</svg>`;
 }
 const summaryIcon=(paths)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
 const calendarIcon=summaryIcon('<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 11h16"/>');
