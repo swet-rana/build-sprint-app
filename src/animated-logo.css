@@ -1,0 +1,8 @@
+.animated-logo .logo-connector{transform-origin:762px 327.5px;transform:rotate(-24.77deg);animation:logo-line-rise 1.15s cubic-bezier(.4,0,.2,1) .25s both}
+.animated-logo .logo-dot{animation:logo-dot-reveal .3s ease-out both}
+.animated-logo .logo-dot-first{animation-delay:1.45s}
+.animated-logo .logo-dot-second{animation-delay:1.85s}
+.animated-logo .logo-dot-third{animation-delay:2.25s}
+@keyframes logo-line-rise{from{transform:rotate(0deg)}to{transform:rotate(-24.77deg)}}
+@keyframes logo-dot-reveal{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){.animated-logo .logo-connector,.animated-logo .logo-dot{animation:none}}
