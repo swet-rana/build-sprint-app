@@ -13,7 +13,7 @@ export function ocrPage(data,width,height,page=1){
   if(!row){row={y,words:[]};rows.push(row);}row.words.push(word);
  }
  rows.sort((a,b)=>a.y-b.y);rows.forEach(r=>r.words.sort((a,b)=>a.bbox.x0-b.bbox.x0));
- const items=[];const item=(str,x,y,w=10)=>({str:clean(str),width:w,transform:[1,0,0,1,x,y]});
+ const items=[];const item=(str,x,y,w=10)=>({str:clean(str),width:w,transform:[1,0,0,1,x,y],sourceTop:(900-y)/800});
  for(const row of rows){
   const y=900-row.y/height*800;
   for(const [label,tokens] of labels){

@@ -81,7 +81,7 @@ export function parseReport(pages){
    const value=Number(result.replaceAll(',',''));if(!Number.isFinite(value))continue;
    const identity=semen?semenIdentity(name,unit,method):testIdentity(name,unit);
    if(!identity){warnings.push(`Page ${page.page}: ${name} is outside the supported semen measurements; check the original.`);continue;}
-   candidates.push({...identity,value,unit:unit||'Ratio',referenceText:referenceText||'Not printed in result row',page:page.page,sourceText:row.text,date});
+   candidates.push({...identity,value,unit:unit||'Ratio',referenceText:referenceText||'Not printed in result row',page:page.page,sourceTop:row.items.find(item=>Number.isFinite(item.sourceTop))?.sourceTop,sourceText:row.text,date});
    pageUsed=true;
   }
   if(pageUsed){

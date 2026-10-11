@@ -2,7 +2,7 @@ import './pdf-stream-compat.js';
 import './report-viewer.css';
 
 // Keep the underlying app mounted so selections and summary state survive Back.
-export async function openReportViewer({name, load, page = 1, sampleUrl}) {
+export async function openReportViewer({name, load, page = 1, sourceTop, sourceName, sampleUrl}) {
   const app = document.querySelector('#app');
   const previousFocus = document.activeElement, previousScroll = window.scrollY;
   const viewer = document.createElement('section');
@@ -13,6 +13,19 @@ export async function openReportViewer({name, load, page = 1, sampleUrl}) {
   const content = viewer.querySelector('.viewer-document'), status = viewer.querySelector('.viewer-status');
   const controls = viewer.querySelector('.viewer-controls');
   let closed = false, pdf, loadingTask, objectUrl, renderTask, rendering = false;
+  const sourcePage=Number(page);
+  const hasSource=Number.isFinite(sourceTop)&&sourceTop>=0&&sourceTop<=1;
+  const sourceNote=document.createElement('p');sourceNote.className='viewer-source-note';sourceNote.hidden=true;
+  controls.after(sourceNote);
+  function showSource(documentElement){
+    if(!hasSource||Number(page)!==sourcePage){sourceNote.hidden=true;return;}
+    const highlight=document.createElement('div');highlight.className='viewer-source-highlight';
+    highlight.style.top=`${Math.max(0,sourceTop-.012)*100}%`;
+    highlight.setAttribute('aria-label',`${sourceName||'Selected result'} source row`);
+    documentElement.append(highlight);
+    sourceNote.textContent=`Showing ${sourceName||'the selected result'} on page ${page}. Highlight marks its original row.`;sourceNote.hidden=false;
+    requestAnimationFrame(()=>{if(!closed)highlight.scrollIntoView({behavior:'instant',block:'center'});});
+  }
   const oldHidden = app.hidden;
   function close() {
     if (closed) return;
@@ -42,7 +55,8 @@ export async function openReportViewer({name, load, page = 1, sampleUrl}) {
       renderTask = original.render({canvas,canvasContext:canvas.getContext('2d'),viewport:sized});
       await renderTask.promise;
       if (closed) return;
-      content.replaceChildren(canvas); status.hidden = true;
+      const documentPage=document.createElement('div');documentPage.className='viewer-page';documentPage.append(canvas);
+      content.replaceChildren(documentPage); status.hidden = true;showSource(documentPage);
       controls.querySelector('span').textContent = `Page ${page} of ${pdf.numPages}`;
     } finally {
       rendering = false;
@@ -76,7 +90,8 @@ export async function openReportViewer({name, load, page = 1, sampleUrl}) {
       objectUrl=URL.createObjectURL(blob);
       const photo=document.createElement('img');photo.src=objectUrl;photo.alt=name;
       photo.addEventListener('error',()=>{status.hidden=false;status.textContent='This photo could not be displayed. Go back and try again.';});
-      content.append(photo);status.hidden=true;
+      const documentPage=document.createElement('div');documentPage.className='viewer-page';documentPage.append(photo);content.append(documentPage);
+      photo.addEventListener('load',()=>{if(!closed)showSource(documentPage);});status.hidden=true;
     }
   } catch(error) {
     if(!closed){status.hidden=false;status.textContent=error.message==='Failed to fetch'?'Could not open the report. Check your connection and try again.':`Could not open the report. ${error.message}`;}

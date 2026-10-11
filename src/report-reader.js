@@ -32,7 +32,8 @@ export async function readLabPdf(blob,onProgress=()=>{}){
   const pages=[],scanned=[],unreadablePages=[];
   for(let n=1;n<=pdf.numPages;n++){
    onProgress(n,pdf.numPages);
-   const page=await pdf.getPage(n),items=(await page.getTextContent()).items;
+   const page=await pdf.getPage(n),viewport=page.getViewport({scale:1});
+   const items=(await page.getTextContent()).items.map(item=>({...item,sourceTop:viewport.convertToViewportPoint(item.transform[4],item.transform[5])[1]/viewport.height}));
    if(items.map(i=>i.str).join('').trim().length<30)scanned.push(n);
    pages.push({page:n,items});
   }
