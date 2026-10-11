@@ -9,7 +9,7 @@ import 'tesseract.js';
 // Expected values are independently transcribed from the fictional PDFs.
 // Only file download, logging transport and browser-only behavior are replaced; reading, parsing,
 // comparison and the finished summary renderer are the application's real code.
-for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed'])test(`finished summary matches the original ${kind} PDFs, even when selected backwards`,async()=>{
+for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blurred','tilted','blur-rejected','rotation-rejected'])test(`finished summary matches the original ${kind} PDFs, even when selected backwards`,async()=>{
  const expected=JSON.parse(await readFile(new URL(`./fixtures/${kind}-summary.expected.json`,import.meta.url)));
  const files=await Promise.all((expected.files??['january','july'].map(name=>`${kind}-sample-${name}.pdf`)).map(name=>readFile(new URL(`./fixtures/${name}`,import.meta.url))));
  const dom=new JSDOM('<div id="summary" hidden></div>',{url:'http://localhost:5173',pretendToBeVisual:true});
@@ -18,7 +18,7 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed'])tes
  const globals=['window','document','localStorage','MutationObserver','fetch','DOMMatrix','ImageData','Path2D'];
  const previous=Object.fromEntries(globals.map(key=>[key,globalThis[key]]));
  Object.assign(globalThis,{window:dom.window,document:dom.window.document,localStorage:dom.window.localStorage,MutationObserver:dom.window.MutationObserver});
- if(kind==='scanned'||kind==='mixed'){
+ if(expected.ocr||kind==='scanned'||kind==='mixed'){
   const native=await import('@napi-rs/canvas');Object.assign(globalThis,{DOMMatrix:native.DOMMatrix,ImageData:native.ImageData,Path2D:native.Path2D});
   const originalCreate=dom.window.document.createElement.bind(dom.window.document);
   dom.window.document.createElement=(name,...args)=>{if(name!=='canvas')return originalCreate(name,...args);const canvas=native.createCanvas(1,1);canvas[Symbol.iterator]=function*(){yield*canvas.toBuffer('image/png');};return canvas;};
@@ -34,7 +34,7 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed'])tes
    builder.onLoad({filter:/[\\/]src[\\/]analysis\.js$/},async args=>({contents:(await readFile(args.path,'utf8'))+"\nexport {capturedEvaluations} from './evaluation-log.js';",resolveDir:new URL('../src/',import.meta.url).pathname}));
    // Node replaces only browser worker paths and canvas byte transport.
    // Production readLabReport, OCR mapping, parser and renderer remain real.
-   if(kind==='scanned'||kind==='mixed'){
+   if(expected.ocr||kind==='scanned'||kind==='mixed'){
     builder.onResolve({filter:/^tesseract\.js$/},()=>({path:'node-ocr-runtime',namespace:'node-ocr'}));
     builder.onLoad({filter:/.*/,namespace:'node-ocr'},()=>({contents:`import {createWorker as real} from ${JSON.stringify(import.meta.resolve('tesseract.js'))};export function createWorker(l,o,options){const fixed={...options,langPath:${JSON.stringify(new URL('../node_modules/@tesseract.js-data/eng/4.0.0_best_int',import.meta.url).pathname)},cacheMethod:'none'};delete fixed.workerPath;delete fixed.corePath;return real(l,o,fixed);}`}));
     builder.onResolve({filter:/^file:/},args=>({path:args.path,external:true}));
@@ -51,6 +51,19 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed'])tes
   analysis.updateReports(['july','january'].map((id,i)=>({id,serial:i+1,name:`${kind}-sample-${id}.pdf`,contentType:'application/pdf',size:files[id==='january'?0:1].length})),['july','january']);
   assert.equal(downloads.length,0);
   await analysis.prepare();
+  if(expected.mode==='reject'){
+   const status=root.querySelector('#analysis-status').textContent;
+   for(const text of expected.errorIncludes)assert(status.includes(text),status);
+   assert.equal(root.querySelector('#retry-summary').hidden,false);
+   assert.equal(root.querySelector('#prepare-summary').disabled,false);
+   assert.equal(root.querySelector('#real-summary').textContent,'','Unreadable reports must not produce a fabricated or partial summary');
+   assert.deepEqual(downloads,['july','january']);
+   const readings=capturedEvaluations.filter(run=>run.kind==='report-reading');
+   assert.equal(readings.length,2);assert(readings[0].output,'Readable report must finish before the damaged report is rejected');assert(!readings[0].error);
+   const summaryLog=capturedEvaluations.find(run=>run.kind==='summary');assert(summaryLog.error);assert.equal(summaryLog.output,null);
+   assert(capturedEvaluations.some(run=>run.kind==='report-reading'&&run.error));
+   return;
+  }
   assert.equal(root.querySelector('#retry-summary').hidden,true,root.querySelector('#analysis-status').textContent);
   assert.deepEqual(downloads,['july','january']);
   const captured=capturedEvaluations.find(run=>run.kind==='summary');assert(captured?.output,'Finished output must be available for logging');

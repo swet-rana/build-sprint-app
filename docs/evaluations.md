@@ -8,11 +8,11 @@ Each record keeps the browser session, original report IDs, original storage IDs
 
 ## Checks
 
-- `npm test`: expected finished summaries from fictional fertility, blood, semen, cross-lab, scanned and mixed text/scan PDFs; logging payload/error/outage, retry timing, reopening and session-isolation checks; existing reading and comparison checks.
+- `npm test`: expected finished summaries from fictional fertility, blood, semen, cross-lab, scanned, mixed text/scan, mildly blurred and slightly tilted PDFs; safe rejection of heavily blurred and sideways scans; logging payload/error/outage, retry timing, reopening and session-isolation checks; existing reading and comparison checks.
 - `npm run check`: backend type checking.
 - `EVALUATION_TEST_CONVEX_URL=https://YOUR-DEPLOYMENT.convex.cloud node tests/evaluation-integration.mjs`: explicit live storage/access check. Uploads fictional PDFs in an isolated session, verifies full output retrieval, repeated-start and repeated-finish behavior, rejects other sessions, checks saved errors, then moves those fictional uploads to that session's trash. This tests logging transport; the finished-summary test separately runs actual PDF reading and rendering.
 
-Expected finished results: `tests/fixtures/{fertility,blood,semen,crosslab,scanned,mixed}-summary.expected.json`.
+Expected finished results: `tests/fixtures/{fertility,blood,semen,crosslab,scanned,mixed,blurred,tilted,blur-rejected,rotation-rejected}-summary.expected.json`.
 Sample PDFs: `tests/fixtures/{fertility,blood,semen}-sample-{january,july}.pdf`.
 Recreate the blood and semen fixtures with `scripts/create-summary-eval-fixtures.py` in a tooling environment with reportlab installed (no app dependency added).
 Finished summary check: `tests/finished-summary.test.mjs`.
@@ -21,3 +21,5 @@ Logging checks: `tests/evaluation-log.test.mjs` and `tests/evaluation-integratio
 Coverage includes fertility, blood, semen, two lab brands with different test labels, image-only scanned PDFs, and mixed native/scanned report pairs. Checks cover a missing blood result, correct physical source pages and both directions of normal-range transitions. The scan checks run real PDF rendering and Tesseract recognition with Node worker paths/canvas transport; medical parsing, comparison and summary rendering use production code. No OCR output is mocked. Sample lab branding and values are fictional software fixtures, not evidence of compatibility with all real reports from those labs. This does not prove correctness for every report format or clinical situation.
 
 Scanned fixtures come from `scripts/create-ocr-fixtures.mjs`: copy `tmp/ocr-fixtures/{first,second}-scanned.pdf` to `tests/fixtures/scanned-sample-{early,late}.pdf`. OCR evals use the installed English data locally, with no remote recognition call.
+
+Quality scan fixtures are recreated with `node scripts/create-quality-scan-fixtures.mjs`. Mild blur (0.8 pixels) and slight tilt (0.25 degrees) must retain the exact expected values. Heavy blur (10 pixels) and sideways rotation (90 degrees) must show a reading error, expose retry, and produce no finished or partial summary, even after the other selected report was read successfully. These cases check safe rejection; they do not claim automatic rotation correction or support for every scan quality.

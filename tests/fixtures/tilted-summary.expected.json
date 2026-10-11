@@ -1,0 +1,46 @@
+{
+  "patient": "Sample Patient",
+  "dates": "27 May 2026 – 25 Aug 2026",
+  "reports": 2,
+  "labs": [
+    "Tata 1mg",
+    "Apollo"
+  ],
+  "files": [
+    "tilted-sample-early.pdf",
+    "tilted-sample-late.pdf"
+  ],
+  "markers": [
+    {
+      "name": "Haemoglobin",
+      "values": [
+        "13.5",
+        "11.8"
+      ],
+      "unit": "g/dL",
+      "reference": "12-15",
+      "change": "Decreased by 1.7 g/dL",
+      "latest": "Below this report’s range",
+      "pointStates": [
+        "normal-transition",
+        "out-of-range"
+      ]
+    },
+    {
+      "name": "C-reactive protein",
+      "values": [
+        "2.5",
+        "2.5"
+      ],
+      "unit": "mg/L",
+      "reference": "0-5",
+      "change": "No measured change",
+      "latest": "Within this report’s range",
+      "pointStates": [
+        "neutral",
+        "neutral"
+      ]
+    }
+  ],
+  "ocr": true
+}

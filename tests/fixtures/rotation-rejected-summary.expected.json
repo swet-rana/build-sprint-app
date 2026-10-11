@@ -1,0 +1,15 @@
+{
+  "mode": "reject",
+  "ocr": true,
+  "files": [
+    "rotation-unreadable-sample.pdf",
+    "scanned-sample-late.pdf"
+  ],
+  "errorIncludes": [
+    "Reading error"
+  ],
+  "scannedIndexes": [
+    0,
+    1
+  ]
+}
