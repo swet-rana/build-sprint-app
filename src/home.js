@@ -62,7 +62,7 @@ function premiumDecorations() {
     <article class="home-floating-card home-floating-lab"><header>${homeIcon('reports')}<strong>Lab Report</strong></header><div class="home-paper-lines"><i></i><i></i></div><svg class="home-decor-trend" viewBox="0 0 180 55" fill="none"><path d="M5 44 34 29 61 34 90 20 116 26 148 13 175 5" stroke="currentColor" stroke-width="2"/>${[[5,44],[34,29],[90,20],[148,13],[175,5]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="3" fill="currentColor"/>`).join('')}</svg><div class="home-decor-results">${[['HbA1c','5.6'],['Vitamin D','28'],['Cholesterol','180']].map(([n,v])=>`<div><span>${n}</span><span>${v}</span><i></i></div>`).join('')}</div><small>Illustrative values</small></article>
   </div><div class="home-premium-ribbons" aria-hidden="true"><img class="home-ribbon-art" src="/images/home-glass-ribbons.png" alt="" width="1024" height="1536"><div class="home-health-symbols">${Object.values(symbols).map(path=>`<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${path}</svg></span>`).join('')}</div></div>`;
 }
-export function mountHome(root, onUploadReports = null, onSelectReports = null, onPrepareSummary = null) {
+export function mountHome(root, onUploadReports = null, onSelectReports = null, onPrepareSummary = null, onBrowseCategories = null) {
   const steps = [
     { icon: 'upload', label: 'Upload<br>your reports', phase: 'upload' },
     { icon: 'select', label: 'Click reports<br>for analysis', phase: 'select' },
@@ -76,7 +76,7 @@ export function mountHome(root, onUploadReports = null, onSelectReports = null, 
     <div class="home-stage" data-home-stage="select" hidden><div class="home-stage-copy"><h1>Click reports<br>for analysis</h1><p>Choose the reports you want to include.</p></div><div class="home-selection-demo"><div class="home-selection-heading"><h2>My Reports</h2><span>For Summary</span></div><div class="home-demo-report-list">${Array.from({ length: 6 }, (_, index) => `<label data-demo-report="${index + 1}"><span class="home-report-mini-icon">${homeIcon('reports')}</span><span>Test Report ${index + 1}</span><input type="checkbox" disabled aria-label="Test Report ${index + 1}"></label>`).join('')}</div><span class="home-demo-caption">Illustrative reports · 2, 3 and 5 selected</span></div></div>
     <div class="home-stage" data-home-stage="prepare" hidden><div class="home-stage-copy"><h1>Prepare summary</h1><p>Bring your selected reports<br>into one clear view.</p></div><div class="home-prepare-demo">${bloodReportsVisual()}<div class="home-demo-button-wrap"><button type="button" class="primary home-prepare-button" disabled>Prepare Summary</button><svg class="home-demo-pointer" viewBox="0 0 24 30" aria-hidden="true"><path d="M3 2v22l6-6 5 10 5-3-5-9h8z"/></svg></div><span class="home-demo-caption">In Summary · illustrative values</span></div></div>
     <div class="home-stage" data-home-stage="ready" hidden><div class="home-stage-copy"><h1>You are ready now!</h1><p>A clear, organised summary<br>for your next doctor conversation.</p></div><div>${summaryPreview(true)}<span class="home-demo-caption">An example of your completed summary</span></div></div>
-    <div class="home-resting" data-home-stage="settled">${premiumDecorations()}<div class="home-resting-copy">${introCopy}</div><ol class="home-journey" aria-label="Your report-to-summary journey">${steps.map((step, index) => `<li><button type="button" data-home-replay="${step.phase}" aria-label="Step ${index + 1}: ${step.label.replace(/<br>/g, ' ')}"><span class="home-step-icon">${homeIcon(step.icon)}</span><span class="home-step-number">${index + 1}</span><span class="home-step-label">${step.label}</span></button></li>`).join('')}</ol><button type="button" class="home-tutorial" id="home-tutorial">Show video tutorial</button><button type="button" class="primary home-begin" id="home-begin">Begin now <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></button></div>
+    <div class="home-resting" data-home-stage="settled">${premiumDecorations()}<div class="home-resting-copy">${introCopy}</div><ol class="home-journey" aria-label="Your report-to-summary journey">${steps.map((step, index) => `<li><button type="button" data-home-replay="${step.phase}" aria-label="Step ${index + 1}: ${step.label.replace(/<br>/g, ' ')}"><span class="home-step-icon">${homeIcon(step.icon)}</span><span class="home-step-number">${index + 1}</span><span class="home-step-label">${step.label}</span></button></li>`).join('')}</ol><p id="home-ready-message" role="status" hidden>select reports for analysis, <button type="button" class="secondary" id="home-ready-reports">go to reports</button></p><button type="button" class="home-tutorial" id="home-tutorial">Show video tutorial</button><button type="button" class="primary home-begin" id="home-begin">Begin now <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></button></div>
   </section>`;
   const stages = [...root.querySelectorAll('[data-home-stage]')];
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -150,6 +150,10 @@ export function mountHome(root, onUploadReports = null, onSelectReports = null, 
       onPrepareSummary();
       return;
     }
+    if (button.dataset.homeReplay === 'ready' && onBrowseCategories) {
+      root.querySelector('#home-ready-message').hidden = onBrowseCategories();
+      return;
+    }
     cancelAnimationFrame(frame);
     frame = 0;
     lastTime = null;
@@ -170,6 +174,7 @@ export function mountHome(root, onUploadReports = null, onSelectReports = null, 
     // A chosen replay stays available with reduced motion, without animated transitions.
     schedule();
   }));
+  root.querySelector('#home-ready-reports').addEventListener('click', onSelectReports);
   root.querySelector('#home-tutorial').addEventListener('click', event => {
     cancelAnimationFrame(frame);
     frame = 0;
