@@ -50,7 +50,7 @@ function summaryPreview(completed = false) {
   </div>`;
 }
 function premiumDecorations() {
-  const symbols = ['files', 'document', 'trend', 'doctor'];
+  const symbols = ['files', 'document', 'trend-axes', 'doctor'];
   return `<div class="home-premium-reports" aria-hidden="true">
     <article class="home-floating-card home-floating-imaging"><header>${homeIcon('reports')}<strong>Imaging Report</strong></header><div class="home-imaging-thumb"><img src="/images/bone-minerals.png" alt="" width="70" height="90"></div><div class="home-paper-lines"><i></i><i></i></div></article>
     <article class="home-floating-card home-floating-prescription"><header><span class="home-rx">Rx</span><strong>Prescription</strong></header><div class="home-paper-lines"><i></i><i></i><i></i></div></article>
