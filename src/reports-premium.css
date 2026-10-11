@@ -45,8 +45,10 @@ body:has(#uploads-view.premium-reports:not([hidden])){min-height:100vh;color:#17
 #uploads-view .report-filename{font-size:11px;margin:18px 0 14px;line-height:1.5;color:#62658c}
 #uploads-view.premium-reports .report-add-details{align-self:flex-start;font-size:11px;min-height:36px;background:transparent;border:0;color:#493dbb;text-decoration:underline;text-underline-offset:3px;padding:0 0 8px}
 #uploads-view .report-card-actions{margin-top:auto}
-#uploads-view.premium-reports .report-open.primary{display:flex;justify-content:center;align-items:center;gap:12px;background:#493dbb;color:#fff;border:0;border-radius:14px;box-shadow:0 5px 14px rgb(73 61 187 / 16%);min-height:44px;padding:10px 18px;font-size:13px;transition:transform .2s,background .2s}
-#uploads-view.premium-reports .report-open.primary:hover{background:#100078;transform:translateY(-1px)}
+#app #uploads-view.premium-reports .report-open.primary{display:flex;justify-content:center;align-items:center;gap:10px;background:#24169b;color:#fff;border:0;border-radius:32px;box-shadow:0 9px 22px rgb(36 22 155 / 20%);min-height:48px;padding:16px 30px;font-size:16px;transition:transform .25s ease,background .25s ease,box-shadow .25s ease}
+#app #uploads-view.premium-reports .report-open.primary:hover{background:#100078;transform:translateY(-3px);box-shadow:0 13px 28px rgb(36 22 155 / 25%)}
+#app #uploads-view.premium-reports .report-open.primary:active{background:#24169b;color:#fff;box-shadow:0 9px 22px rgb(36 22 155 / 20%)}
+#app #uploads-view.premium-reports .report-open.primary:focus-visible{outline:3px solid #24169b;outline-offset:4px}
 #uploads-view .stored-note{display:flex;align-items:flex-start;gap:10px;background:#f0ecff;padding:16px 18px;border-radius:14px;font-size:11px;line-height:1.7;color:#62658c;margin-top:22px}
 #uploads-view .stored-note svg{flex-shrink:0;margin-top:1px;color:#493dbb}
 #uploads-view .reports-selection-bar{display:flex;align-items:center;gap:16px;margin:0 0 20px;padding:14px 18px;border:1px solid #e7e3fa;border-radius:16px;background:#fff;box-shadow:0 5px 18px rgb(49 32 110 / 4%)}
@@ -136,7 +138,7 @@ body:has(#uploads-view.premium-reports:not([hidden]))::before{content:'';positio
  #uploads-view .report-details h2{font-size:17px}
  #uploads-view .report-details p{font-size:12px}
  #uploads-view .report-filename{font-size:12px}
- #uploads-view.premium-reports .report-open.primary{font-size:14px;min-height:46px}
+ #app #uploads-view.premium-reports .report-open.primary{padding:14px 24px}
 }
 
 @media(max-width:600px){#uploads-view #saved-title{font-size:25px}}
