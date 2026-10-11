@@ -62,7 +62,7 @@ function premiumDecorations() {
     <article class="home-floating-card home-floating-lab"><header>${homeIcon('reports')}<strong>Lab Report</strong></header><div class="home-paper-lines"><i></i><i></i></div><svg class="home-decor-trend" viewBox="0 0 180 55" fill="none"><path d="M5 44 34 29 61 34 90 20 116 26 148 13 175 5" stroke="currentColor" stroke-width="2"/>${[[5,44],[34,29],[90,20],[148,13],[175,5]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="3" fill="currentColor"/>`).join('')}</svg><div class="home-decor-results">${[['HbA1c','5.6'],['Vitamin D','28'],['Cholesterol','180']].map(([n,v])=>`<div><span>${n}</span><span>${v}</span><i></i></div>`).join('')}</div><small>Illustrative values</small></article>
   </div><div class="home-premium-ribbons" aria-hidden="true"><img class="home-ribbon-art" src="/images/home-glass-ribbons.png" alt="" width="1024" height="1536"><div class="home-health-symbols">${Object.values(symbols).map(path=>`<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${path}</svg></span>`).join('')}</div></div>`;
 }
-export function mountHome(root, onUploadReports = null, onSelectReports = null) {
+export function mountHome(root, onUploadReports = null, onSelectReports = null, onPrepareSummary = null) {
   const steps = [
     { icon: 'upload', label: 'Upload<br>your reports', phase: 'upload' },
     { icon: 'select', label: 'Click reports<br>for analysis', phase: 'select' },
@@ -144,6 +144,10 @@ export function mountHome(root, onUploadReports = null, onSelectReports = null) 
     }
     if (button.dataset.homeReplay === 'select' && onSelectReports) {
       onSelectReports();
+      return;
+    }
+    if (button.dataset.homeReplay === 'prepare' && onPrepareSummary) {
+      onPrepareSummary();
       return;
     }
     cancelAnimationFrame(frame);

@@ -54,17 +54,18 @@ const home=mountHome(document.querySelector('#home-view'),()=>{
  const selectionBar=document.querySelector('.reports-selection-bar');
  const scrollTarget=selectionBar&&!selectionBar.hidden&&!window.matchMedia('(max-width: 760px)').matches?selectionBar:reportsList;
  scrollTarget.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
-});
+},goToPrepareSummary);
 const analysis=mountAnalysis(document.querySelector('#summary-view'),ready=>{
   summaryReady=ready;
   placePrintButton();
 },{onAddReports:()=>switchView('reports'),onRemoveReport:id=>uploads.removeFromAnalysis(id)});
-const uploads=mountUploads(document.querySelector('#uploads-view'),(reports,ids)=>analysis.updateReports(reports,ids),()=>{
+const uploads=mountUploads(document.querySelector('#uploads-view'),(reports,ids)=>analysis.updateReports(reports,ids),goToPrepareSummary);
+function goToPrepareSummary(){
  switchView('summary');
  const prepareButton=document.querySelector('#prepare-summary');
  prepareButton.focus({preventScroll:true});
  prepareButton.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'center'});
-});
+}
 function switchView(view) {
   currentView=view;
   document.querySelector('#home-begin').addEventListener('click',()=>switchView('reports'));
