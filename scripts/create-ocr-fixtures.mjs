@@ -4,7 +4,7 @@ const base=new URL('../tmp/ocr-fixtures',import.meta.url).pathname;await mkdir(b
 for(const [name,date,value] of [['first','27/May/2026','13.5'],['second','25/Aug/2026','11.8']]){
  const c=createCanvas(1800,2400),ctx=c.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,1800,2400);ctx.fillStyle='black';ctx.font='36px Arial';
  const text=(str,x,y)=>ctx.fillText(str,x,y);
- text('Apollo Diagnostics',60,100);text('Patient Name : Sample Patient',60,200);text(`Collected : ${date}`,60,280);
+ text(name==='first'?'Tata 1mg':'Apollo Diagnostics',60,100);text('FICTIONAL SAMPLE - NOT FOR CLINICAL USE',60,150);text('Patient Name : Sample Patient',60,200);text(`Collected : ${date}`,60,280);
  text('Test Name',60,500);text('Result',720,500);text('Unit',960,500);text('Bio. Ref. Interval',1170,500);text('Method',1620,500);
  text('HAEMOGLOBIN',60,620);text(value,720,620);text('g/dL',960,620);text('12-15',1275,620);text('Calculated',1620,620);
  text('CRP',60,740);text('2.50',720,740);text('mg/L',960,740);text('0-5',1275,740);text('Measured',1620,740);

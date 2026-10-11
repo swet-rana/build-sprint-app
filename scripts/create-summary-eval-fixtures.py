@@ -3,7 +3,7 @@ from pathlib import Path
 from reportlab.pdfgen import canvas
 ROOT = Path(__file__).resolve().parents[1] / 'tests' / 'fixtures'
 
-def report(kind, month, date, rows, cover=False):
+def report(kind, month, date, rows, cover=False, lab=None):
     c = canvas.Canvas(str(ROOT / f'{kind}-sample-{month}.pdf'), pagesize=(720, 840), invariant=1)
     c.setTitle(f'Fictional {kind} report for software tests')
     if cover:
@@ -15,6 +15,7 @@ def report(kind, month, date, rows, cover=False):
     c.setFont('Helvetica-Bold', 16)
     c.drawString(40, 800, 'SEMEN ANALYSIS' if kind == 'semen' else 'BLOOD TEST REPORT')
     c.setFont('Helvetica', 11)
+    if lab: c.drawString(430, 800, lab)
     c.drawString(40, 775, 'FICTIONAL SAMPLE - NOT FOR CLINICAL USE')
     c.drawString(40, 745, 'Patient Name : Sample Patient')
     c.drawString(40, 720, f'Collection Date : {date}')
@@ -48,3 +49,13 @@ for month, date, concentration, total, motility in [
         ['Progressive motility', '31', '%', '30-100', 'Microscopy'],
         ['Normal forms', '5', '%', '4-100', 'Strict'],
     ])
+
+# Different lab branding and aliases; illustrative software fixtures only.
+report('crosslab', 'january', '15/Jan/2026', [
+    ['HGB', '12.5', 'g/dL', '12-15', 'Measured'],
+    ['CRP', '6', 'mg/L', '0-5', 'Measured'],
+], cover=True, lab='Tata 1mg')
+report('crosslab', 'july', '15/Jul/2026', [
+    ['HAEMOGLOBIN', '13.2', 'g/dL', '12-15', 'Measured'],
+    ['C-reactive protein', '3', 'mg/L', '0-5', 'Measured'],
+], lab='Apollo Diagnostics')
