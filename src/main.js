@@ -69,7 +69,7 @@ function switchView(view) {
   currentView=view;
   const logo=document.querySelector('.brand .healthstats-logo');
   if(view==='home'&&!document.querySelector('.homepage-logo')) {
-    logo.outerHTML='<picture class="homepage-logo"><source media="(prefers-reduced-motion: reduce)" srcset="/images/healthstats-logo-animated-still.png?v=smooth"><img class="healthstats-logo" src="/images/healthstats-logo-animated.gif?v=smooth" alt="HealthStats — Track. Compare. Move forward." width="1020" height="686"></picture>';
+    logo.outerHTML='<picture class="homepage-logo"><source media="(prefers-reduced-motion: reduce)" srcset="/images/healthstats-logo-animated-still.png?v=clean-bars"><img class="healthstats-logo" src="/images/healthstats-logo-animated.gif?v=clean-bars" alt="HealthStats — Track. Compare. Move forward." width="1020" height="686"></picture>';
   } else if(view!=='home'&&document.querySelector('.homepage-logo')) {
     document.querySelector('.homepage-logo').outerHTML=animatedLogo();
   }
