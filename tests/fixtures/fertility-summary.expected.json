@@ -1,0 +1,73 @@
+{
+  "patient": "Priya Sharma",
+  "dates": "15 Jan 2026 – 15 Jul 2026",
+  "reports": 2,
+  "markers": [
+    {
+      "values": [
+        "1.2",
+        "1.5"
+      ],
+      "unit": "ng/mL",
+      "reference": "Age-dependent",
+      "change": "Increased by 0.3 ng/mL",
+      "latest": "See source for interpretation",
+      "name": "AMH"
+    },
+    {
+      "values": [
+        "9.8",
+        "7.2"
+      ],
+      "unit": "mIU/mL",
+      "reference": "3.5-12.5",
+      "change": "Decreased by 2.6 mIU/mL",
+      "latest": "Within this report’s range",
+      "name": "FSH"
+    },
+    {
+      "values": [
+        "6.5",
+        "5.8"
+      ],
+      "unit": "mIU/mL",
+      "reference": "2.4-12.6",
+      "change": "Decreased by 0.7 mIU/mL",
+      "latest": "Within this report’s range",
+      "name": "LH"
+    },
+    {
+      "values": [
+        "48",
+        "55"
+      ],
+      "unit": "pg/mL",
+      "reference": "12.5-166",
+      "change": "Increased by 7 pg/mL",
+      "latest": "Within this report’s range",
+      "name": "ESTRADIOL (E2)"
+    },
+    {
+      "values": [
+        "3.8",
+        "2.4"
+      ],
+      "unit": "μIU/mL",
+      "reference": "0.27-4.2",
+      "change": "Decreased by 1.4 μIU/mL",
+      "latest": "Within this report’s range",
+      "name": "TSH"
+    },
+    {
+      "values": [
+        "28",
+        "18"
+      ],
+      "unit": "ng/mL",
+      "reference": "4.8-23.3",
+      "change": "Decreased by 10 ng/mL",
+      "latest": "Within this report’s range",
+      "name": "PROLACTIN"
+    }
+  ]
+}
