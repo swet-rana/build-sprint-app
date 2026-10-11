@@ -1,6 +1,6 @@
 # Static homepage circle icons
 
-Current homepage decoration: four static transparent PNGs inside plain 64px white circles, without the former lavender halo. Existing ribbon art and all navigation remain unchanged.
+Current homepage decoration: four static transparent PNGs inside 64px white circles with soft highlights, inward edge shading and a short shadow for depth, without the former lavender halo. Existing ribbon art and all navigation remain unchanged.
 
 Assets: public/images/home-static-{files,document,trend,doctor}.png (256px). Generated using the built-in Image Generation tool. The comparison image uses the previous document/magnifier artwork as a reference. Final images are downscaled for efficient display.
 
