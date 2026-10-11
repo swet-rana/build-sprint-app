@@ -51,7 +51,9 @@ const home=mountHome(document.querySelector('#home-view'),()=>{
  if(uploadButton.getAttribute('aria-expanded')==='true')uploadButton.click();
  const reportsList=document.querySelector('#reports-list');
  reportsList.querySelector('[data-analysis-id]')?.focus({preventScroll:true});
- reportsList.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
+ const selectionBar=document.querySelector('.reports-selection-bar');
+ const scrollTarget=selectionBar&&!selectionBar.hidden&&!window.matchMedia('(max-width: 760px)').matches?selectionBar:reportsList;
+ scrollTarget.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
 });
 const analysis=mountAnalysis(document.querySelector('#summary-view'),ready=>{
   summaryReady=ready;
