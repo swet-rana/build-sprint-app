@@ -1,11 +1,49 @@
 {
-  "mode": "reject",
-  "errorIncludes": [
-    "Reading error",
-    "No supported dated blood or semen result tables"
+  "patient": "Sample Patient",
+  "dates": "15 Jan 2026 \u2013 15 Jul 2026",
+  "reports": 2,
+  "markers": [
+    {
+      "name": "Haemoglobin",
+      "values": [
+        "12.5",
+        "13.2"
+      ],
+      "unit": "g/dL",
+      "reference": "12-15",
+      "change": "Increased by 0.7 g/dL",
+      "latest": "Within this report\u2019s range",
+      "pointStates": [
+        "neutral",
+        "neutral"
+      ],
+      "pages": [
+        "2",
+        "2"
+      ]
+    },
+    {
+      "name": "C-reactive protein",
+      "values": [
+        "6",
+        "3"
+      ],
+      "unit": "mg/L",
+      "reference": "0-5",
+      "change": "Decreased by 3 mg/L",
+      "latest": "Within this report\u2019s range",
+      "pointStates": [
+        "out-of-range",
+        "normal-transition"
+      ],
+      "pages": [
+        "3",
+        "3"
+      ]
+    }
   ],
   "files": [
     "layout-sample-january.pdf",
-    "blood-sample-july.pdf"
+    "layout-sample-july.pdf"
   ]
 }

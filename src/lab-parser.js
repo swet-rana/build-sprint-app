@@ -58,9 +58,12 @@ export function parseReport(pages){
   const header=rows[headerIndex];
   const centres=['Test Name','Result','Unit','Bio. Ref. Interval','Method'].map(label=>{const i=header.items.find(i=>clean(i.str).toLowerCase()===label.toLowerCase());return i?i.transform[4]+i.width/2:null;});
   if(centres.slice(0,4).some(v=>v===null))continue;
-  if(centres[4]===null)centres[4]=Infinity;
-  const bounds=centres.slice(1).map((value,i)=>(value+centres[i])/2);
-  const cells=row=>{const out=['','','','',''];for(const i of row.items){const centre=i.transform[4]+i.width/2;const col=bounds.findIndex(b=>centre<b);const index=col<0?4:col;out[index]=clean(out[index]+' '+i.str);}return out;};
+  // Locate columns in their printed order, then return cells in the parser's
+  // semantic order. Result and reference columns can trade positions.
+  const columns=centres.map((centre,index)=>({centre,index})).filter(c=>c.centre!==null).sort((a,b)=>a.centre-b.centre);
+  if(columns.some((c,i)=>i>0&&c.centre===columns[i-1].centre))continue;
+  const bounds=columns.slice(1).map((column,i)=>(column.centre+columns[i].centre)/2);
+  const cells=row=>{const out=['','','','',''];for(const i of row.items){const centre=i.transform[4]+i.width/2;const position=bounds.findIndex(b=>centre<b);const index=columns[position<0?columns.length-1:position].index;out[index]=clean(out[index]+' '+i.str);}return out;};
   let pageUsed=false;
   for(let n=headerIndex+1;n<rows.length;n++){
    const row=rows[n];if(/^(Comment|Comments|Interpretation|Note|Reference Range|Reference Group)\s*:/i.test(row.text)||row.y<100)break;
