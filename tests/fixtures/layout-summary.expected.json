@@ -1,0 +1,11 @@
+{
+  "mode": "reject",
+  "errorIncludes": [
+    "Reading error",
+    "No supported dated blood or semen result tables"
+  ],
+  "files": [
+    "layout-sample-january.pdf",
+    "blood-sample-july.pdf"
+  ]
+}
