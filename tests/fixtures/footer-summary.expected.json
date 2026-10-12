@@ -1,0 +1,68 @@
+{
+  "patient": "Sample Patient",
+  "dates": "15 Jan 2026 \u2013 15 Jul 2026",
+  "reports": 2,
+  "labs": [
+    "Practo / Thyrocare",
+    "Practo / Thyrocare"
+  ],
+  "markers": [
+    {
+      "name": "HbA1c",
+      "values": [
+        "5.6",
+        "5.9"
+      ],
+      "unit": "%",
+      "reference": "Below 5.7%: Normal 5.7%-6.4%: Prediabetic",
+      "change": "Increased by 0.3 %",
+      "latest": "See source for interpretation",
+      "pages": [
+        "1",
+        "1"
+      ],
+      "pointStates": [
+        "neutral",
+        "neutral"
+      ]
+    },
+    {
+      "name": "C-reactive protein",
+      "values": [
+        "6",
+        "3"
+      ],
+      "unit": "mg/L",
+      "reference": "0-5",
+      "change": "Decreased by 3 mg/L",
+      "latest": "Within this report\u2019s range",
+      "pages": [
+        "1",
+        "1"
+      ],
+      "pointStates": [
+        "out-of-range",
+        "normal-transition"
+      ]
+    },
+    {
+      "name": "Haemoglobin",
+      "values": [
+        "12.2",
+        "12.8"
+      ],
+      "unit": "g/dL",
+      "reference": "12-15",
+      "change": "Increased by 0.6 g/dL",
+      "latest": "Within this report\u2019s range",
+      "pages": [
+        "2",
+        "2"
+      ],
+      "pointStates": [
+        "neutral",
+        "neutral"
+      ]
+    }
+  ]
+}
