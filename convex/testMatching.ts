@@ -4,17 +4,17 @@ import {internal} from './_generated/api';
 import {isSessionKey} from './fileRules.js';
 import {mappingKey,localStandard,STANDARD_TESTS,validStandardMatch} from './testMappingRules.js';
 const entry=v.object({name:v.string(),unit:v.string(),specimen:v.string(),method:v.string()});
-export const claim=internalMutation({args:{sessionKey:v.string(),reportIds:v.array(v.id('reports')),entries:v.array(entry)},handler:async(ctx,args)=>{
+export const claim=internalMutation({args:{sessionKey:v.string(),reportIds:v.array(v.id('reports')),entries:v.array(entry)},returns:v.any(),handler:async(ctx,args)=>{
  if(!isSessionKey(args.sessionKey)||!args.reportIds.length||args.reportIds.length>10||args.entries.length>50)throw new ConvexError('Invalid test matching request.');
  const reports=[];for(const id of args.reportIds){const r=await ctx.db.get('reports',id);if(!r||r.deleted||r.sessionKey!==args.sessionKey)throw new ConvexError('Report unavailable in this browser.');reports.push(r);}
  const rows=[],fresh=[];for(const e of args.entries){if(!e.name.trim()||e.name.length>200||e.unit.length>60||e.method.length>100||e.specimen!=='blood')throw new ConvexError('Invalid test name.');if(localStandard(e.name,e.unit))continue;const key=mappingKey(e);let row=await ctx.db.query('testNameMappings').withIndex('by_key',q=>q.eq('key',key)).first();if(row?.status==='pending'&&Date.now()-row.startedAt>120000){await ctx.db.patch('testNameMappings',row._id,{status:'failed',error:'Name matching did not finish; original result retained.'});row={...row,status:'failed'};}if(!row){const _id=await ctx.db.insert('testNameMappings',{...e,key,status:'pending',startedAt:Date.now()});row=await ctx.db.get('testNameMappings',_id);if(row)fresh.push(row);}rows.push(row);}
  const runId=fresh.length?await ctx.db.insert('evaluationRuns',{sessionKey:args.sessionKey,kind:'summary',reportIds:args.reportIds,engine:'OpenAI gpt-4.1-mini test-name matching',inputs:reports.map(r=>({reportId:r._id,storageId:r.storageId,name:r.name,contentType:r.contentType,contentHash:r.contentHash??null})),status:'running',startedAt:Date.now()}):null;
  return {rows,fresh,runId};
 }});
-export const finish=internalMutation({args:{ids:v.array(v.id('testNameMappings')),matches:v.any(),error:v.optional(v.string())},handler:async(ctx,{ids,matches,error})=>{
+export const finish=internalMutation({args:{ids:v.array(v.id('testNameMappings')),matches:v.any(),error:v.optional(v.string())},returns:v.any(),handler:async(ctx,{ids,matches,error})=>{
  const rows=[];for(const id of ids){const row=await ctx.db.get('testNameMappings',id);if(!row)continue;const match=matches?.find((m:any)=>m.key===row.key);const mapped=!error&&match?.certain===true&&validStandardMatch(row.name,match.standardId);const patch={status:error?'failed':mapped?'mapped':'unmatched',finishedAt:Date.now(),...(mapped?{standardId:match.standardId}:{}),...(error?{error}:{})};if(row.status==='pending')await ctx.db.patch('testNameMappings',id,patch);rows.push({...row,...(row.status==='pending'?patch:{})});}return rows;
 }});
-export const match=action({args:{sessionKey:v.string(),reportIds:v.array(v.id('reports')),entries:v.array(entry)},handler:async(ctx,args):Promise<any>=>{
+export const match=action({args:{sessionKey:v.string(),reportIds:v.array(v.id('reports')),entries:v.array(entry)},returns:v.any(),handler:async(ctx,args):Promise<any>=>{
  if(!process.env.OPENAI_API_KEY)throw new ConvexError('Test name matching unavailable: server API key missing. Original results retained.');
  const claimed=await ctx.runMutation(internal.testMatching.claim,args);if(!claimed.fresh.length)return claimed.rows;
  let request:any,rawResponse:any,error:string|undefined,matches:any[]=[];

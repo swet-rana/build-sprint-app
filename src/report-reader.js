@@ -97,6 +97,10 @@ export async function readLabPdf(blob,onProgress=()=>{},options={}){
   if(native)native.readingPaths=[...(scanned.length<pages.length?['text']:[]),...(scanned.length>visionPages.length?['scan (OCR)']:[])];
   const result=visionPages.length?mergeScanResults(visionPages,native,pdf.numPages):native;
   finishCoverage(coverage,result,attempts,visionPages);
+  if(visionPages.some(p=>nativeFallback.includes(p.page))){
+   result.readingPaths=(result.readingPaths??[]).filter(path=>path!=='scan (AI vision)'||visionPages.some(p=>scanned.includes(p.page)));
+   result.readingPaths.push('text fallback (AI vision)');
+  }
   if(ocrDiagnostics.length)result.ocrDiagnostics=ocrDiagnostics;
   if(unreadablePages.length)result.warnings.push(`Reading error on scanned pages ${unreadablePages.join(', ')}: no supported blood table could be read; these pages are excluded. Check the originals for omitted tests.`);result.warnings.push('Scanned pages were read automatically. Check every value against the original PDF.');return result;
  }catch(error){
