@@ -1,4 +1,5 @@
 import { ocrPage } from './ocr-page.js';
+import {scanPageCheck} from './scan-screening.js';
 export async function makeOcrReader(onStatus=()=>{}){
  let worker;
  try{
@@ -7,11 +8,13 @@ export async function makeOcrReader(onStatus=()=>{}){
   await worker.setParameters({preserve_interword_spaces:'1'});
  }catch(error){console.error('Photo reader startup failed:',error);await worker?.terminate();throw Error('The photo reader could not start. Reload and try again. If this continues, its reading files need to be installed.');}
  return {
-  async read(canvas,page){
+  async read(canvas,page,{screen=false}={}){
    let timer;
    try{
     const result=await Promise.race([worker.recognize(canvas,{}, {blocks:true}),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Image reading timed out. Upload a clearer image or try again.')),120000);})]);
-    return ocrPage(result.data,canvas.width,canvas.height,page);
+    const screening=screen?scanPageCheck(result.data):null;
+    if(screening&&!screening.hasTestContent)return {page,items:[],exclusionReason:screening.reason,screening};
+    try{return ocrPage(result.data,canvas.width,canvas.height,page);}catch(error){if(screening)error.screening=screening;throw error;}
    }finally{clearTimeout(timer);}
   },close:()=>worker.terminate(),
  };

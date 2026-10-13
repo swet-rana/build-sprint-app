@@ -15,10 +15,14 @@ export const begin=mutation({args:{sessionKey:v.string(),reportIds:v.array(v.id(
 export const reserve=internalMutation({args:{sessionKey:v.string(),readingId:v.id('visionReadings'),reportId:v.id('reports'),page:v.number()},returns:v.id('evaluationRuns'),handler:async(ctx,{sessionKey,readingId,reportId,page})=>{
  const reading=await ctx.db.get('visionReadings',readingId),report=await ctx.db.get('reports',reportId),userId=await getAuthUserId(ctx),owner=userId?`user:${userId}`:`browser:${sessionKey}`;
  if(!isSessionKey(sessionKey)||!reading||reading.sessionKey!==sessionKey||reading.owner!==owner||!reading.reportIds.includes(reportId)||!report||report.sessionKey!==sessionKey||report.deleted||!Number.isInteger(page)||page<1||page>100||Date.now()-reading.createdAt>3600000)throw new ConvexError('This scan reading expired or the report is unavailable. Prepare the summary again.');
- const day=visionDay(Date.now()),daily=await ctx.db.query('visionDaily').withIndex('by_owner_day',q=>q.eq('owner',owner).eq('day',day)).first();
- const limit=visionLimitError(reading.pages,daily?.calls??0);if(limit)throw new ConvexError(limit);
+ const day=visionDay(Date.now()),daily=await ctx.db.query('visionAppDaily').withIndex('by_day',q=>q.eq('day',day)).first();
+ // Include reservations made under the old per-user limit earlier today. This
+ // migration is bounded and conservative: 151 nonzero legacy owners already exceed the cap.
+ const used=daily?.pages??(await ctx.db.query('visionDaily').withIndex('by_day',q=>q.eq('day',day)).take(151)).reduce((sum,row)=>sum+row.calls,0);
+ const limit=visionLimitError(reading.pages,used);if(limit)throw new ConvexError(limit);
+ // Both counters are reserved in the same Convex transaction, before any provider IO.
  await ctx.db.patch('visionReadings',readingId,{pages:reading.pages+1});
- if(daily)await ctx.db.patch('visionDaily',daily._id,{calls:daily.calls+1});else await ctx.db.insert('visionDaily',{owner,day,calls:1});
+ if(daily)await ctx.db.patch('visionAppDaily',daily._id,{pages:used+1});else await ctx.db.insert('visionAppDaily',{day,pages:used+1});
  return ctx.db.insert('evaluationRuns',{sessionKey,kind:'report-reading',reportIds:[reportId],engine:`OpenAI ${VISION_MODEL} vision / page ${page}`,inputs:[{reportId,storageId:report.storageId,name:report.name,contentType:report.contentType,contentHash:report.contentHash??null}],status:'running',startedAt:Date.now()});
 }});
 export const read=action({args:{sessionKey:v.string(),readingId:v.id('visionReadings'),reportId:v.id('reports'),page:v.number(),image:v.string(),ocrDiagnostics:v.optional(v.string())},returns:scanValidator,handler:async(ctx,{sessionKey,readingId,reportId,page,image,ocrDiagnostics}):Promise<any>=>{

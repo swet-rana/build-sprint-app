@@ -42,3 +42,11 @@ test('failed OCR reading preserves rejected words and scores through offline ret
  const id=await logger.begin('report-reading',['report'],'reader');await logger.finish(id,null,error);online=true;await logger.flush();
  assert.equal(actions[0].error,error.message);assert.deepEqual(JSON.parse(actions[0].outputJson),{diagnostics:error.diagnostics});logger.dispose();
 });
+
+test('failed scan reading preserves checked pages and exact skip reasons through offline retry',async()=>{
+ const store=memoryRetryStore();let online=false;const actions=[];
+ const logger=createEvaluationLogger({mutation:async()=> 'run',action:async(ref,args)=>{if(!online)throw Error('Offline');actions.push(args);}},'session',()=>{},options(store));
+ const error=Error('Scan reading stopped: app-wide limit.');error.pageCoverage={total:27,checked:27,read:0,vision:0,ocr:0,skipped:[{page:1,reason:'Local OCR found no test-like content.'}]};
+ const id=await logger.begin('report-reading',['report'],'reader');await logger.finish(id,null,error);online=true;await logger.flush();
+ assert.equal(actions[0].error,error.message);assert.deepEqual(JSON.parse(actions[0].outputJson),{pageCoverage:error.pageCoverage});logger.dispose();
+});

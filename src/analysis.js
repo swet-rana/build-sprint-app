@@ -50,16 +50,20 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
    if(band){band.setAttribute('x',labelRight+4);band.setAttribute('width',svg.viewBox.baseVal.width-labelRight-26);}
   }
  });
- root.innerHTML=`<form id="analysis-form" class="summary-workspace"><section class="analysis-controls" aria-labelledby="selected-analysis-title"><div class="analysis-selection-heading"><h2 id="selected-analysis-title">Reports selected for analysis</h2><div class="analysis-selection-actions"><span id="analysis-selection-count">0 of 10 reports selected</span><button class="secondary" id="add-analysis-reports" type="button">${summaryIcon('<path d="M12 5v14M5 12h14"/>')}Add more reports</button></div></div><div id="selected-analysis-reports"></div></section><aside class="summary-preparation" aria-labelledby="preparation-title">${summaryIcon('<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z"/>')}<h2 id="preparation-title">Turn your reports into<br>a clear summary</h2><ul class="analysis-guide">${['Compare key markers across reports.','Highlight changes and trends.','Prepare a clear, doctor-friendly summary.','Keep findings connected to their original reports.'].map(text=>`<li>${summaryIcon('<path d="m6 12 4 4 8-8"/>')}<span>${text}</span></li>`).join('')}</ul><button class="primary" id="prepare-summary" type="submit" disabled>Prepare summary <span aria-hidden="true">→</span></button><p class="preparation-help">Select 2–10 reports from different dates.</p></aside></form><section class="analysis-notice" aria-label="Report information">${summaryIcon('<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/>')}<div><p id="analysis-status" role="status" aria-live="polite" hidden></p><p>Check this draft against the originals. Access stays tied to this browser until sign-in is available.</p></div><button type="button" class="secondary" id="retry-summary" hidden>Try again</button></section><div id="reading-failures" role="status" hidden></div><div id="real-summary"></div>`;
+ root.innerHTML=`<form id="analysis-form" class="summary-workspace"><section class="analysis-controls" aria-labelledby="selected-analysis-title"><div class="analysis-selection-heading"><h2 id="selected-analysis-title">Reports selected for analysis</h2><div class="analysis-selection-actions"><span id="analysis-selection-count">0 of 10 reports selected</span><button class="secondary" id="add-analysis-reports" type="button">${summaryIcon('<path d="M12 5v14M5 12h14"/>')}Add more reports</button></div></div><div id="selected-analysis-reports"></div></section><aside class="summary-preparation" aria-labelledby="preparation-title">${summaryIcon('<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z"/>')}<h2 id="preparation-title">Turn your reports into<br>a clear summary</h2><ul class="analysis-guide">${['Compare key markers across reports.','Highlight changes and trends.','Prepare a clear, doctor-friendly summary.','Keep findings connected to their original reports.'].map(text=>`<li>${summaryIcon('<path d="m6 12 4 4 8-8"/>')}<span>${text}</span></li>`).join('')}</ul><button class="primary" id="prepare-summary" type="submit" disabled>Prepare summary <span aria-hidden="true">→</span></button><p class="preparation-help">Select 2–10 reports from different dates.</p></aside></form><section class="analysis-notice" aria-label="Report information">${summaryIcon('<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/>')}<div><p id="analysis-status" role="status" aria-live="polite" hidden></p><p>Check this draft against the originals. Access stays tied to this browser until sign-in is available.</p></div><button type="button" class="secondary" id="retry-summary" hidden>Try again</button></section><div id="reading-failures" role="status" hidden></div><section id="scan-page-coverage" class="reading-coverage" aria-label="Scanned page reading" hidden></section><div id="real-summary"></div>`;
  const button=root.querySelector('#prepare-summary'),status=root.querySelector('#analysis-status'),output=root.querySelector('#real-summary'),selectionList=root.querySelector('#selected-analysis-reports');
  let failures=[],reports=[],reportIds=[],comparison=null,selected=new Set(),busy=false,activeCategory='all',selectionVersion=0;
  const retry=root.querySelector('#retry-summary'),addReports=root.querySelector('#add-analysis-reports'),preparationHelp=root.querySelector('.preparation-help');
- const thumbnails=new Map(),readingPaths=new Map();
+ const thumbnails=new Map(),readingPaths=new Map(),scanCoverage=new Map();
  addReports.addEventListener('click',onAddReports);
  selectionList.addEventListener('click',event=>{const remove=event.target.closest('[data-summary-remove]');if(remove&&!busy)onRemoveReport(remove.dataset.summaryRemove);});
  function canPrepare(){return reportIds.length>=2&&reportIds.length<=MAX_ANALYSIS_REPORTS&&reportIds.every(id=>reports.some(r=>r.id===id));}
  const site=import.meta.env.VITE_CONVEX_URL?.replace(/\.convex\.cloud\/?$/,'.convex.site');
  function message(text,error=false){status.textContent=text;status.hidden=!text;status.classList.toggle('is-error',error);retry.hidden=!error;}
+ function showCoverage(){
+  const box=root.querySelector('#scan-page-coverage');box.hidden=!scanCoverage.size;
+  box.innerHTML=[...scanCoverage].map(([id,coverage])=>`<div><h3>${escape(reports.find(r=>r.id===id)?.name??'Scanned report')}</h3><p>${coverage.read} scanned ${coverage.read===1?'page':'pages'} read · ${coverage.skipped.length} skipped · ${coverage.checked} of ${coverage.total} checked. ${coverage.vision} included from AI vision; ${coverage.ocr} from local OCR.</p>${coverage.skipped.length?`<details><summary>Why pages were skipped</summary><ul>${coverage.skipped.map(p=>`<li>Page ${p.page}: ${escape(p.reason)}</li>`).join('')}</ul></details>`:''}</div>`).join('');
+ }
  function showPaths(){
   for(const item of selectionList.querySelectorAll('li')){
    const id=item.querySelector('[data-summary-remove]')?.dataset.summaryRemove,text=readingPaths.get(id);
@@ -148,7 +152,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   const countError=analysisCountError(ids.length);if(countError){message(countError,true);return;}
   if(choices.some(r=>r?.duplicateOf&&ids.includes(reports.find(p=>p.serial===r.duplicateOf)?.id))){message('Untick duplicate reports before analyzing. Each report date should appear once.',true);return;}
   if(!canPrepare()||choices.some(r=>!r)||new Set(ids).size!==ids.length){message('Tick at least two different lab reports in My reports.',true);return;}
-  failures=[];readingPaths.clear();showPaths();showFailures();busy=true;setBusyControls();button.textContent='Reading reports…';comparison=null;output.innerHTML='';onReady(false);
+  failures=[];readingPaths.clear();scanCoverage.clear();showCoverage();showPaths();showFailures();busy=true;setBusyControls();button.textContent='Reading reports…';comparison=null;output.innerHTML='';onReady(false);
   const logger=evaluationLogger();
   const summaryRun=await logger.begin('summary',ids,'HealthStats comparison and summary renderer v1');
   try{
@@ -163,8 +167,10 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
      function showPath(text){readingPaths.set(file.id,text);showPaths();}
      const report=await readLabReport(blob,(page,total,step)=>{message(`Reading report ${i+1} of ${choices.length}: page ${page} of ${total}${step?` · ${step}`:''}…`);if(step?.includes('path'))showPath(step);},file.contentType,{vision:vision?(canvas,page,diagnostics)=>vision(canvas,page,file,diagnostics):null});
      showPath((report.readingPaths??['text']).join(' + '));
+     if(report.scanCoverage){scanCoverage.set(file.id,report.scanCoverage);showCoverage();}
      await logger.finish(readingRun,report);parsed.push({...report,id:file.id,fileName:file.name});
     }catch(error){
+     if(error.pageCoverage){scanCoverage.set(file.id,error.pageCoverage);showCoverage();}
      await logger.finish(readingRun,null,error);
      const reason=error.name==='TimeoutError'?'The file took too long to download. Try again.':error.message==='Failed to fetch'?'Could not download the file. Check your connection and try again.':error.message.includes('confidently')?'The scan is too unclear to read safely. Upload a clearer copy.':error.message.includes('No supported dated')?'Could not find a readable, dated blood or semen results table.':error.message;
      failures.push({reportId:file.id,fileName:file.name,error:error.message,message:`Report #${file.serial} (${file.name}) could not be read: ${reason}`});showFailures();
@@ -201,7 +207,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   reports=saved;
   const next=ids.filter(id=>reports.some(r=>r.id===id));
   if(JSON.stringify(next)!==JSON.stringify(reportIds)){
-   reportIds=next;selectionVersion++;failures=[];readingPaths.clear();showFailures();comparison=null;output.innerHTML='';onReady(false);
+   reportIds=next;selectionVersion++;failures=[];readingPaths.clear();scanCoverage.clear();showCoverage();showFailures();comparison=null;output.innerHTML='';onReady(false);
    message('Report selection changed. Prepare the summary when ready.');
   }
   const choices=reportIds.map(id=>reports.find(r=>r.id===id));
@@ -209,7 +215,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   selectionList.innerHTML=choices.length?`<ul class="analysis-selected-list">${choices.map(r=>`<li><span class="selected-report-number" aria-label="Report #${escape(r.serial)}">${escape(r.serial)}</span><div class="selected-report-preview" ${r.contentType?.startsWith('image/')?`data-summary-thumbnail="${escape(r.id)}"`:''} aria-hidden="true">${pdfIcon}<span>${r.contentType==='application/pdf'?'PDF':'Photo'}</span></div><div class="selected-report-details"><strong title="${escape(r.name)}">${escape(r.name)}</strong><p>${calendarIcon}${escape(r.details?.testDate?testDateLabel(r.details.testDate):'Date not added')}</p><p>${labIcon}${escape(r.details?.labName||'Lab not added')}</p>${r.duplicateOf?`<p class="duplicate-note">Duplicate of report #${escape(r.duplicateOf)}</p>`:''}</div><span class="selected-report-file">${r.contentType==='application/pdf'?'PDF':'Image'} · ${sizeLabel(r.size)}</span><button type="button" class="remove-analysis-report" data-summary-remove="${escape(r.id)}" aria-label="Remove report #${escape(r.serial)} from selection">${summaryIcon('<path d="m6 6 12 12M18 6 6 18"/>')}</button></li>`).join('')}</ul>`:'<div class="summary-empty"><p>No reports selected</p><span>Choose at least two medical reports from My Reports to prepare a summary.</span></div>';
   preparationHelp.textContent=choices.length<2?'Select at least two reports from different dates.':`Compare up to ${MAX_ANALYSIS_REPORTS} reports from different dates.`;
   for(const [id,pending] of thumbnails){if(!reportIds.includes(id)){thumbnails.delete(id);pending.then(url=>{if(url)URL.revokeObjectURL(url);});}}
-  showFailures();showPaths();loadThumbnails();setBusyControls();
+  showFailures();showPaths();showCoverage();loadThumbnails();setBusyControls();
   if(reportIds.length>MAX_ANALYSIS_REPORTS)message(analysisCountError(reportIds.length),true);
   if(choices.length&&choices.length<2)message('Select at least two reports to compare.');
 

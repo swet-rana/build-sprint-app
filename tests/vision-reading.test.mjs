@@ -10,8 +10,8 @@ test('vision excludes unsure values, keeps exact known values, date, page and sc
 test('vision refuses invalid dates, missing patient identity, non-blood/semen and malformed results',()=>{
  for(const change of [{reportDate:'2026-02-30'},{patientName:null},{reportKind:'other'},{tests:[{...scan.tests[0],value:'13?2'}]}])assert.throws(()=>mergeScanResults([{page:1,result:validateScan({...scan,...change})}],null,1));
 });
-test('vision caps four pages per reading and ten calls per user per IST day',()=>{
- assert.equal(visionLimitError(3,9),null);assert.match(visionLimitError(4,0),/4 pages/);assert.match(visionLimitError(0,10),/10 scan readings/);
+test('vision caps thirty pages per reading and 150 pages across the app per IST day',()=>{
+ assert.equal(visionLimitError(29,149),null);assert.match(visionLimitError(30,0),/30 vision pages/);assert.match(visionLimitError(0,150),/150 vision pages/);
  assert.equal(visionDay(Date.parse('2026-10-13T18:29:59Z')),'2026-10-13');assert.equal(visionDay(Date.parse('2026-10-13T18:30:00Z')),'2026-10-14');
 });
 test('vision cannot silently merge different people, dates or conflicting values',()=>{

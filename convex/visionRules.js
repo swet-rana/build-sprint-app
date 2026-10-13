@@ -3,7 +3,7 @@ export const VISION_PROMPT=`Transcribe this medical report page, not interpret i
 const nullableString={type:['string','null']};
 export const VISION_SCHEMA={type:'object',additionalProperties:false,properties:{reportKind:{type:'string',enum:['blood','semen','other']},patientName:nullableString,reportDate:nullableString,tests:{type:'array',items:{type:'object',additionalProperties:false,properties:{name:{type:'string'},value:nullableString,unit:nullableString,referenceRange:nullableString,readable:{type:'boolean'},sourceTop:{type:['number','null']}},required:['name','value','unit','referenceRange','readable','sourceTop']}}},required:['reportKind','patientName','reportDate','tests']};
 export function visionDay(now){return new Date(now+19800000).toISOString().slice(0,10);}
-export function visionLimitError(pages,calls){return pages>=4?'Scan reading stopped: the limit is 4 pages per summary preparation. Choose a smaller set of result pages.':calls>=10?'Scan reading stopped: you have used your 10 scan readings for today. Try again tomorrow.':null;}
+export function visionLimitError(pages,calls){return pages>=30?'Scan reading stopped: the limit is 30 vision pages per summary preparation. Choose a smaller set of result pages.':calls>=150?'Scan reading stopped: HealthStats has reached its app-wide daily limit of 150 vision pages. Try again tomorrow.':null;}
 export function validateScan(result){
  if(!result||!['blood','semen','other'].includes(result.reportKind)||!Array.isArray(result.tests)||result.tests.length>300)throw Error('The scan reader returned an invalid result. Try again.');
  for(const field of ['patientName','reportDate'])if(result[field]!==null&&typeof result[field]!=='string')throw Error('The scan reader returned invalid report details.');

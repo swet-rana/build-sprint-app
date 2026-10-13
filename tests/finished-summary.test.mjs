@@ -9,7 +9,7 @@ import 'tesseract.js';
 // Expected values are independently transcribed from the fictional PDFs.
 // Only file download, logging transport and browser-only behavior are replaced; reading, parsing,
 // comparison and the finished summary renderer are the application's real code.
-for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blurred','tilted','blur-rejected','rotation-rejected','layout','multipage','footer','panels','confidence-partial','vision'])test(`${kind.includes('rejected')?'failed reports are excluded while readable reports still produce a summary':'finished summary matches the original PDFs'}: ${kind}, selected backwards`,async()=>{
+for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blurred','tilted','blur-rejected','rotation-rejected','layout','multipage','footer','panels','confidence-partial','vision','scan-filter'])test(`${kind.includes('rejected')?'failed reports are excluded while readable reports still produce a summary':'finished summary matches the original PDFs'}: ${kind}, selected backwards`,async()=>{
  const expected=JSON.parse(await readFile(new URL(`./fixtures/${kind}-summary.expected.json`,import.meta.url)));
  const files=await Promise.all((expected.files??['january','july'].map(name=>`${kind}-sample-${name}.pdf`)).map(name=>readFile(new URL(`./fixtures/${name}`,import.meta.url))));
  const dom=new JSDOM('<div id="summary" hidden></div>',{url:'http://localhost:5173',pretendToBeVisual:true});
@@ -29,14 +29,14 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blu
  globalThis.fetch=async(url,options)=>{const id=JSON.parse(options.body).reportId;downloads.push(id);return new Response(files[id==='january'?0:1],{headers:{'Content-Type':'application/pdf'}});};
  const bundle=await build({entryPoints:['src/analysis.js'],bundle:true,write:false,format:'esm',platform:'node',define:{'import.meta.env.VITE_CONVEX_URL':'"https://fictional.convex.cloud"'},loader:{'.css':'empty'},plugins:[{
   name:'node-pdf-worker',setup(builder){
-   if(kind==='vision'){
+   if(kind==='vision'||kind==='scan-filter'){
     builder.onResolve({filter:/vision-client\.js$/},()=>({path:'fictional-vision-transport',namespace:'fictional-vision'}));
-    builder.onLoad({filter:/.*/,namespace:'fictional-vision'},()=>({contents:`export function visionReading(){return async()=>({reportKind:'blood',patientName:'Sample Patient',reportDate:'2026-07-15',tests:[{name:'Haemoglobin',value:'13.2',unit:'g/dL',referenceRange:'12 - 16',readable:true,sourceTop:0.27},{name:'CRP',value:'3.0',unit:'mg/L',referenceRange:'0 - 5',readable:true,sourceTop:0.32},{name:'Vitamin D',value:'24',unit:'ng/mL',referenceRange:'30 - 100',readable:true,sourceTop:0.37},{name:'Unreadable fictional marker',value:'999',unit:'mg/L',referenceRange:null,readable:false,sourceTop:null}]});}`}));
+    builder.onLoad({filter:/.*/,namespace:'fictional-vision'},()=>({contents:`export const visionRequests=[];export function visionReading(){return async(canvas,page)=>{visionRequests.push(page);return ({reportKind:'blood',patientName:'Sample Patient',reportDate:'2026-07-15',tests:[{name:'Haemoglobin',value:'13.2',unit:'g/dL',referenceRange:'12 - 16',readable:true,sourceTop:0.27},{name:'CRP',value:'3.0',unit:'mg/L',referenceRange:'0 - 5',readable:true,sourceTop:0.32},{name:'Vitamin D',value:'24',unit:'ng/mL',referenceRange:'30 - 100',readable:true,sourceTop:0.37},{name:'Unreadable fictional marker',value:'999',unit:'mg/L',referenceRange:null,readable:false,sourceTop:null}]});};}`}));
    }
 
    builder.onResolve({filter:/evaluation-log\.js$/},()=>({path:'captured-logging',namespace:'captured-logging'}));
    builder.onLoad({filter:/.*/,namespace:'captured-logging'},()=>({contents:'export const capturedEvaluations=[];export function evaluationLogger(){return {begin:async kind=>kind,finish:async(kind,output,error)=>capturedEvaluations.push({kind,output,error})};}'}));
-   builder.onLoad({filter:/[\\/]src[\\/]analysis\.js$/},async args=>({contents:(await readFile(args.path,'utf8'))+"\nexport {capturedEvaluations} from './evaluation-log.js';",resolveDir:new URL('../src/',import.meta.url).pathname}));
+   builder.onLoad({filter:/[\\/]src[\\/]analysis\.js$/},async args=>({contents:(await readFile(args.path,'utf8'))+"\nexport {capturedEvaluations} from './evaluation-log.js';"+(kind==='scan-filter'?"\nexport {visionRequests} from './vision-client.js';":''),resolveDir:new URL('../src/',import.meta.url).pathname}));
    // Node replaces only browser worker paths and canvas byte transport.
    // Production readLabReport, OCR mapping, parser and renderer remain real.
    if(expected.ocr||kind==='scanned'||kind==='mixed'){
@@ -50,7 +50,7 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blu
   }
  }]});
  try{
-  const {mountAnalysis,capturedEvaluations}=await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}`);
+  const {mountAnalysis,capturedEvaluations,visionRequests}=await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}`);
   capturedEvaluations.length=0;
   const root=document.querySelector('#summary');const analysis=mountAnalysis(root,()=>{});
   analysis.updateReports(['july','january'].map((id,i)=>({id,serial:i+1,name:kind==='confidence-partial'?expected.files[id==='january'?0:1]:`${kind}-sample-${id}.pdf`,contentType:'application/pdf',size:files[id==='january'?0:1].length})),['july','january']);
@@ -101,7 +101,7 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blu
    if(wanted.values.includes(null)){assert(marker.textContent.includes('Not reported'));assert.equal(marker.querySelectorAll('.result-point').length,0);}
    if(wanted.pointStates)assert.deepEqual([...marker.querySelectorAll('.result-point')].map(p=>p.getAttribute('class').split(' ').find(c=>c.startsWith('trend-')).slice(6)),wanted.pointStates);
   }
-  if(kind==='vision'){
+  if(kind==='vision'||kind==='scan-filter'){
    assert.equal(paper.querySelectorAll('.scan-value-notice').length,4);
    assert(paper.textContent.includes('unreadable in scan'));
    assert.equal(paper.textContent.includes('999'),false,'An unsure scan value must never be included');
@@ -109,6 +109,16 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blu
    assert([...root.querySelectorAll('.reading-path')].some(p=>p.textContent.includes('AI vision')));
    assert([...root.querySelectorAll('.reading-path')].some(p=>p.textContent.includes('text')));
    assert.equal(captured.output.comparison.later.markers.every(m=>m.readPath==='vision'),true);
+   if(kind==='scan-filter'){
+    assert.deepEqual(visionRequests,[27],'The first 26 OCR-screened covers/images must never reach AI vision');
+    const coverage=captured.output.comparison.later.scanCoverage;
+    assert.equal(coverage.checked,27);assert.equal(coverage.read,1);assert.equal(coverage.vision,1);assert.equal(coverage.skipped.length,26);
+    assert.deepEqual(coverage.skipped.map(p=>p.page),Array.from({length:26},(_,i)=>i+1));
+    assert(coverage.skipped.every(p=>p.reason.includes('no test-like')));
+    assert(root.querySelector('#scan-page-coverage').textContent.includes('1 scanned page read · 26 skipped · 27 of 27 checked'));
+    assert(root.querySelector('#scan-page-coverage').textContent.includes('Page 26:'));
+   }
+
    analysis.updateReports(['july','january'].map((id,i)=>({id,serial:i+1,name:`updated-${id}.pdf`,contentType:'application/pdf',size:files[id==='january'?0:1].length,details:{labName:'Updated details',testDate:'',patientName:'',testType:''}})),['july','january']);
    assert.equal(root.querySelectorAll('.reading-path').length,2,'Reading paths survive a report-details refresh');
    assert([...root.querySelectorAll('.reading-path')].some(p=>p.textContent.includes('AI vision')));

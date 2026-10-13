@@ -1,0 +1,78 @@
+{
+  "patient": "Sample Patient",
+  "dates": "15 Jan 2026 \u2013 15 Jul 2026",
+  "reports": 2,
+  "markers": [
+    {
+      "name": "Haemoglobin",
+      "values": [
+        "12.5",
+        "13.2"
+      ],
+      "unit": "g/dL",
+      "reference": "12-15",
+      "change": "Increased by 0.7 g/dL",
+      "latest": "Within this report\u2019s range",
+      "pointStates": [
+        "neutral",
+        "neutral"
+      ],
+      "pages": [
+        "2",
+        "27"
+      ],
+      "references": [
+        "12-15",
+        "12 - 16"
+      ]
+    },
+    {
+      "name": "C-reactive protein",
+      "values": [
+        "6",
+        "3"
+      ],
+      "unit": "mg/L",
+      "reference": "0-5",
+      "change": "Decreased by 3 mg/L",
+      "latest": "Within this report\u2019s range",
+      "pointStates": [
+        "out-of-range",
+        "normal-transition"
+      ],
+      "pages": [
+        "2",
+        "27"
+      ],
+      "references": [
+        "0-5",
+        "0 - 5"
+      ]
+    },
+    {
+      "name": "Vitamin D",
+      "values": [
+        null,
+        "24"
+      ],
+      "unit": "ng/mL",
+      "reference": "30 - 100",
+      "change": "One recorded value; no measured change can be calculated",
+      "latest": "Below this report\u2019s range",
+      "pointStates": [],
+      "pages": [
+        null,
+        "27"
+      ]
+    }
+  ],
+  "ocr": true,
+  "files": [
+    "blood-sample-january.pdf",
+    "scan-filter-sample.pdf"
+  ],
+  "scannedIndexes": [
+    1
+  ],
+  "vision": true
+}
