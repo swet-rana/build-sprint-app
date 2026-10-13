@@ -1,15 +1,18 @@
+import {classifyScanPage,isStandardBloodTest} from './blood-page-classification.js';
 import {normalizePatient} from './lab-parser.js';
 import {testIdentity} from './test-names.js';
 import {semenIdentity} from './semen-markers.js';
 function validDate(date){if(!/^\d{4}-\d{2}-\d{2}$/.test(date??''))return false;const parsed=new Date(date+'T00:00:00Z');return Number.isFinite(parsed.getTime())&&parsed.toISOString().slice(0,10)===date;}
 export function mergeScanResults(scans,native,pageCount){
  let result=native?{...native,markers:[...native.markers],warnings:[...native.warnings],usedPages:[...native.usedPages],unreadable:[...(native.unreadable??[])]}:null;
- for(const {page,result:scan} of scans){
+ for(const {page,result:originalScan} of scans){
+  const scan=classifyScanPage(originalScan);
   if(scan.reportKind==='other')continue;
   if(!validDate(scan.reportDate)||!scan.patientName?.trim())throw Error(`Page ${page}: the scan reader could not read the patient name and report date. Upload a clearer full-page copy.`);
   if(result&&(result.date!==scan.reportDate||normalizePatient(result.patientName)!==normalizePatient(scan.patientName)))throw Error('The scanned pages contain different patient names or dates. Upload each dated report separately.');
   result??={reportKind:scan.reportKind,date:scan.reportDate,patientName:scan.patientName,patientId:null,patientIdIssuer:null,labName:'',markers:[],usedPages:[],excludedPages:[],pageCount,warnings:[],unreadable:[]};
   for(const row of scan.tests){
+   if(scan.originalReportKind==='other'&&!isStandardBloodTest(row.name,row.unit)){result.warnings.push(`Page ${page}: ${row.name} is not a recognized blood test on this page; excluded.`);continue;}
    if(!row.readable||row.value===null){result.unreadable.push({name:row.name,value:null,page,reason:'Unreadable in scan'});continue;}
    if(!/^[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?$/.test(row.value))throw Error(`Page ${page}: ${row.name} has an unclear numeric value. Check the original scan.`);
    const value=Number(row.value.replaceAll(',',''));if(!Number.isFinite(value))throw Error('The scan reader returned an invalid numeric value.');

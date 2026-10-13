@@ -5,7 +5,7 @@ import {internal} from './_generated/api';
 import type {Id} from './_generated/dataModel';
 import {isSessionKey,matchesFileType} from './fileRules.js';
 import {VISION_MODEL,VISION_PROMPT,VISION_SCHEMA,validateScan,visionDay,visionLimitError} from './visionRules.js';
-const scanValidator=v.object({reportKind:v.union(v.literal('blood'),v.literal('semen'),v.literal('other')),patientName:v.union(v.string(),v.null()),reportDate:v.union(v.string(),v.null()),tests:v.array(v.object({name:v.string(),value:v.union(v.string(),v.null()),unit:v.union(v.string(),v.null()),referenceRange:v.union(v.string(),v.null()),readable:v.boolean(),sourceTop:v.union(v.number(),v.null())}))});
+const scanValidator=v.object({reportKind:v.union(v.literal('blood'),v.literal('semen'),v.literal('other')),specimen:v.optional(v.union(v.literal('blood'),v.literal('semen'),v.literal('urine'),v.literal('other'),v.literal('unknown'))),originalReportKind:v.optional(v.literal('other')),patientName:v.union(v.string(),v.null()),reportDate:v.union(v.string(),v.null()),tests:v.array(v.object({name:v.string(),value:v.union(v.string(),v.null()),unit:v.union(v.string(),v.null()),referenceRange:v.union(v.string(),v.null()),readable:v.boolean(),sourceTop:v.union(v.number(),v.null())}))});
 export const begin=mutation({args:{sessionKey:v.string(),reportIds:v.array(v.id('reports'))},returns:v.id('visionReadings'),handler:async(ctx,{sessionKey,reportIds})=>{
  if(!isSessionKey(sessionKey)||!reportIds.length||reportIds.length>10)throw new ConvexError('Invalid scan reading request.');
  for(const id of reportIds){const r=await ctx.db.get('reports',id);if(!r||r.sessionKey!==sessionKey||r.deleted)throw new ConvexError('Report not found in this browser.');}

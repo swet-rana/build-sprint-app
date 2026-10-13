@@ -14,7 +14,7 @@ export async function makeOcrReader(onStatus=()=>{}){
     const result=await Promise.race([worker.recognize(canvas,{}, {blocks:true}),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Image reading timed out. Upload a clearer image or try again.')),120000);})]);
     const screening=screen?scanPageCheck(result.data):null;
     if(screening&&!screening.hasTestContent)return {page,items:[],exclusionReason:screening.reason,screening};
-    try{return ocrPage(result.data,canvas.width,canvas.height,page);}catch(error){if(screening)error.screening=screening;throw error;}
+    try{return {...ocrPage(result.data,canvas.width,canvas.height,page),...(screening?{screening}:{})};}catch(error){if(screening)error.screening=screening;throw error;}
    }finally{clearTimeout(timer);}
   },close:()=>worker.terminate(),
  };

@@ -8,7 +8,7 @@ test('vision excludes unsure values, keeps exact known values, date, page and sc
  assert.equal(result.markers.length,1);assert.equal(result.markers[0].value,13.2);assert.equal(result.markers[0].readPath,'vision');assert.equal(result.markers[0].page,3);assert.equal(result.date,'2026-07-15');assert.equal(result.unreadable[0].name,'Vitamin D');assert.equal(result.unreadable[0].value,null);
 });
 test('vision refuses invalid dates, missing patient identity, non-blood/semen and malformed results',()=>{
- for(const change of [{reportDate:'2026-02-30'},{patientName:null},{reportKind:'other'},{tests:[{...scan.tests[0],value:'13?2'}]}])assert.throws(()=>mergeScanResults([{page:1,result:validateScan({...scan,...change})}],null,1));
+ for(const change of [{reportDate:'2026-02-30'},{patientName:null},{reportKind:'other',tests:[{...scan.tests[0],name:'Kidney length',unit:'cm'}]},{tests:[{...scan.tests[0],value:'13?2'}]}])assert.throws(()=>mergeScanResults([{page:1,result:validateScan({...scan,...change})}],null,1));
 });
 test('vision caps thirty pages per reading and 150 pages across the app per IST day',()=>{
  assert.equal(visionLimitError(29,149),null);assert.match(visionLimitError(30,0),/30 vision pages/);assert.match(visionLimitError(0,150),/150 vision pages/);
