@@ -56,3 +56,6 @@ export function testIdentity(name,unit){
  const matchingUnit=!clean(unit)&&identity?.id.endsWith('-ratio')?'ratio':unitIdentity(unit);
  return {key:`${identity?.id??token}|${matchingUnit}`,name:identity?.name??base.toUpperCase(),rawName};
 }
+
+export const TEST_DEFINITIONS=definitions;
+export function isKnownTestName(name,unit){const id=testIdentity(name,unit).key.split('|')[0];return id==='rdw-cv'||definitions.some(d=>d[0]===id);}

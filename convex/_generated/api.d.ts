@@ -16,6 +16,8 @@ import type * as originRules from "../originRules.js";
 import type * as profiles from "../profiles.js";
 import type * as reportDetails from "../reportDetails.js";
 import type * as reports from "../reports.js";
+import type * as testMappingRules from "../testMappingRules.js";
+import type * as testMatching from "../testMatching.js";
 import type * as vision from "../vision.js";
 import type * as visionRules from "../visionRules.js";
 
@@ -34,6 +36,8 @@ declare const fullApi: ApiFromModules<{
   profiles: typeof profiles;
   reportDetails: typeof reportDetails;
   reports: typeof reports;
+  testMappingRules: typeof testMappingRules;
+  testMatching: typeof testMatching;
   vision: typeof vision;
   visionRules: typeof visionRules;
 }>;

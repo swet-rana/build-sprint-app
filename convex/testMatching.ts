@@ -1,0 +1,30 @@
+import {v,ConvexError} from 'convex/values';
+import {action,internalMutation} from './_generated/server';
+import {internal} from './_generated/api';
+import {isSessionKey} from './fileRules.js';
+import {mappingKey,localStandard,STANDARD_TESTS,validStandardMatch} from './testMappingRules.js';
+const entry=v.object({name:v.string(),unit:v.string(),specimen:v.string(),method:v.string()});
+export const claim=internalMutation({args:{sessionKey:v.string(),reportIds:v.array(v.id('reports')),entries:v.array(entry)},handler:async(ctx,args)=>{
+ if(!isSessionKey(args.sessionKey)||!args.reportIds.length||args.reportIds.length>10||args.entries.length>50)throw new ConvexError('Invalid test matching request.');
+ const reports=[];for(const id of args.reportIds){const r=await ctx.db.get('reports',id);if(!r||r.deleted||r.sessionKey!==args.sessionKey)throw new ConvexError('Report unavailable in this browser.');reports.push(r);}
+ const rows=[],fresh=[];for(const e of args.entries){if(!e.name.trim()||e.name.length>200||e.unit.length>60||e.method.length>100||e.specimen!=='blood')throw new ConvexError('Invalid test name.');if(localStandard(e.name,e.unit))continue;const key=mappingKey(e);let row=await ctx.db.query('testNameMappings').withIndex('by_key',q=>q.eq('key',key)).first();if(row?.status==='pending'&&Date.now()-row.startedAt>120000){await ctx.db.patch('testNameMappings',row._id,{status:'failed',error:'Name matching did not finish; original result retained.'});row={...row,status:'failed'};}if(!row){const _id=await ctx.db.insert('testNameMappings',{...e,key,status:'pending',startedAt:Date.now()});row=await ctx.db.get('testNameMappings',_id);if(row)fresh.push(row);}rows.push(row);}
+ const runId=fresh.length?await ctx.db.insert('evaluationRuns',{sessionKey:args.sessionKey,kind:'summary',reportIds:args.reportIds,engine:'OpenAI gpt-4.1-mini test-name matching',inputs:reports.map(r=>({reportId:r._id,storageId:r.storageId,name:r.name,contentType:r.contentType,contentHash:r.contentHash??null})),status:'running',startedAt:Date.now()}):null;
+ return {rows,fresh,runId};
+}});
+export const finish=internalMutation({args:{ids:v.array(v.id('testNameMappings')),matches:v.any(),error:v.optional(v.string())},handler:async(ctx,{ids,matches,error})=>{
+ const rows=[];for(const id of ids){const row=await ctx.db.get('testNameMappings',id);if(!row)continue;const match=matches?.find((m:any)=>m.key===row.key);const mapped=!error&&match?.certain===true&&validStandardMatch(row.name,match.standardId);const patch={status:error?'failed':mapped?'mapped':'unmatched',finishedAt:Date.now(),...(mapped?{standardId:match.standardId}:{}),...(error?{error}:{})};if(row.status==='pending')await ctx.db.patch('testNameMappings',id,patch);rows.push({...row,...(row.status==='pending'?patch:{})});}return rows;
+}});
+export const match=action({args:{sessionKey:v.string(),reportIds:v.array(v.id('reports')),entries:v.array(entry)},handler:async(ctx,args):Promise<any>=>{
+ if(!process.env.OPENAI_API_KEY)throw new ConvexError('Test name matching unavailable: server API key missing. Original results retained.');
+ const claimed=await ctx.runMutation(internal.testMatching.claim,args);if(!claimed.fresh.length)return claimed.rows;
+ let request:any,rawResponse:any,error:string|undefined,matches:any[]=[];
+ try{
+ const schema={type:'object',additionalProperties:false,properties:{matches:{type:'array',items:{type:'object',additionalProperties:false,properties:{key:{type:'string'},standardId:{anyOf:[{type:'string',enum:STANDARD_TESTS.map(s=>s.id)},{type:'null'}]},certain:{type:'boolean'}},required:['key','standardId','certain']}}},required:['matches']};
+ request={model:'gpt-4.1-mini',store:false,input:[{role:'user',content:[{type:'input_text',text:'Map laboratory test names to this catalog when their analyte and explicitly stated qualifiers are equivalent. Standard abbreviations such as Hb/HGB mean haemoglobin; wording like concentration, level, blood, or serum does not change the analyte. An empty method means no method qualifier was supplied; do not require an unstated method. Preserve a stated method or condition. Do not interpret results or diagnose. Do not conflate total/free, fasting/random, direct/calculated, sensitive/ordinary, percentages/absolute counts. If uncertain return standardId null and certain false. Do not compute values. Return every input key exactly once.\n'+JSON.stringify({catalog:STANDARD_TESTS,tests:claimed.fresh.map((r:any)=>({key:r.key,name:r.name,unit:r.unit,specimen:r.specimen,method:r.method}))})}]}],text:{format:{type:'json_schema',name:'test_names',strict:true,schema}},max_output_tokens:6000};
+ const response=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:`Bearer ${process.env.OPENAI_API_KEY}`,'Content-Type':'application/json'},body:JSON.stringify(request),signal:AbortSignal.timeout(90000)});rawResponse=await response.json();if(!response.ok||rawResponse.status!=='completed')throw Error('AI name matching unavailable; original names and units retained.');
+ const text=rawResponse.output?.flatMap((i:any)=>i.content??[]).filter((p:any)=>p.type==='output_text').map((p:any)=>p.text).join('');matches=JSON.parse(text).matches;if(!Array.isArray(matches)||matches.length!==claimed.fresh.length||new Set(matches.map(m=>m.key)).size!==matches.length||claimed.fresh.some((r:any)=>!matches.some(m=>m.key===r.key)))throw Error('AI name matching returned incomplete names; original results retained.');
+ }catch(e){error=e instanceof Error?e.message:'Name matching failed; original results retained.';}
+ const updated=await ctx.runMutation(internal.testMatching.finish,{ids:claimed.fresh.map((r:any)=>r._id),matches,...(error?{error}:{})});
+ const outputStorageId=await ctx.storage.store(new Blob([JSON.stringify({request,rawResponse:rawResponse??null,matches:updated,error:error??null})],{type:'application/json'}));await ctx.runMutation(internal.evaluations.complete,{sessionKey:args.sessionKey,runId:claimed.runId!,outputStorageId,...(error?{error}:{})});
+ return claimed.rows.map((r:any)=>updated.find((u:any)=>u._id===r._id)??r);
+}});
