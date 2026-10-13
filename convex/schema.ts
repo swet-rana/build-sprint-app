@@ -23,5 +23,7 @@ export default defineSchema({
     status:v.union(v.literal('running'),v.literal('succeeded'),v.literal('failed')),
     startedAt:v.number(),finishedAt:v.optional(v.number()),outputStorageId:v.optional(v.id('_storage')),error:v.optional(v.string()),
   }).index('by_session',['sessionKey']).index('by_session_run',['sessionKey','runKey']),
+  visionReadings: defineTable({sessionKey:v.string(),owner:v.string(),reportIds:v.array(v.id('reports')),pages:v.number(),createdAt:v.number()}).index('by_owner',['owner']),
+  visionDaily: defineTable({owner:v.string(),day:v.string(),calls:v.number()}).index('by_owner_day',['owner','day']),
   reportCounters: defineTable({sessionKey:v.string(),nextSerial:v.number()}).index("by_session",["sessionKey"]),
 });

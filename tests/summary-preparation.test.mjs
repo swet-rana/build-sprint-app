@@ -40,3 +40,17 @@ test('Summary preserves selected originals, waits for a click and offers retry a
   assert.equal(root.querySelector('#analysis-selection-count').textContent,'1 of 10 reports selected');
  }finally{dom.window.close();for(const key of globals){if(previous[key]===undefined)delete globalThis[key];else globalThis[key]=previous[key];}}
 });
+
+test('A scan limit or AI service failure stops preparation with its clear message and retry',async()=>{
+ const dom=new JSDOM('<div id="summary"></div>',{url:'http://localhost:5173'}),keys=['window','document','localStorage','MutationObserver','fetch'];const old=Object.fromEntries(keys.map(k=>[k,globalThis[k]]));
+ Object.assign(globalThis,{window:dom.window,document:dom.window.document,localStorage:dom.window.localStorage,MutationObserver:dom.window.MutationObserver});let downloads=0;
+ globalThis.fetch=async()=>{downloads++;return new Response('fictional scan',{headers:{'Content-Type':'application/pdf'}});};
+ try{
+  const bundle=await build({entryPoints:['src/analysis.js'],bundle:true,write:false,format:'esm',platform:'node',define:{'import.meta.env.VITE_CONVEX_URL':'"https://fictional.convex.cloud"'},loader:{'.css':'empty'},plugins:[{name:'failed-scan-service',setup(b){b.onResolve({filter:/report-viewer\.js$|report-reader\.js$/},a=>({path:a.path,namespace:'failure'}));b.onLoad({filter:/.*/,namespace:'failure'},a=>({contents:a.path.includes('report-viewer')?'export async function openReportViewer(){}':`export async function readLabReport(){const error=Error(globalThis.scanFailure);error.code='VISION_STOP';throw error;}`}));}}]});
+  const {mountAnalysis}=await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}`),root=document.querySelector('#summary'),analysis=mountAnalysis(root,()=>{});
+  analysis.updateReports([{id:'one',serial:1,name:'scan.pdf',contentType:'application/pdf',size:100},{id:'two',serial:2,name:'text.pdf',contentType:'application/pdf',size:100}],['one','two']);
+  for(const text of ['Scan reading stopped: the limit is 4 pages per summary preparation.','Scan reading stopped: you have used your 10 scan readings for today. Try again tomorrow.','Scan reading stopped: the AI service could not read this page (API 429). Try again later.']){
+   globalThis.scanFailure=text;downloads=0;await analysis.prepare();assert.equal(downloads,1,'Do not keep making requests after a scan cap or API failure');assert(root.querySelector('#analysis-status').textContent.includes(text));assert.equal(root.querySelector('#real-summary').textContent,'');assert.equal(root.querySelector('#retry-summary').hidden,false);
+  }
+ }finally{delete globalThis.scanFailure;dom.window.close();for(const key of keys){if(old[key]===undefined)delete globalThis[key];else globalThis[key]=old[key];}}
+});

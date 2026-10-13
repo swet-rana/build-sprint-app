@@ -1,9 +1,10 @@
 import React, {useState} from 'react';
 import {createRoot} from 'react-dom/client';
-import {ConvexReactClient, useConvexAuth, useQuery} from 'convex/react';
+import {useConvexAuth, useQuery} from 'convex/react';
 import {ConvexAuthProvider, useAuthActions} from '@convex-dev/auth/react';
 import {api} from '../convex/_generated/api';
 import './profile.css';
+import {authClient} from './auth-client.js';
 
 function Profile({continueWithoutAccount}) {
   const {isLoading,isAuthenticated}=useConvexAuth();
@@ -63,6 +64,6 @@ function Profile({continueWithoutAccount}) {
   </section>;
 }
 export function mountProfile(root,continueWithoutAccount){
-  const client=new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
+  const client=authClient();
   createRoot(root).render(<ConvexAuthProvider client={client}><Profile continueWithoutAccount={continueWithoutAccount}/></ConvexAuthProvider>);
 }
