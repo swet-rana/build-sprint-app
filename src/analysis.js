@@ -54,12 +54,21 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
  const button=root.querySelector('#prepare-summary'),status=root.querySelector('#analysis-status'),output=root.querySelector('#real-summary'),selectionList=root.querySelector('#selected-analysis-reports');
  let failures=[],reports=[],reportIds=[],comparison=null,selected=new Set(),busy=false,activeCategory='all',selectionVersion=0;
  const retry=root.querySelector('#retry-summary'),addReports=root.querySelector('#add-analysis-reports'),preparationHelp=root.querySelector('.preparation-help');
- const thumbnails=new Map();
+ const thumbnails=new Map(),readingPaths=new Map();
  addReports.addEventListener('click',onAddReports);
  selectionList.addEventListener('click',event=>{const remove=event.target.closest('[data-summary-remove]');if(remove&&!busy)onRemoveReport(remove.dataset.summaryRemove);});
  function canPrepare(){return reportIds.length>=2&&reportIds.length<=MAX_ANALYSIS_REPORTS&&reportIds.every(id=>reports.some(r=>r.id===id));}
  const site=import.meta.env.VITE_CONVEX_URL?.replace(/\.convex\.cloud\/?$/,'.convex.site');
  function message(text,error=false){status.textContent=text;status.hidden=!text;status.classList.toggle('is-error',error);retry.hidden=!error;}
+ function showPaths(){
+  for(const item of selectionList.querySelectorAll('li')){
+   const id=item.querySelector('[data-summary-remove]')?.dataset.summaryRemove,text=readingPaths.get(id);
+   let label=item.querySelector('.reading-path');
+   if(!text){label?.remove();continue;}
+   if(!label){label=document.createElement('p');label.className='reading-path';item.querySelector('.selected-report-details').append(label);}
+   label.textContent=`Reading path: ${text}`;
+  }
+ }
  function showFailures(){
   const box=root.querySelector('#reading-failures');box.hidden=!failures.length;
   box.innerHTML=failures.map(f=>`<p>${escape(f.message)}</p>`).join('');
@@ -139,7 +148,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   const countError=analysisCountError(ids.length);if(countError){message(countError,true);return;}
   if(choices.some(r=>r?.duplicateOf&&ids.includes(reports.find(p=>p.serial===r.duplicateOf)?.id))){message('Untick duplicate reports before analyzing. Each report date should appear once.',true);return;}
   if(!canPrepare()||choices.some(r=>!r)||new Set(ids).size!==ids.length){message('Tick at least two different lab reports in My reports.',true);return;}
-  failures=[];showFailures();busy=true;setBusyControls();button.textContent='Reading reports…';comparison=null;output.innerHTML='';onReady(false);
+  failures=[];readingPaths.clear();showPaths();showFailures();busy=true;setBusyControls();button.textContent='Reading reports…';comparison=null;output.innerHTML='';onReady(false);
   const logger=evaluationLogger();
   const summaryRun=await logger.begin('summary',ids,'HealthStats comparison and summary renderer v1');
   try{
@@ -151,8 +160,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
     const readingRun=await logger.begin('report-reading',[file.id],'pdf.js 6.4.299 / Tesseract 6 / HealthStats parser v1');
     try{
      const blob=await fetchReport(file);
-     const card=[...selectionList.querySelectorAll('.analysis-selected-list li')].find(li=>li.querySelector('[data-summary-remove]')?.dataset.summaryRemove===file.id);
-     function showPath(text){if(!card)return;let label=card.querySelector('.reading-path');if(!label){label=document.createElement('p');label.className='reading-path';card.querySelector('.selected-report-details').append(label);}label.textContent=`Reading path: ${text}`;}
+     function showPath(text){readingPaths.set(file.id,text);showPaths();}
      const report=await readLabReport(blob,(page,total,step)=>{message(`Reading report ${i+1} of ${choices.length}: page ${page} of ${total}${step?` · ${step}`:''}…`);if(step?.includes('path'))showPath(step);},file.contentType,{vision:vision?(canvas,page,diagnostics)=>vision(canvas,page,file,diagnostics):null});
      showPath((report.readingPaths??['text']).join(' + '));
      await logger.finish(readingRun,report);parsed.push({...report,id:file.id,fileName:file.name});
@@ -193,7 +201,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   reports=saved;
   const next=ids.filter(id=>reports.some(r=>r.id===id));
   if(JSON.stringify(next)!==JSON.stringify(reportIds)){
-   reportIds=next;selectionVersion++;failures=[];showFailures();comparison=null;output.innerHTML='';onReady(false);
+   reportIds=next;selectionVersion++;failures=[];readingPaths.clear();showFailures();comparison=null;output.innerHTML='';onReady(false);
    message('Report selection changed. Prepare the summary when ready.');
   }
   const choices=reportIds.map(id=>reports.find(r=>r.id===id));
@@ -201,7 +209,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   selectionList.innerHTML=choices.length?`<ul class="analysis-selected-list">${choices.map(r=>`<li><span class="selected-report-number" aria-label="Report #${escape(r.serial)}">${escape(r.serial)}</span><div class="selected-report-preview" ${r.contentType?.startsWith('image/')?`data-summary-thumbnail="${escape(r.id)}"`:''} aria-hidden="true">${pdfIcon}<span>${r.contentType==='application/pdf'?'PDF':'Photo'}</span></div><div class="selected-report-details"><strong title="${escape(r.name)}">${escape(r.name)}</strong><p>${calendarIcon}${escape(r.details?.testDate?testDateLabel(r.details.testDate):'Date not added')}</p><p>${labIcon}${escape(r.details?.labName||'Lab not added')}</p>${r.duplicateOf?`<p class="duplicate-note">Duplicate of report #${escape(r.duplicateOf)}</p>`:''}</div><span class="selected-report-file">${r.contentType==='application/pdf'?'PDF':'Image'} · ${sizeLabel(r.size)}</span><button type="button" class="remove-analysis-report" data-summary-remove="${escape(r.id)}" aria-label="Remove report #${escape(r.serial)} from selection">${summaryIcon('<path d="m6 6 12 12M18 6 6 18"/>')}</button></li>`).join('')}</ul>`:'<div class="summary-empty"><p>No reports selected</p><span>Choose at least two medical reports from My Reports to prepare a summary.</span></div>';
   preparationHelp.textContent=choices.length<2?'Select at least two reports from different dates.':`Compare up to ${MAX_ANALYSIS_REPORTS} reports from different dates.`;
   for(const [id,pending] of thumbnails){if(!reportIds.includes(id)){thumbnails.delete(id);pending.then(url=>{if(url)URL.revokeObjectURL(url);});}}
-  showFailures();loadThumbnails();setBusyControls();
+  showFailures();showPaths();loadThumbnails();setBusyControls();
   if(reportIds.length>MAX_ANALYSIS_REPORTS)message(analysisCountError(reportIds.length),true);
   if(choices.length&&choices.length<2)message('Select at least two reports to compare.');
 

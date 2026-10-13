@@ -109,6 +109,11 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blu
    assert([...root.querySelectorAll('.reading-path')].some(p=>p.textContent.includes('AI vision')));
    assert([...root.querySelectorAll('.reading-path')].some(p=>p.textContent.includes('text')));
    assert.equal(captured.output.comparison.later.markers.every(m=>m.readPath==='vision'),true);
+   analysis.updateReports(['july','january'].map((id,i)=>({id,serial:i+1,name:`updated-${id}.pdf`,contentType:'application/pdf',size:files[id==='january'?0:1].length,details:{labName:'Updated details',testDate:'',patientName:'',testType:''}})),['july','january']);
+   assert.equal(root.querySelectorAll('.reading-path').length,2,'Reading paths survive a report-details refresh');
+   assert([...root.querySelectorAll('.reading-path')].some(p=>p.textContent.includes('AI vision')));
+   assert([...root.querySelectorAll('.reading-path')].some(p=>p.textContent.includes('text')));
+
   }
   if(kind==='fertility'){
   const prolactin=markers.find(m=>m.querySelector('.change strong').textContent==='Decreased by 10 ng/mL');
