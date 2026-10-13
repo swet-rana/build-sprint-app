@@ -34,3 +34,11 @@ test('retry delay increases to one minute and another session’s jobs stay unto
  await logger.begin('summary',['own'],'v1');for(let n=0;n<8;n++)await logger.flush();
  assert.deepEqual(delays,[1000,2000,4000,8000,16000,32000,60000,60000,60000]);assert.equal((await store.get('other')).reportIds[0],'private');logger.dispose();
 });
+
+test('failed OCR reading preserves rejected words and scores through offline retry',async()=>{
+ const store=memoryRetryStore();let online=false;const actions=[];
+ const logger=createEvaluationLogger({mutation:async()=> 'run',action:async(ref,args)=>{if(!online)throw Error('Offline');actions.push(args);}},'session',()=>{},options(store));
+ const error=Error('Could not read name confidently.');error.diagnostics={kind:'ocr-low-confidence',page:2,threshold:80,lowConfidenceWords:[{text:'Sample',confidence:79.5,bbox:{x0:1,y0:2,x1:3,y1:4}}]};
+ const id=await logger.begin('report-reading',['report'],'reader');await logger.finish(id,null,error);online=true;await logger.flush();
+ assert.equal(actions[0].error,error.message);assert.deepEqual(JSON.parse(actions[0].outputJson),{diagnostics:error.diagnostics});logger.dispose();
+});

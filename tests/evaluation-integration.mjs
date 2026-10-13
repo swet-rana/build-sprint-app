@@ -32,6 +32,12 @@ for(const kind of ['report-reading','summary']){
 const failed=await client.mutation(api.evaluations.begin,{sessionKey,kind:'report-reading',reportIds:[reportIds[0]],engine:'isolated integration test v1'});
 await client.action(api.evaluations.finish,{sessionKey,runId:failed,error:'Unreadable sample'});
 assert.equal((await client.query(api.evaluations.get,{sessionKey,runId:failed})).error,'Unreadable sample');console.log('Reading error saved correctly.');
+const diagnostics={kind:'ocr-low-confidence',page:1,threshold:80,lowConfidenceWords:[{text:'Fictional',confidence:79,bbox:{x0:10,y0:20,x1:30,y1:40}}]};
+const rejected=await client.mutation(api.evaluations.begin,{sessionKey,kind:'report-reading',reportIds:[reportIds[0]],engine:'isolated confidence integration test'});
+await client.action(api.evaluations.finish,{sessionKey,runId:rejected,error:'Fictional low-confidence scan',outputJson:JSON.stringify({diagnostics})});
+const recorded=await client.query(api.evaluations.get,{sessionKey,runId:rejected});assert.equal(recorded.status,'failed');assert.equal(recorded.error,'Fictional low-confidence scan');assert.deepEqual(await(await fetch(recorded.outputUrl)).json(),{diagnostics});assert.equal(await client.query(api.evaluations.get,{sessionKey:otherSession,runId:rejected}),null);
+console.log('Failed OCR reading saved its exact rejected words and scores; another session cannot access them.');
+
 await assert.rejects(client.mutation(api.evaluations.begin,{sessionKey:otherSession,kind:'summary',reportIds,engine:'test'}));
 for(const reportId of reportIds)await client.mutation(api.reports.setDeleted,{sessionKey,reportId,deleted:true});
 console.log('Cross-session input rejected; fictional test uploads moved to their isolated session’s trash.');

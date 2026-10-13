@@ -33,3 +33,15 @@ test('recognized information pages are excluded without a reading error',()=>{
  const unknown=words.filter(w=>!['understand','critical','focus'].includes(w.text));
  assert.throws(()=>ocrPage({blocks:[{paragraphs:[{lines:[{words:unknown}]}]}]},600,900,56),/columns/);
 });
+
+test('OCR rejects below 80 and retains exact low words, scores, page and boxes',()=>{
+ const input=data();const word=input.blocks[0].paragraphs[0].lines[0].words[3];word.confidence=79.5;
+ assert.throws(()=>ocrPage(input,600,800,7),error=>{assert.equal(error.code,'LOW_CONFIDENCE');assert.equal(error.diagnostics.threshold,80);assert.equal(error.diagnostics.page,7);assert.deepEqual(error.diagnostics.lowConfidenceWords,[{text:word.text,confidence:79.5,bbox:word.bbox}]);return true;});
+ word.confidence=80;assert.doesNotThrow(()=>ocrPage(input,600,800,7));
+});
+
+test('result confidence rejection saves only the low-confidence result words',()=>{
+ const input=data();const word=input.blocks[0].paragraphs[0].lines[3].words[1];word.confidence=79;
+ assert.throws(()=>ocrPage(input,600,800,3),error=>{assert.equal(error.diagnostics.field,'test result');assert.equal(error.diagnostics.page,3);assert.deepEqual(error.diagnostics.lowConfidenceWords,[{text:word.text,confidence:79,bbox:word.bbox}]);return true;});
+ word.confidence=80;assert.doesNotThrow(()=>ocrPage(input,600,800,3));
+});

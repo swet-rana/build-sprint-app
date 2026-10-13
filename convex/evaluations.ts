@@ -25,7 +25,7 @@ export const finish=action({
   const ownership=await ctx.runQuery(internal.evaluations.owned,{sessionKey,runId});
   if(ownership==='missing')throw new ConvexError('Evaluation not found in this browser.');
   if(ownership==='completed')return null;
-  if((outputJson===undefined)===(error===undefined))throw new ConvexError('Provide either an output or an error.');
+  if(outputJson===undefined&&error===undefined)throw new ConvexError('Provide an output or an error.');
   if(outputJson!==undefined)JSON.parse(outputJson);
   const outputStorageId=outputJson===undefined?undefined:await ctx.storage.store(new Blob([outputJson],{type:'application/json'}));
   try{const saved=await ctx.runMutation(internal.evaluations.complete,{sessionKey,runId,...(outputStorageId?{outputStorageId}:{}),...(error!==undefined?{error:error.slice(0,10000)||'Unknown error'}:{})});if(!saved&&outputStorageId)await ctx.storage.delete(outputStorageId);return null;}

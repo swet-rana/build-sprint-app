@@ -3,6 +3,11 @@ const norm=s=>clean(s).toLowerCase().replace(/[^a-z0-9]/g,'');
 const labels=[['Patient Name',['patient','name']],['Collection Date',['collection','date']],['Collected',['collected']],['Patient ID',['patient','id']],['UHID/MR No',['uhidmr','no']],['Name',['name']]];
 const headers=[['Test Name',[/^(test|investigation)$/,/^name$/]],['Result',[/^(result|value)$/]],['Unit',[/^units?$/]],['Bio. Ref. Interval',[/^(bio|biological)$/, /^ref(erence)?$/, /^(interval|range)$/]],['Method',[/^method$/]]];
 function phrase(words,tokens){for(let i=0;i<=words.length-tokens.length;i++)if(tokens.every((t,j)=>t instanceof RegExp?t.test(norm(words[i+j].text)):norm(words[i+j].text)===t))return {start:i,end:i+tokens.length,words:words.slice(i,i+tokens.length)};return null;}
+function confidenceError(message,words,page,field){
+ const error=Error(message);error.code='LOW_CONFIDENCE';
+ error.diagnostics={kind:'ocr-low-confidence',page,field,threshold:80,lowConfidenceWords:words.filter(w=>w.confidence<80).map(w=>({text:w.text,confidence:w.confidence,bbox:{...w.bbox}}))};
+ return error;
+}
 export function ocrPage(data,width,height,page=1){
  const words=(data.blocks||[]).flatMap(b=>(b.paragraphs||[]).flatMap(p=>(p.lines||[]).flatMap(l=>l.words||[]))).filter(w=>clean(w.text));
  if(!words.length){const error=Error('No readable text found. Upload a clearer, upright photo or scan.');error.code='NO_TEXT';throw error;}
@@ -21,7 +26,7 @@ export function ocrPage(data,width,height,page=1){
    const nextLabels=labels.map(([,t])=>phrase(row.words.slice(found.end),t)).filter(Boolean);
    const end=nextLabels.length?found.end+Math.min(...nextLabels.map(f=>f.start)):row.words.length;
    const valueWords=row.words.slice(found.end,end);
-   if(valueWords.length&&[...found.words,...valueWords].some(w=>w.confidence<80))throw Error(`Could not read ${label.toLowerCase()} confidently. Upload a clearer photo or scan.`);
+   if(valueWords.length&&[...found.words,...valueWords].some(w=>w.confidence<80))throw confidenceError(`Could not read ${label.toLowerCase()} confidently. Upload a clearer photo or scan.`,[...found.words,...valueWords],page,label);
    if(valueWords.length){items.push(item(label,found.words[0].bbox.x0/width*600,y));items.push(item(valueWords.map(w=>w.text).join(' ').replace(/^\s*:\s*/,''),valueWords[0].bbox.x0/width*600,y));}
   }
  }
@@ -42,7 +47,7 @@ export function ocrPage(data,width,height,page=1){
   const cells=Array.from({length:5},()=>[]);
   for(const word of row.words){const x=(word.bbox.x0+word.bbox.x1)/2/width*600;const col=boundaries.findIndex(b=>x<b);cells[col<0?4:col].push(word);}
   const result=clean(cells[1].map(w=>w.text).join(' '));
-  if(/^[+-]?[\d,]+(?:\.\d+)?$/.test(result)&&cells.slice(0,4).flat().some(w=>w.confidence<80))throw Error('A test result could not be read confidently. Upload a sharper photo or scan; no uncertain values were included.');
+  if(/^[+-]?[\d,]+(?:\.\d+)?$/.test(result)&&cells.slice(0,4).flat().some(w=>w.confidence<80))throw confidenceError('A test result could not be read confidently. Upload a sharper photo or scan; no uncertain values were included.',cells.slice(0,4).flat(),page,'test result');
   const y=900-row.y/height*800;
   cells.forEach((words,i)=>{if(words.length)items.push(item(words.map(w=>w.text).join(' '),centres[i]-5,y));});
  }

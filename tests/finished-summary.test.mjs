@@ -9,7 +9,7 @@ import 'tesseract.js';
 // Expected values are independently transcribed from the fictional PDFs.
 // Only file download, logging transport and browser-only behavior are replaced; reading, parsing,
 // comparison and the finished summary renderer are the application's real code.
-for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blurred','tilted','blur-rejected','rotation-rejected','layout','multipage','footer','panels'])test(`${kind.includes('rejected')?'unreadable or unsupported reports are rejected without a partial summary':'finished summary matches the original PDFs'}: ${kind}, selected backwards`,async()=>{
+for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blurred','tilted','blur-rejected','rotation-rejected','layout','multipage','footer','panels','confidence-partial'])test(`${kind.includes('rejected')?'failed reports are excluded while readable reports still produce a summary':'finished summary matches the original PDFs'}: ${kind}, selected backwards`,async()=>{
  const expected=JSON.parse(await readFile(new URL(`./fixtures/${kind}-summary.expected.json`,import.meta.url)));
  const files=await Promise.all((expected.files??['january','july'].map(name=>`${kind}-sample-${name}.pdf`)).map(name=>readFile(new URL(`./fixtures/${name}`,import.meta.url))));
  const dom=new JSDOM('<div id="summary" hidden></div>',{url:'http://localhost:5173',pretendToBeVisual:true});
@@ -48,20 +48,29 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blu
   const {mountAnalysis,capturedEvaluations}=await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}`);
   capturedEvaluations.length=0;
   const root=document.querySelector('#summary');const analysis=mountAnalysis(root,()=>{});
-  analysis.updateReports(['july','january'].map((id,i)=>({id,serial:i+1,name:`${kind}-sample-${id}.pdf`,contentType:'application/pdf',size:files[id==='january'?0:1].length})),['july','january']);
+  analysis.updateReports(['july','january'].map((id,i)=>({id,serial:i+1,name:kind==='confidence-partial'?expected.files[id==='january'?0:1]:`${kind}-sample-${id}.pdf`,contentType:'application/pdf',size:files[id==='january'?0:1].length})),['july','january']);
   assert.equal(downloads.length,0);
   await analysis.prepare();
-  if(expected.mode==='reject'){
-   const status=root.querySelector('#analysis-status').textContent;
-   for(const text of expected.errorIncludes)assert(status.includes(text),status);
+  if(expected.mode==='reject'||expected.mode==='partial'){
+   assert.deepEqual(downloads,['july','january'],'A failed file must not prevent the other download');
+   const readings=capturedEvaluations.filter(run=>run.kind==='report-reading');assert.equal(readings.length,2);
+   const failed=readings.find(r=>r.error),good=readings.find(r=>r.output);assert(failed);assert(good);
+   const captured=capturedEvaluations.find(run=>run.kind==='summary');assert(captured.output);assert(!captured.error);
+   const c=captured.output.comparison;assert.equal(c.reports.length,1);assert.equal(c.comparable.length,0);assert.deepEqual(c.reports[0].markers,good.output.markers);
+   assert.equal(captured.output.failedFiles.length,1);
+   assert.equal(root.querySelector('.real-summary-paper .report-count strong').textContent,'1');
+   assert.equal(root.querySelectorAll('.result-point').length,0,'One readable report must not invent a trend');
+   assert.equal(root.querySelectorAll('.real-summary-paper .source-button').length,good.output.markers.length);
    assert.equal(root.querySelector('#retry-summary').hidden,false);
-   assert.equal(root.querySelector('#prepare-summary').disabled,false);
-   assert.equal(root.querySelector('#real-summary').textContent,'','Unreadable reports must not produce a fabricated or partial summary');
-   assert.deepEqual(downloads,['july','january']);
-   const readings=capturedEvaluations.filter(run=>run.kind==='report-reading');
-   assert.equal(readings.length,2);assert(readings[0].output,'Readable report must finish before the damaged report is rejected');assert(!readings[0].error);
-   const summaryLog=capturedEvaluations.find(run=>run.kind==='summary');assert(summaryLog.error);assert.equal(summaryLog.output,null);
-   assert(capturedEvaluations.some(run=>run.kind==='report-reading'&&run.error));
+   assert.equal(root.querySelector('[data-reading-status="failed"]').querySelector('.reading-file-error').textContent.includes('could not be read'),true);
+   if(kind==='confidence-partial'){
+    assert(root.querySelector('#reading-failures').textContent.includes('low-confidence-scan.pdf'));
+    assert(root.querySelector('#reading-failures').textContent.includes('too unclear'));
+    assert.deepEqual([...root.querySelectorAll('.values .result-value')].map(e=>e.textContent),expected.values);
+    assert.equal(failed.error.diagnostics.threshold,80);assert.equal(failed.error.diagnostics.page,1);
+    assert(failed.error.diagnostics.lowConfidenceWords.length>0);
+    for(const word of failed.error.diagnostics.lowConfidenceWords){assert(word.text);assert(word.confidence<80);assert(word.bbox);}
+   }
    return;
   }
   assert.equal(root.querySelector('#retry-summary').hidden,true,root.querySelector('#analysis-status').textContent);

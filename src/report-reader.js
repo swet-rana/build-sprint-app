@@ -45,7 +45,7 @@ export async function readLabPdf(blob,onProgress=()=>{}){
    const page=await pdf.getPage(n),natural=page.getViewport({scale:1}),viewport=page.getViewport({scale:Math.min(3,2400/Math.max(natural.width,natural.height))});
    const canvas=document.createElement('canvas');canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);
    await page.render({canvas,canvasContext:canvas.getContext('2d'),viewport}).promise;
-   try{pages[n-1]=await reader.read(canvas,n);}catch(error){if(['NO_TEXT','NO_TABLE'].includes(error.code)){pages[n-1]={page:n,items:[]};unreadablePages.push(n);}else throw Error(`Page ${n}: ${error.message}`);}
+   try{pages[n-1]=await reader.read(canvas,n);}catch(error){if(['NO_TEXT','NO_TABLE'].includes(error.code)){pages[n-1]={page:n,items:[]};unreadablePages.push(n);}else{const failure=Error(`Page ${n}: ${error.message}`);if(error.diagnostics)failure.diagnostics=error.diagnostics;throw failure;}}
    canvas.width=canvas.height=0;
   }
   const result=parseReport(pages);if(unreadablePages.length)result.warnings.push(`Reading error on scanned pages ${unreadablePages.join(', ')}: no supported blood table could be read; these pages are excluded. Check the originals for omitted tests.`);result.warnings.push('Scanned pages were read automatically. Check every value against the original PDF.');return result;

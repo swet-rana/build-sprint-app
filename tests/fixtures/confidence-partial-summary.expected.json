@@ -1,0 +1,16 @@
+{
+  "mode": "partial",
+  "ocr": true,
+  "files": [
+    "blood-sample-july.pdf",
+    "low-confidence-scan.pdf"
+  ],
+  "scannedIndexes": [
+    1
+  ],
+  "values": [
+    "13.2",
+    "3",
+    "24"
+  ]
+}

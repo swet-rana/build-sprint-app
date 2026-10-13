@@ -29,8 +29,8 @@ test('Summary preserves selected originals, waits for a click and offers retry a
   assert(root.querySelectorAll('.selected-report-details')[1].textContent.includes('Date not added'));
   root.querySelector('#add-analysis-reports').click();assert.equal(visits,1);
   root.querySelector('[data-summary-remove="july"]').click();assert.deepEqual(removed,['july']);
-  await analysis.prepare();assert.deepEqual(downloads,['january']);
-  assert(root.querySelector('#analysis-status').textContent.includes('temporarily unavailable'));
+  await analysis.prepare();assert.deepEqual(downloads,['january','july']);
+  assert(root.querySelector('#reading-failures').textContent.includes('temporarily unavailable'));
   assert.equal(root.querySelector('#retry-summary').hidden,false);
   assert.equal(root.querySelector('#retry-summary').disabled,false);
   assert.equal(root.querySelector('#prepare-summary').disabled,false);
