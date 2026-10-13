@@ -44,6 +44,17 @@ function field(rows,label){
  }
  return null;
 }
+function resultCells(header,allowSeparateReference=false){
+  const centres=['Test Name','Result','Unit','Bio. Ref. Interval','Method'].map(label=>{const i=header.items.find(i=>clean(i.str).toLowerCase()===label.toLowerCase());return i?i.transform[4]+i.width/2:null;});
+  if(centres.slice(0,3).some(v=>v===null)||(centres[3]===null&&!allowSeparateReference))return null;
+  // Locate columns in their printed order, then return cells in the parser's
+  // semantic order. Result and reference columns can trade positions.
+  const columns=centres.map((centre,index)=>({centre,index})).filter(c=>c.centre!==null).sort((a,b)=>a.centre-b.centre);
+  if(columns.some((c,i)=>i>0&&c.centre===columns[i-1].centre))return null;
+  const bounds=columns.slice(1).map((column,i)=>(column.centre+columns[i].centre)/2);
+  return row=>{const out=['','','','',''];for(const i of row.items){const centre=i.transform[4]+i.width/2;const position=bounds.findIndex(b=>centre<b);const index=columns[position<0?columns.length-1:position].index;out[index]=clean(out[index]+' '+i.str);}return out;};
+}
+const laterPanel=/^(?:Liver Function Test|Iron Studies(?:,?\s*Basic)?|Complete Blood Count|Kidney Function Test|Renal Function Test|Lipid Profile)$/i;
 export function parseReport(pages){
  const candidates=[],identities=[],dates=[],usedPages=new Set(),warnings=[],labNames=new Set();
  for(const page of pages){
@@ -56,15 +67,7 @@ export function parseReport(pages){
   for(const row of rows)if(row.items.some(i=>/^(result|value)$/i.test(clean(i.str)))&&row.items.some(i=>/^(unit|units)$/i.test(clean(i.str))))row.items=row.items.map(i=>({...i,str:headerAliases[clean(i.str).toLowerCase()]??i.str}));
   const headerIndex=rows.findIndex(r=>r.items.some(i=>/^Test Name$/i.test(clean(i.str)))&&r.items.some(i=>/^Result$/i.test(clean(i.str)))&&r.items.some(i=>/^Unit$/i.test(clean(i.str))));
   if(headerIndex<0)continue;
-  const header=rows[headerIndex];
-  const centres=['Test Name','Result','Unit','Bio. Ref. Interval','Method'].map(label=>{const i=header.items.find(i=>clean(i.str).toLowerCase()===label.toLowerCase());return i?i.transform[4]+i.width/2:null;});
-  if(centres.slice(0,3).some(v=>v===null)||(centres[3]===null&&!footerCollection))continue;
-  // Locate columns in their printed order, then return cells in the parser's
-  // semantic order. Result and reference columns can trade positions.
-  const columns=centres.map((centre,index)=>({centre,index})).filter(c=>c.centre!==null).sort((a,b)=>a.centre-b.centre);
-  if(columns.some((c,i)=>i>0&&c.centre===columns[i-1].centre))continue;
-  const bounds=columns.slice(1).map((column,i)=>(column.centre+columns[i].centre)/2);
-  const cells=row=>{const out=['','','','',''];for(const i of row.items){const centre=i.transform[4]+i.width/2;const position=bounds.findIndex(b=>centre<b);const index=columns[position<0?columns.length-1:position].index;out[index]=clean(out[index]+' '+i.str);}return out;};
+  let cells=resultCells(rows[headerIndex],!!footerCollection);if(!cells)continue;
   let pageUsed=false;
   if(footerCollection&&!semen){
    for(const result of footerResults(rows,headerIndex,cells,numeric,clean)){
@@ -73,8 +76,20 @@ export function parseReport(pages){
     candidates.push({...testIdentity(name,unit),value,unit,referenceText,page:page.page,sourceTop:row.items.find(i=>Number.isFinite(i.sourceTop))?.sourceTop,sourceText:row.text,date});pageUsed=true;
    }
   }
+  let inNotes=false;
   for(let n=headerIndex+1;(!footerCollection||semen)&&n<rows.length;n++){
-   const row=rows[n];if(/^(Comment|Comments|Interpretation|Note|Reference Range|Reference Group)\s*:/i.test(row.text)||row.y<100)break;
+   const row=rows[n];if(row.y<100)break;
+   const repeated=resultCells(row);
+   if(repeated){cells=repeated;inNotes=false;continue;}
+   if(/^(Comment|Comments|Interpretation|Note|Reference Range|Reference Group)\s*:/i.test(row.text)){inNotes=true;continue;}
+   if(inNotes){
+    if(!laterPanel.test(row.text))continue;
+    // Resume only at an explicit panel caption with nearby numeric result rows
+    // in the established columns. Prose and numeric examples stay excluded.
+    const next=rows.slice(n+1,n+6).find(r=>{const [name,value,unit,range]=cells(r);return name&&numeric.test(value)&&unit&&range;});
+    if(!next)continue;
+    inNotes=false;continue;
+   }
    let [name,result,unit,referenceText,method]=cells(row);
    if(!name)continue;
    if(!numeric.test(result)){if(semen&&result)warnings.push(`Page ${page.page}: ${name} was not included because its result is not a single numeric value. Check the original.`);continue;}

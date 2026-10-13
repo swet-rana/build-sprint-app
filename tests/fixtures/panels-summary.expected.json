@@ -1,0 +1,102 @@
+{
+  "patient": "Sample Patient",
+  "dates": "15 Jan 2026 \u2013 15 Jul 2026",
+  "reports": 2,
+  "markers": [
+    {
+      "name": "CALCIUM",
+      "values": [
+        "9",
+        "9.5"
+      ],
+      "unit": "mg/dL",
+      "reference": "8-10",
+      "change": "Increased by 0.5 mg/dL",
+      "latest": "Within this report\u2019s range",
+      "pages": [
+        "2",
+        "1"
+      ],
+      "pointStates": [
+        "neutral",
+        "neutral"
+      ]
+    },
+    {
+      "name": "Iron",
+      "values": [
+        "45",
+        "50"
+      ],
+      "unit": "ug/dL",
+      "reference": "30-150",
+      "change": "Increased by 5 ug/dL",
+      "latest": "Within this report\u2019s range",
+      "pages": [
+        "2",
+        "1"
+      ],
+      "pointStates": [
+        "neutral",
+        "neutral"
+      ]
+    },
+    {
+      "name": "ALT (SGPT)",
+      "values": [
+        "15",
+        "18"
+      ],
+      "unit": "U/L",
+      "reference": "0-40",
+      "change": "Increased by 3 U/L",
+      "latest": "Within this report\u2019s range",
+      "pages": [
+        "2",
+        "1"
+      ],
+      "pointStates": [
+        "neutral",
+        "neutral"
+      ]
+    },
+    {
+      "name": "MCV",
+      "values": [
+        "85",
+        "86"
+      ],
+      "unit": "fL",
+      "reference": "80-100",
+      "change": "Increased by 1 fL",
+      "latest": "Within this report\u2019s range",
+      "pages": [
+        "2",
+        "1"
+      ],
+      "pointStates": [
+        "neutral",
+        "neutral"
+      ]
+    },
+    {
+      "name": "Absolute neutrophil count",
+      "values": [
+        "4",
+        "4.5"
+      ],
+      "unit": "X 10^3/uL",
+      "reference": "2-7",
+      "change": "Increased by 0.5 X 10^3/uL",
+      "latest": "Within this report\u2019s range",
+      "pages": [
+        "2",
+        "1"
+      ],
+      "pointStates": [
+        "neutral",
+        "neutral"
+      ]
+    }
+  ]
+}

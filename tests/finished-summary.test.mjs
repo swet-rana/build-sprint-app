@@ -9,7 +9,7 @@ import 'tesseract.js';
 // Expected values are independently transcribed from the fictional PDFs.
 // Only file download, logging transport and browser-only behavior are replaced; reading, parsing,
 // comparison and the finished summary renderer are the application's real code.
-for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blurred','tilted','blur-rejected','rotation-rejected','layout','multipage','footer'])test(`${kind.includes('rejected')?'unreadable or unsupported reports are rejected without a partial summary':'finished summary matches the original PDFs'}: ${kind}, selected backwards`,async()=>{
+for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blurred','tilted','blur-rejected','rotation-rejected','layout','multipage','footer','panels'])test(`${kind.includes('rejected')?'unreadable or unsupported reports are rejected without a partial summary':'finished summary matches the original PDFs'}: ${kind}, selected backwards`,async()=>{
  const expected=JSON.parse(await readFile(new URL(`./fixtures/${kind}-summary.expected.json`,import.meta.url)));
  const files=await Promise.all((expected.files??['january','july'].map(name=>`${kind}-sample-${name}.pdf`)).map(name=>readFile(new URL(`./fixtures/${name}`,import.meta.url))));
  const dom=new JSDOM('<div id="summary" hidden></div>',{url:'http://localhost:5173',pretendToBeVisual:true});
