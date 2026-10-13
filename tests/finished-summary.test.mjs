@@ -78,7 +78,7 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blu
    }
    return;
   }
-  assert.equal(root.querySelector('#retry-summary').hidden,true,root.querySelector('#analysis-status').textContent);
+  assert.equal(root.querySelector('#retry-summary').hidden,true,root.querySelector('#analysis-status').textContent+' '+root.querySelector('#reading-failures').textContent);
   assert.deepEqual(downloads,['july','january']);
   const captured=capturedEvaluations.find(run=>run.kind==='summary');assert(captured?.output,'Finished output must be available for logging');
   if(expected.labs)assert.deepEqual(captured.output.comparison.reports.map(r=>r.labName),expected.labs);
