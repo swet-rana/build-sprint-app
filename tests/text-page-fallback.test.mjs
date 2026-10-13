@@ -2,7 +2,7 @@ import test from 'node:test';import assert from 'node:assert/strict';
 import {textPageNeedsVision} from '../src/text-page-fallback.js';
 import {classifyScanPage} from '../src/blood-page-classification.js';
 import {mergeScanResults} from '../src/scan-results.js';
-import {validateScan} from '../convex/visionRules.js';
+import {validateScan,VISION_PROMPT} from '../convex/visionRules.js';
 const items=text=>text.split('\n').map((str,i)=>({str,transform:[1,0,0,1,40,750-i*20],width:str.length*6}));
 test('A failed native text page with lab evidence requires vision; covers and dates do not',()=>{
  assert.equal(textPageNeedsVision({page:1,items:items('Collected On: 15/07/2026\nTest Results Units Biological Reference Interval\nHaemoglobin 132 g/L 120-160')}).eligible,true);
@@ -18,3 +18,5 @@ test('Urine, imaging and semen retain their classification; an unreadable blood 
  assert.equal(classifyScanPage({...scan,specimen:'urine'}).reportKind,'other');assert.equal(classifyScanPage({...scan,tests:[{...row,name:'Kidney length',unit:'cm'}]}).reportKind,'other');assert.equal(classifyScanPage({...scan,reportKind:'semen'}).reportKind,'semen');
  const unclear=validateScan({...scan,tests:[{...row,readable:false}]});assert.equal(unclear.tests[0].value,null);assert.throws(()=>mergeScanResults([{page:1,result:unclear}],null,1),/No readable/);
 });
+
+test('Vision uses the text reader’s printed day/month/year convention and collection-date priority',()=>{assert(VISION_PROMPT.includes('DD/MM/YYYY'));assert(VISION_PROMPT.includes('never swap day and month'));assert(VISION_PROMPT.includes('collection/test date before a reporting'));});
