@@ -50,7 +50,8 @@ test('A scan limit or AI service failure stops preparation with its clear messag
   const {mountAnalysis}=await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}`),root=document.querySelector('#summary'),analysis=mountAnalysis(root,()=>{});
   analysis.updateReports([{id:'one',serial:1,name:'scan.pdf',contentType:'application/pdf',size:100},{id:'two',serial:2,name:'text.pdf',contentType:'application/pdf',size:100}],['one','two']);
   for(const text of ['Scan reading stopped: the limit is 30 vision pages per summary preparation.','Scan reading stopped: HealthStats has reached its app-wide daily limit of 150 vision pages. Try again tomorrow.','Scan reading stopped: the AI service could not read this page (API 429). Try again later.']){
-   globalThis.scanFailure=text;downloads=0;await analysis.prepare();assert.equal(downloads,1,'Do not keep making requests after a scan cap or API failure');assert(root.querySelector('#analysis-status').textContent.includes(text));assert.equal(root.querySelector('#real-summary').textContent,'');assert.equal(root.querySelector('#retry-summary').hidden,false);
+   const firstAttempt=globalThis.scanFailure===undefined;
+   globalThis.scanFailure=text;downloads=0;await analysis.prepare();assert.equal(downloads,firstAttempt?1:0,'Retry reuses the original and never downloads the next report after a scan cap or API failure');assert(root.querySelector('#analysis-status').textContent.includes(text));assert.equal(root.querySelector('#real-summary').textContent,'');assert.equal(root.querySelector('#retry-summary').hidden,false);
   }
  }finally{delete globalThis.scanFailure;dom.window.close();for(const key of keys){if(old[key]===undefined)delete globalThis[key];else globalThis[key]=old[key];}}
 });

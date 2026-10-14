@@ -1,0 +1,234 @@
+{
+  "before": [
+    {
+      "path": "/",
+      "bytes": 1057
+    },
+    {
+      "path": "/fonts/plus-jakarta-sans-latin-variable.woff2",
+      "bytes": 27348
+    },
+    {
+      "path": "/fonts/inter-latin-variable.woff2",
+      "bytes": 48256
+    },
+    {
+      "path": "/typography.css",
+      "bytes": 1679
+    },
+    {
+      "path": "/assets/index-bMDKB1Jk.css",
+      "bytes": 113721
+    },
+    {
+      "path": "/assets/index-BSEublu_.js",
+      "bytes": 436537
+    },
+    {
+      "path": "/images/healthstats-logo-lavender.png",
+      "bytes": 410560
+    },
+    {
+      "path": "/images/summary-trendlines.png",
+      "bytes": 1067400
+    },
+    {
+      "path": "/images/bone-minerals.png",
+      "bytes": 1009063
+    },
+    {
+      "path": "/images/home-glass-ribbons.png",
+      "bytes": 1449940
+    },
+    {
+      "path": "/images/home-static-files.png",
+      "bytes": 63425
+    },
+    {
+      "path": "/images/healthstats-logo-animated.gif",
+      "bytes": 695505
+    },
+    {
+      "path": "/images/home-static-trend-axes.png",
+      "bytes": 18195
+    },
+    {
+      "path": "/images/home-static-doctor.png",
+      "bytes": 65632
+    },
+    {
+      "path": "/images/reports-summary.png",
+      "bytes": 1355752
+    },
+    {
+      "path": "/images/profile-card.png",
+      "bytes": 1104004
+    },
+    {
+      "path": "/images/home-static-document.png",
+      "bytes": 45561
+    }
+  ],
+  "final-after-desktop": [
+    {
+      "path": "/",
+      "bytes": 1057
+    },
+    {
+      "path": "/fonts/plus-jakarta-sans-latin-variable.woff2",
+      "bytes": 27348
+    },
+    {
+      "path": "/fonts/inter-latin-variable.woff2",
+      "bytes": 48256
+    },
+    {
+      "path": "/typography.css",
+      "bytes": 1679
+    },
+    {
+      "path": "/assets/index-BFA33Lqu.css",
+      "bytes": 113786
+    },
+    {
+      "path": "/assets/index-Bb2_ZCKq.js",
+      "bytes": 439623
+    },
+    {
+      "path": "/images/healthstats-logo-lavender.png",
+      "bytes": 410560
+    },
+    {
+      "path": "/images/healthstats-logo-animated.gif",
+      "bytes": 695505
+    },
+    {
+      "path": "/images/categories/bone-minerals.webp",
+      "bytes": 3532
+    },
+    {
+      "path": "/images/home-glass-ribbons.png",
+      "bytes": 1449940
+    },
+    {
+      "path": "/images/home-static-files.png",
+      "bytes": 63425
+    },
+    {
+      "path": "/images/home-static-document.png",
+      "bytes": 45561
+    },
+    {
+      "path": "/images/home-static-trend-axes.png",
+      "bytes": 18195
+    },
+    {
+      "path": "/images/home-static-doctor.png",
+      "bytes": 65632
+    }
+  ],
+  "before-mobile": [
+    {
+      "path": "/",
+      "bytes": 1057
+    },
+    {
+      "path": "/fonts/plus-jakarta-sans-latin-variable.woff2",
+      "bytes": 27348
+    },
+    {
+      "path": "/typography.css",
+      "bytes": 1679
+    },
+    {
+      "path": "/assets/index-bMDKB1Jk.css",
+      "bytes": 113721
+    },
+    {
+      "path": "/fonts/inter-latin-variable.woff2",
+      "bytes": 48256
+    },
+    {
+      "path": "/assets/index-BSEublu_.js",
+      "bytes": 436537
+    },
+    {
+      "path": "/images/healthstats-logo-lavender.png",
+      "bytes": 410560
+    },
+    {
+      "path": "/images/summary-trendlines.png",
+      "bytes": 1067400
+    },
+    {
+      "path": "/images/bone-minerals.png",
+      "bytes": 1009063
+    },
+    {
+      "path": "/images/home-glass-ribbons.png",
+      "bytes": 1449940
+    },
+    {
+      "path": "/images/home-static-files.png",
+      "bytes": 63425
+    },
+    {
+      "path": "/images/home-static-document.png",
+      "bytes": 45561
+    },
+    {
+      "path": "/images/healthstats-logo-animated.gif",
+      "bytes": 695505
+    },
+    {
+      "path": "/images/home-static-trend-axes.png",
+      "bytes": 18195
+    },
+    {
+      "path": "/images/home-static-doctor.png",
+      "bytes": 65632
+    },
+    {
+      "path": "/images/reports-summary.png",
+      "bytes": 1355752
+    },
+    {
+      "path": "/images/profile-card.png",
+      "bytes": 1104004
+    }
+  ],
+  "final-after-mobile": [
+    {
+      "path": "/",
+      "bytes": 1057
+    },
+    {
+      "path": "/fonts/plus-jakarta-sans-latin-variable.woff2",
+      "bytes": 27348
+    },
+    {
+      "path": "/typography.css",
+      "bytes": 1679
+    },
+    {
+      "path": "/assets/index-BFA33Lqu.css",
+      "bytes": 113786
+    },
+    {
+      "path": "/fonts/inter-latin-variable.woff2",
+      "bytes": 48256
+    },
+    {
+      "path": "/assets/index-Bb2_ZCKq.js",
+      "bytes": 439623
+    },
+    {
+      "path": "/images/healthstats-logo-lavender.png",
+      "bytes": 410560
+    },
+    {
+      "path": "/images/healthstats-logo-animated.gif",
+      "bytes": 695505
+    }
+  ]
+}

@@ -75,6 +75,10 @@ test('PDF cards stay unopened; central selection and private image previews work
     root.querySelector('[data-clear-filters]').click();assert.equal(root.querySelectorAll('[data-report-id]').length,2);
     observer.callback(observer.targets.map(target=>({target,isIntersecting:true})));
     await new Promise(resolve=>setTimeout(resolve,25));assert.equal(downloads.length,2,'Cached thumbnails do not redownload when filters change');
+    root.querySelector('[data-report-id="photo-2"]').click();
+    root.querySelector('[data-report-id="pdf-1"]').click();
+    await new Promise(resolve=>setTimeout(resolve,25));
+    assert.deepEqual(downloads,['pdf-1','photo-2'],'Opening the thumbnail image or reopening a PDF reuses the shared original');
     root.querySelector('#show-upload').click();
     assert.equal(root.querySelector('.reports-selection-bar').nextElementSibling.id,'add-reports-panel','The summary action stays above the expanded upload form');
     const picker=root.querySelector('#report-files');

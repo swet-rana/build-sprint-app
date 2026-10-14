@@ -29,6 +29,11 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blu
  globalThis.fetch=async(url,options)=>{const id=JSON.parse(options.body).reportId;downloads.push(id);return new Response(files[id==='january'?0:1],{headers:{'Content-Type':'application/pdf'}});};
  const bundle=await build({entryPoints:['src/analysis.js'],bundle:true,write:false,format:'esm',platform:'node',define:{'import.meta.env.VITE_CONVEX_URL':'"https://fictional.convex.cloud"'},loader:{'.css':'empty'},plugins:[{
   name:'node-pdf-worker',setup(builder){
+   if(kind==='fertility'){
+    builder.onLoad({filter:/[\\/]src[\\/]report-reader\.js$/},async args=>({contents:(await readFile(args.path,'utf8')).replace('export async function readLabReport(', 'async function originalReadLabReport(')+'\nexport async function readLabReport(...args){globalThis.__fictionalReaderCalls=(globalThis.__fictionalReaderCalls??0)+1;return originalReadLabReport(...args);}',resolveDir:new URL('../src/',import.meta.url).pathname}));
+    builder.onResolve({filter:/report-viewer\.js$/},()=>({path:'viewer-download-check',namespace:'viewer-download-check'}));
+    builder.onLoad({filter:/.*/,namespace:'viewer-download-check'},()=>({contents:'export async function openReportViewer({load}){await load();}'}));
+   }
    if(kind==='vision'||kind==='scan-filter'){
     builder.onResolve({filter:/vision-client\.js$/},()=>({path:'fictional-vision-transport',namespace:'fictional-vision'}));
     builder.onLoad({filter:/.*/,namespace:'fictional-vision'},()=>({contents:`export const visionRequests=[];export function visionReading(){return async(canvas,page)=>{visionRequests.push(page);return ({reportKind:'blood',patientName:'Sample Patient',reportDate:'2026-07-15',tests:[{name:'Haemoglobin',value:'13.2',unit:'g/dL',referenceRange:'12 - 16',readable:true,sourceTop:0.27},{name:'CRP',value:'3.0',unit:'mg/L',referenceRange:'0 - 5',readable:true,sourceTop:0.32},{name:'Vitamin D',value:'24',unit:'ng/mL',referenceRange:'30 - 100',readable:true,sourceTop:0.37},{name:'Unreadable fictional marker',value:'999',unit:'mg/L',referenceRange:null,readable:false,sourceTop:null}]});};}`}));
@@ -128,6 +133,15 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blu
   if(kind==='fertility'){
   const prolactin=markers.find(m=>m.querySelector('.change strong').textContent==='Decreased by 10 ng/mL');
   assert.deepEqual([...prolactin.querySelectorAll('.result-point')].map(p=>p.getAttribute('class')),['result-point trend-out-of-range range-above','result-point trend-normal-transition range-within']);
+  assert.equal(globalThis.__fictionalReaderCalls,2);
+  const source=paper.querySelector('.source-button');source.click();source.click();
+  await new Promise(resolve=>setTimeout(resolve,20));
+  await analysis.prepare();
+  assert.deepEqual(downloads,['july','january'],'Repeated source opens and summary preparation reuse the same original files');
+  assert.equal(globalThis.__fictionalReaderCalls,2,'The real PDF reader runs once per file, including repeated preparation');
+  assert.equal(root.querySelector('.real-summary-paper .summary-heading p').textContent,expected.dates);
+  console.log('CACHE PROOF: two fictional originals downloaded twice total; real PDF reader ran twice total; two source opens and a second summary made zero extra downloads or readings.');
+  delete globalThis.__fictionalReaderCalls;
   }
   assert(paper.querySelector('.summary-footer').textContent.includes('A change is not a diagnosis'));
  }finally{dom.window.close();for(const key of globals){if(previous[key]===undefined)delete globalThis[key];else globalThis[key]=previous[key];}}

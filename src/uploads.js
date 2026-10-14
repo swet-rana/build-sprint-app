@@ -1,3 +1,4 @@
+import {reportCache} from './report-cache.js';
 import {convertHeicUpload,isHeicPhoto} from './heic-upload.js';
 import { matchesReportSearch } from './report-search.js';
 import { MAX_ANALYSIS_REPORTS } from './analysis-rules.js';
@@ -22,7 +23,7 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
   root.classList.add('premium-reports');
   const uploadPanel=root.querySelector('.upload-panel'), savedPanel=root.querySelector('.saved-reports');
   uploadPanel.id='add-reports-panel';uploadPanel.hidden=true;
-  savedPanel.querySelector('.saved-heading').innerHTML=`<div class="reports-title-with-art health-page-heading"><img class="reports-heading-art health-page-heading-art" src="/images/reports-summary.png" alt="" width="88" height="88" decoding="async"><div><h1 id="saved-title">My reports</h1><p>All your health records, in one place.</p></div></div><div class="report-upload-heading"><button class="primary premium-upload" type="button" id="show-upload" aria-expanded="false" aria-controls="add-reports-panel"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5M4 15v6h16v-6"/></svg>Upload report</button><p id="report-count-label"></p></div>`;
+  savedPanel.querySelector('.saved-heading').innerHTML=`<div class="reports-title-with-art health-page-heading"><img class="reports-heading-art health-page-heading-art" src="/images/reports-summary.png" alt="" width="88" height="88" loading="lazy" decoding="async"><div><h1 id="saved-title">My reports</h1><p>All your health records, in one place.</p></div></div><div class="report-upload-heading"><button class="primary premium-upload" type="button" id="show-upload" aria-expanded="false" aria-controls="add-reports-panel"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5M4 15v6h16v-6"/></svg>Upload report</button><p id="report-count-label"></p></div>`;
   const toolbar=document.createElement('div');toolbar.className='reports-toolbar';
   toolbar.innerHTML=`<label class="report-search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><span class="sr-only">Search reports</span><input id="search-reports" type="search" placeholder="Search by report type, lab or PDF / photo" autocomplete="off"></label><div class="report-arrange-row"><div class="report-filters" aria-label="Filter reports"><button type="button" data-report-filter="all" aria-pressed="true">All reports</button><button type="button" data-report-filter="pdf" aria-pressed="false">PDF</button><button type="button" data-report-filter="image" aria-pressed="false">Image</button></div><label class="report-sort">Sort by<select id="sort-reports"><option value="upload-newest">Upload date · newest first</option><option value="upload-oldest">Upload date · oldest first</option><option value="report-newest">Report date · newest first</option><option value="report-oldest">Report date · oldest first</option></select></label></div>`;
   savedPanel.querySelector('.saved-heading').after(toolbar);
@@ -80,6 +81,15 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
   const trashPages = [], trashSubscriptions = [];
   const url = import.meta.env.VITE_CONVEX_URL;
   const site = url?.replace(/\.convex\.cloud\/?$/, '.convex.site');
+  const recentUploads=new Map();
+  function syncCachedReports(){
+    const cache=reportCache(site,sessionKey);
+    for(const report of saved){
+      const file=recentUploads.get(report.id);
+      if(file&&file.size===report.size&&file.type===report.contentType){void cache.remember(report,file);recentUploads.delete(report.id);}
+    }
+    void cache.sync(saved);
+  }
   function message(text, isError = false) { status.textContent = text; status.classList.toggle('is-error', isError); }
   function renderQueue() {
     queueEl.innerHTML = queue.map(item => `<li><div><strong>${escape(item.file.name)}</strong><span>${sizeLabel(item.file.size)}</span></div><span class="queue-state ${item.state==='error'?'is-error':''}">${escape(item.message || 'Ready to upload')}</span></li>`).join('');
@@ -100,7 +110,7 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
         thumbnailObserver.unobserve(target);
         const reportId=target.dataset.thumbnailId;
         let promise=thumbnailCache.get(reportId);
-        if(!promise){promise=fetch(`${site}/reports/open`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionKey,reportId}),signal:AbortSignal.timeout(60000)}).then(response=>{if(!response.ok)throw Error('Preview unavailable');return response.blob();}).then(blob=>URL.createObjectURL(blob)).catch(()=>null);thumbnailCache.set(reportId,promise);}
+        if(!promise){const report=saved.find(r=>r.id===reportId);if(!report)return;promise=reportCache(site,sessionKey).original(report).then(blob=>URL.createObjectURL(blob)).catch(()=>null);thumbnailCache.set(reportId,promise);}
         promise.then(url=>{if(url&&target.isConnected){const image=document.createElement('img');image.src=url;image.alt='';image.decoding='async';target.prepend(image);target.classList.add('has-thumbnail');}});
       });
     },{rootMargin:'100px'});
@@ -184,13 +194,14 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
         const complete=reportPages.at(-1).isDone;
         loaded=complete;renderReports();renderQueue();
         if(complete){
+          syncCachedReports();
           analysisIds=new Set([...analysisIds].filter(id=>saved.some(r=>r.id===id)));
           publishSelection();
         }else if(!reportSubscriptions[index+1])watchReports(index+1,result.continueCursor);
       },()=>{
         message('Unlimited uploads need the latest storage update. Run npx convex dev --once, then reload.',true);
         if(!legacySubscription)legacySubscription=client.onUpdate(api.reports.list,{sessionKey},reports=>{
-          saved=reports;loaded=true;renderReports();renderQueue();publishSelection();
+          saved=reports;loaded=true;syncCachedReports();renderReports();renderQueue();publishSelection();
         },()=>{loaded=false;renderQueue();message('Reports could not be loaded. Check your connection and reload.',true);});
       });
     }
@@ -233,6 +244,7 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
         const response = await fetch(`${site}/reports/upload`, {method:'POST',body:form,signal:AbortSignal.timeout(120000)});
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || 'Upload failed. Try again.');
+        if(result.reportId){recentUploads.set(result.reportId,item.file);if(loaded)syncCachedReports();}
         item.state='saved'; item.message='Uploaded';
       } catch (error) {
         item.state='error'; item.message=error.name==='TimeoutError' ? 'Upload timed out. Check your connection and try again.' : error.message === 'Failed to fetch' ? 'Connection lost. Check your connection and try again.' : error.message;
@@ -295,11 +307,7 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
     if (!button || button.disabled) return;
     const report = saved.find(r=>r.id===button.dataset.reportId);
     if(!report) return;
-    await openReportViewer({name:`Report #${report.serial} · ${report.name}`,load:async()=>{
-      const response=await fetch(`${site}/reports/open`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionKey,reportId:report.id}),signal:AbortSignal.timeout(60000)});
-      if(!response.ok){const result=await response.json();throw Error(result.error||'Could not open this report.');}
-      return response.blob();
-    }});
+    await openReportViewer({name:`Report #${report.serial} · ${report.name}`,load:()=>reportCache(site,sessionKey).original(report)});
   });
   return {removeFromAnalysis(id){
     if(!analysisIds.delete(id))return;

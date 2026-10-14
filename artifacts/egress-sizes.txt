@@ -1,0 +1,8 @@
+Local production-build response bodies; cold cache; no gzip; no Convex/backend traffic.
+Desktop homepage, 1440px wide: before 7913635 bytes; after 3384099 bytes.
+Mobile homepage, 390 × 844 CSS viewport: before 7913635 bytes; after 1737814 bytes.
+18 category PNG originals: before 25392230 bytes.
+All category WebP files, including 3 smaller mobile variants: after 92846 bytes.
+Desktop category WebP set actually used by one page: 82458 bytes.
+Largest category WebP dimensions: 112 × 112 pixels.
+Smaller mobile variants: 88 × 88, 96 × 96, 88 × 88 pixels.

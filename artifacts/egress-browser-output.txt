@@ -1,0 +1,8 @@
+Local fictional-report browser check; Convex replaced only by a local fixture backend.
+First preparation: 2 original downloads; 2 real PDF reader calls; 2 reports read; 6 matching tests.
+Second preparation: 2 original downloads total; 2 reader calls total.
+Source viewer opened and returned to HealthStats; original downloads stayed at 2.
+Same original opened from Reports; original downloads stayed at 2.
+After a page reload: 2 original downloads total; 0 reader calls on the new load; 2 reports read; 6 matching tests.
+Mobile frame: viewport 390; page width 390.
+All 36 original/compressed comparison images loaded for visual review.

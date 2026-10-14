@@ -1,0 +1,31 @@
+
+> build-sprint-app@1.0.0 prebuild
+> node scripts/prepare-ocr.mjs
+
+Local photo-reading assets prepared.
+
+> build-sprint-app@1.0.0 build
+> vite build
+
+vite v6.4.3 building for production...
+transforming...
+node_modules/@convex-dev/auth/dist/react/index.js (6:0): Module level directives cause errors when bundled, "use client" in "node_modules/@convex-dev/auth/dist/react/index.js" was ignored.
+✓ 187 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                              1.06 kB │ gzip:   0.60 kB
+dist/assets/pdf.worker.min-Dkey6ZUl.mjs  1,321.31 kB
+dist/assets/index-BFA33Lqu.css             113.79 kB │ gzip:  20.41 kB
+dist/assets/pdf.worker.min-OGYDhRwp.js       0.07 kB │ gzip:   0.09 kB
+dist/assets/ocr-reader-C4aYmh6T.js           6.22 kB │ gzip:   3.03 kB
+dist/assets/report-reader-9tifKaqy.js       11.94 kB │ gzip:   4.89 kB
+dist/assets/index-rsjYK84W.js               15.89 kB │ gzip:   6.80 kB
+dist/assets/index-Bb2_ZCKq.js              439.62 kB │ gzip: 138.25 kB
+dist/assets/pdf-q-5ow4VI.js                541.88 kB │ gzip: 164.25 kB
+dist/assets/heic-to-BMmzkEG2.js          3,150.92 kB │ gzip: 776.17 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 2.85s
