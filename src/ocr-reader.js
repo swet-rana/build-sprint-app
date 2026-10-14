@@ -5,7 +5,7 @@ export async function makeOcrReader(onStatus=()=>{}){
  let worker;
  try{
   const {createWorker}=await import('tesseract.js');
-  worker=await createWorker('eng',1,{workerPath:'/ocr/worker.min.js',corePath:'/ocr/core',langPath:'/ocr/lang',workerBlobURL:false,logger:({status,progress})=>onStatus(`${status}${Number.isFinite(progress)?` ${Math.round(progress*100)}%`:''}`)});
+  worker=await createWorker('eng',1,{workerPath:'https://cdn.jsdelivr.net/npm/tesseract.js@6.0.1/dist/worker.min.js',corePath:'https://cdn.jsdelivr.net/npm/tesseract.js-core@6.1.2',langPath:'https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng@1.0.0/4.0.0_best_int',workerBlobURL:true,logger:({status,progress})=>onStatus(`${status}${Number.isFinite(progress)?` ${Math.round(progress*100)}%`:''}`)});
   await worker.setParameters({preserve_interword_spaces:'1'});
  }catch(error){console.error('Photo reader startup failed:',error);await worker?.terminate();throw Error('The photo reader could not start. Reload and try again. If this continues, its reading files need to be installed.');}
  return {

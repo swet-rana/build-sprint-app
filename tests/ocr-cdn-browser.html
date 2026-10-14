@@ -1,0 +1,20 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Fictional scanned PDF CDN check</title></head><body><h1>Fictional scanned PDF CDN check</h1><button id="scan">Scan fictional PDF</button><pre id="result">Not started</pre><pre id="network"></pre><script type="module">
+import {guardTestTarget} from './test-target.js';
+guardTestTarget(import.meta.env.VITE_CONVEX_URL,{script:'ocr-cdn-browser.html',devOnly:true});
+guardTestTarget(location.origin,{script:'ocr-cdn-browser.html',devOnly:true});
+// Test-only network observation inside the worker. Recognition is unchanged.
+const NativeBlob=window.Blob,NativeWorker=window.Worker;
+window.Blob=class extends NativeBlob{constructor(parts,options){
+ if(parts?.length===1&&typeof parts[0]==='string'&&parts[0].startsWith('importScripts('))parts=[`new PerformanceObserver(list=>{for(const e of list.getEntries())if(e.name.startsWith('https://cdn.jsdelivr.net/'))self.postMessage({ocrNetwork: 'GET '+e.name+' status='+e.responseStatus});}).observe({type:'resource',buffered:true});\n`,...parts];
+ super(parts,options);
+}};
+window.Worker=class extends NativeWorker{constructor(...args){super(...args);this.addEventListener('message',event=>{if(event.data?.ocrNetwork){event.stopImmediatePropagation();document.querySelector('#network').textContent+=event.data.ocrNetwork+'\n';console.log(event.data.ocrNetwork);}});}};
+const {readLabReport}=await import('/src/report-reader.js');
+document.querySelector('#scan').onclick=async()=>{
+ const out=document.querySelector('#result');out.textContent='Reading…';
+ try{const blob=await(await fetch('/tmp/ocr-fixtures/second-scanned.pdf')).blob();const result=await readLabReport(blob,(_p,_n,status)=>{out.textContent=status;},'application/pdf');
+ if(result.date!=='2026-08-25'||JSON.stringify(result.markers.map(m=>m.value))!=='[11.8,2.5]')throw Error('Fictional scan does not match expected values');
+ out.textContent='PASS: fictional scanned PDF; correct date and 2 expected values; path='+result.readingPaths.join(', ');
+ }catch(e){out.textContent='FAIL: '+e.message;console.error(e);}
+};
+</script></body></html>

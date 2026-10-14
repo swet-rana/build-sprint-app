@@ -8,7 +8,7 @@ import {createWorker} from 'tesseract.js';
 import {ocrPage} from '../src/ocr-page.js';
 import {parseReport,compareReportSeries} from '../src/lab-parser.js';
 const folder=new URL('../tmp/semen-fixtures/',import.meta.url);await mkdir(folder,{recursive:true});
-const worker=await createWorker('eng',1,{langPath:new URL('../public/ocr/lang',import.meta.url).pathname});
+const worker=await createWorker('eng',1,{langPath:new URL('../tmp/ocr-assets/lang',import.meta.url).pathname});
 try{
  const reports=[];
  for(const [index,date,concentration] of [[1,'15/Jan/2026',24],[2,'15/Feb/2026',30]]){

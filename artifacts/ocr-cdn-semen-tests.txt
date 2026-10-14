@@ -1,0 +1,6 @@
+
+> build-sprint-app@1.0.0 test:semen
+> node scripts/prepare-ocr.mjs && node tests/semen-ocr-integration.mjs
+
+Local OCR test data prepared outside the public build.
+Two semen photos: real recognition, identities, source references and comparison passed.

@@ -1,0 +1,10 @@
+
+> build-sprint-app@1.0.0 test:ocr
+> node scripts/prepare-ocr.mjs && node scripts/create-ocr-fixtures.mjs && node tests/ocr-integration.mjs
+
+Local OCR test data prepared outside the public build.
+Fictional photos, scanned PDFs and blank image created.
+Native scan text items: 0
+Scanned PDF: correct patient, date and values.
+Photo: correct patient, date and values.
+Unreadable image: correct reading error.
