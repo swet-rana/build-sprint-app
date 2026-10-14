@@ -55,3 +55,10 @@ test('The app-wide server cap prevents storage and provider calls before the act
  const ctx={runMutation:async(ref,args)=>reserve._handler(q.ctx,args),storage:{store:async()=>{assert.fail('A capped request must not upload or call the provider');}}};
  try{await assert.rejects(read._handler(ctx,{...q.args(1),image:'data:image/jpeg;base64,/9j/AA=='}),/150 vision pages/);}finally{if(previousKey===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=previousKey;}
 });
+
+test('Rejected image size saves page dimensions, format, byte count and exact rule without calling AI or reserving a vision page',async()=>{
+ const oldKey=process.env.OPENAI_API_KEY;process.env.OPENAI_API_KEY='fictional-test-key';const calls=[],blobs=[];
+ const ctx={runMutation:async(ref,args)=>{assert(!('readingId' in args),'Image validation must not reserve a vision page');calls.push(args);return 'fictional-run';},storage:{store:async blob=>{blobs.push(blob);return 'fictional-storage';}}};
+ const image='data:image/jpeg;base64,'+'/9j/'.padEnd(750000,'A');
+ try{await assert.rejects(read._handler(ctx,{sessionKey:'a'.repeat(64),readingId:'fictional',reportId:'fictional',page:2,image,imageMetadata:{width:1600,height:1200,sourceWidth:4032,sourceHeight:3024,fileType:'image/jpeg',byteSize:562500,dataUrlCharacters:image.length}}),/too large or invalid/);assert.equal(calls.length,2);assert.match(calls[0].engine,/image validation/);assert.match(calls[1].error,/too large or invalid/);const saved=JSON.parse(await blobs[0].text());assert.equal(saved.imageCheck.width,1600);assert.equal(saved.imageCheck.height,1200);assert.equal(saved.imageCheck.byteSize,562500);assert.equal(saved.imageCheck.fileType,'image/jpeg');assert.equal(saved.rejected,true);assert(saved.rule.includes('image.length>750000'));assert.equal(saved.image,undefined);}finally{if(oldKey===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=oldKey;}
+});

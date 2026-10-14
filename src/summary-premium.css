@@ -136,3 +136,19 @@
  @media(prefers-reduced-motion:reduce){#summary-view .summary-scroll-down{transition:none}}
 }
 @media print{.summary-scroll-down{display:none!important}}
+
+@media screen and (max-width:760px){
+ #app #summary-view .analysis-notice>div{flex:1 1 calc(100% - 34px);min-width:0;width:auto}
+ #app #summary-view .analysis-notice p,#app #summary-view #reading-failures,#app #summary-view .reading-file-error{min-width:0;max-width:100%;overflow-wrap:anywhere;word-break:normal}
+ #app #summary-view .selected-report-details .reading-file-error{display:block;width:100%;line-height:1.5}
+ #app #summary-view #reading-failures{width:100%}
+ #app #summary-view #reading-failures p{display:block;max-width:100%;line-height:1.6}
+}
+
+.reading-file-error-mobile{display:none}
+@media screen and (max-width:760px){
+ #app #summary-view .selected-report-details .reading-file-error{display:none}
+ #app #summary-view .reading-file-error-mobile{display:block;grid-column:1 / -1;width:100%;min-width:0;margin:4px 0 0;font-size:12px;line-height:1.6;color:#8e342d;overflow-wrap:anywhere}
+ #app #summary-view .analysis-selected-list .selected-report-file{grid-column:3;grid-row:2;white-space:normal}
+ #app #summary-view .analysis-selected-list .remove-analysis-report{grid-column:4;grid-row:1}
+}

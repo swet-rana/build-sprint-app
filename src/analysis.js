@@ -81,8 +81,8 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   for(const item of selectionList.querySelectorAll('li')){
    const id=item.querySelector('[data-summary-remove]')?.dataset.summaryRemove;
    const failure=failures.find(f=>f.reportId===id);item.dataset.readingStatus=failure?'failed':'';
-   item.querySelector('.reading-file-error')?.remove();
-   if(failure){const note=document.createElement('p');note.className='reading-file-error';note.textContent=failure.message;item.querySelector('.selected-report-details').append(note);}
+   item.querySelectorAll('.reading-file-error,.reading-file-error-mobile').forEach(note=>note.remove());
+   if(failure){const note=document.createElement('p');note.className='reading-file-error';note.textContent=failure.message;item.querySelector('.selected-report-details').append(note);const mobileNote=note.cloneNode(true);mobileNote.className='reading-file-error-mobile';item.append(mobileNote);}
   }
  }
  function setBusyControls(){

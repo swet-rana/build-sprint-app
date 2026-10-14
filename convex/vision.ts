@@ -1,7 +1,7 @@
 import {v,ConvexError} from 'convex/values';
 import {getAuthUserId} from '@convex-dev/auth/server';
 import {action,mutation,internalMutation} from './_generated/server';
-import {internal} from './_generated/api';
+import {internal,api} from './_generated/api';
 import type {Id} from './_generated/dataModel';
 import {isSessionKey,matchesFileType} from './fileRules.js';
 import {VISION_MODEL,VISION_PROMPT,VISION_SCHEMA,validateScan,visionDay,visionLimitError} from './visionRules.js';
@@ -25,9 +25,16 @@ export const reserve=internalMutation({args:{sessionKey:v.string(),readingId:v.i
  if(daily)await ctx.db.patch('visionAppDaily',daily._id,{pages:used+1});else await ctx.db.insert('visionAppDaily',{day,pages:used+1});
  return ctx.db.insert('evaluationRuns',{sessionKey,kind:'report-reading',reportIds:[reportId],engine:`OpenAI ${VISION_MODEL} vision / page ${page}`,inputs:[{reportId,storageId:report.storageId,name:report.name,contentType:report.contentType,contentHash:report.contentHash??null}],status:'running',startedAt:Date.now()});
 }});
-export const read=action({args:{sessionKey:v.string(),readingId:v.id('visionReadings'),reportId:v.id('reports'),page:v.number(),image:v.string(),ocrDiagnostics:v.optional(v.string())},returns:scanValidator,handler:async(ctx,{sessionKey,readingId,reportId,page,image,ocrDiagnostics}):Promise<any>=>{
+export const read=action({args:{sessionKey:v.string(),readingId:v.id('visionReadings'),reportId:v.id('reports'),page:v.number(),image:v.string(),ocrDiagnostics:v.optional(v.string()),imageMetadata:v.optional(v.object({width:v.number(),height:v.number(),sourceWidth:v.number(),sourceHeight:v.number(),fileType:v.string(),byteSize:v.number(),dataUrlCharacters:v.number()}))},returns:scanValidator,handler:async(ctx,{sessionKey,readingId,reportId,page,image,ocrDiagnostics,imageMetadata}):Promise<any>=>{
  if(!process.env.OPENAI_API_KEY)throw new ConvexError('Scan reading is unavailable: the server API key is missing.');
- if(image.length>750000||!/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(image))throw new ConvexError('The scan image is too large or invalid. Upload a smaller clear copy.');
+ const payload=image.split(',')[1]??'',imageCheck={page,width:imageMetadata?.width??null,height:imageMetadata?.height??null,fileType:image.match(/^data:([^;,]+)/)?.[1]??'invalid',byteSize:Math.max(0,Math.floor(payload.length*3/4)-(payload.endsWith('==')?2:payload.endsWith('=')?1:0)),dataUrlCharacters:image.length};
+ const rejected=image.length>750000||!/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(image);
+ console.info('Scan image check',{...imageCheck,rejected,rule:'image.length>750000 || !/^data:image\\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(image)'});
+ if(rejected){
+  const error='The scan image is too large or invalid. Upload a smaller clear copy.';
+  try{const runId=await ctx.runMutation(api.evaluations.begin,{sessionKey,kind:'report-reading',reportIds:[reportId],engine:`Vision image validation / page ${page}`});const outputStorageId=await ctx.storage.store(new Blob([JSON.stringify({imageCheck,rejected:true,rule:'image.length>750000 || !/^data:image\\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(image)'})],{type:'application/json'}));await ctx.runMutation(internal.evaluations.complete,{sessionKey,runId,outputStorageId,error});}catch{console.warn('Scan image rejection log could not be saved.');}
+  throw new ConvexError(error);
+ }
  const bytes=Uint8Array.from(atob(image.split(',')[1]),c=>c.charCodeAt(0));if(!matchesFileType(bytes,'image/jpeg'))throw new ConvexError('Invalid scan image.');
  if(ocrDiagnostics&&(ocrDiagnostics.length>100000||!JSON.parse(ocrDiagnostics)))throw new ConvexError('Invalid OCR details.');
  const runId=await ctx.runMutation(internal.vision.reserve,{sessionKey,readingId,reportId,page});
@@ -46,7 +53,7 @@ export const read=action({args:{sessionKey:v.string(),readingId:v.id('visionRead
  }catch(error){const message=error instanceof Error?error.message:'Unknown scan reading error';await save({error:message});throw new ConvexError(message.startsWith('Scan reading stopped:')?message:'Scan reading stopped: the AI service failed. Try again later.');}
  async function save(outcome:object){
   const loggedRequest=request?{...request,input:[{role:'user',content:[{type:'input_text',text:VISION_PROMPT},{type:'input_image',storageId:imageStorageId,detail:'high'}]}]}:null;
-  const outputStorageId=await ctx.storage.store(new Blob([JSON.stringify({page,imageStorageId: imageStorageId??null,ocrDiagnostics:ocrDiagnostics?JSON.parse(ocrDiagnostics):null,request:loggedRequest,rawResponse:rawResponse??null,...outcome})],{type:'application/json'}));
+  const outputStorageId=await ctx.storage.store(new Blob([JSON.stringify({imageCheck,page,imageStorageId: imageStorageId??null,ocrDiagnostics:ocrDiagnostics?JSON.parse(ocrDiagnostics):null,request:loggedRequest,rawResponse:rawResponse??null,...outcome})],{type:'application/json'}));
   await ctx.runMutation(internal.evaluations.complete,{sessionKey,runId,outputStorageId,...('error' in outcome?{error:String(outcome.error)}:{})});
  }
 }});

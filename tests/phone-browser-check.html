@@ -1,0 +1,7 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fictional phone image checks</title></head><body>
+<h1>Fictional phone image checks</h1><pre id="encoding">Checking large image…</pre><pre id="heic">Checking HEIC…</pre><iframe title="390px error layout check" src="/tests/phone-error-frame.html" width="390" height="844" style="border:0;max-width:100%"></iframe>
+<script type="module">
+import {encodeScanImage} from '/src/scan-image.js';import {convertHeicUpload} from '/src/heic-upload.js';
+try{const canvas=document.createElement('canvas');canvas.width=4032;canvas.height=3024;const c=canvas.getContext('2d');c.fillStyle='white';c.fillRect(0,0,4032,3024);for(let i=0;i<200;i++){c.fillStyle=`hsl(${i*19%360} 60% 50%)`;c.fillRect(i*21,0,10,3024);}const result=await encodeScanImage(canvas);document.querySelector('#encoding').textContent='PASS large phone image: '+JSON.stringify(result.metadata);canvas.width=canvas.height=0;}catch(e){document.querySelector('#encoding').textContent='FAIL '+e.message;}
+try{const blob=await(await fetch('/tests/fixtures/fictional-phone-photo.heic')).blob(),input=new File([blob],'fictional-phone.heic',{type:'image/heic'}),output=await convertHeicUpload(input);document.querySelector('#heic').textContent='PASS genuine HEIC converted before upload: '+JSON.stringify({fileType:output.type,byteSize:output.size,name:output.name});}catch(e){document.querySelector('#heic').textContent='FAIL '+e.message;}
+</script></body></html>

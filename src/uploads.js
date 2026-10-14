@@ -1,3 +1,4 @@
+import {convertHeicUpload,isHeicPhoto} from './heic-upload.js';
 import { matchesReportSearch } from './report-search.js';
 import { MAX_ANALYSIS_REPORTS } from './analysis-rules.js';
 import { openReportViewer } from './report-viewer.js';
@@ -5,7 +6,7 @@ import { ConvexClient } from 'convex/browser';
 import './reports.css';
 import './reports-premium.css';
 import { api } from '../convex/_generated/api';
-import { fileError } from '../convex/fileRules.js';
+import { fileError,MAX_FILE_SIZE } from '../convex/fileRules.js';
 import { numberReports, sortReports } from './report-list.js';
 import { emptyDetails, testDateLabel, shortTestType } from './report-details.js';
 const escape = text => String(text).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
@@ -17,7 +18,7 @@ const pdfPreviewIcon = '<svg class="report-format-icon" viewBox="0 0 64 76" fill
 const imagePreviewIcon = '<svg class="report-format-icon" viewBox="0 0 64 76" fill="none" aria-hidden="true"><path d="M14 4h25l13 13v51a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4Z" fill="white" stroke="currentColor" stroke-width="2"/><path d="M39 4v13h13" stroke="currentColor" stroke-width="2"/><rect x="17" y="28" width="28" height="27" rx="3" fill="#EEE9FF" stroke="currentColor" stroke-width="2"/><circle cx="36" cy="36" r="3" fill="currentColor"/><path d="m18 50 9-10 8 9 4-4 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
 export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
-  root.innerHTML = `<section class="upload-panel" aria-labelledby="upload-title"><div class="upload-heading"><h2 id="upload-title">Add your lab reports</h2><p>Start with two medical reports from different dates. Upload clear copies with all pages included.</p></div><form id="upload-form"><div class="file-picker"><svg width="38" height="38" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 26V8m-7 7 7-7 7 7M8 25v8h24v-8"/></svg><div><label for="report-files">Choose reports</label><p id="file-help">PDF, JPG, PNG or WebP · up to 10 MB each</p><p id="multiple-file-help">Choose several files at once, or add them one at a time before uploading.</p></div><input id="report-files" type="file" accept="application/pdf,image/jpeg,image/png,image/webp,.pdf,.jpg,.jpeg,.png,.webp" multiple aria-describedby="file-help multiple-file-help" /></div><ul id="upload-queue" class="upload-queue" aria-label="Selected reports"></ul><div id="upload-actions" class="upload-actions" hidden><button class="primary" type="submit" id="upload-submit">Upload reports</button><button class="secondary" type="button" id="clear-selection">Clear selection</button></div></form><p id="upload-status" class="upload-status" role="status" aria-live="polite"></p><div class="upload-note"><strong>Your reports stay separate from the sample.</strong><p>Your original files are saved. For now, access is tied to this browser. Clearing browser data loses access; sign-in will come later. Once two reports are saved, open My summary to compare them. Clear photos and scanned PDFs can be read too.</p></div></section><section class="saved-reports" aria-labelledby="saved-title"><div class="saved-heading"><h2 id="saved-title">Your uploaded reports</h2><span id="report-count-label"></span></div><div id="reports-list"><p class="loading-message">Prepare for conversation with your doctor</p></div></section>`;
+  root.innerHTML = `<section class="upload-panel" aria-labelledby="upload-title"><div class="upload-heading"><h2 id="upload-title">Add your lab reports</h2><p>Start with two medical reports from different dates. Upload clear copies with all pages included.</p></div><form id="upload-form"><div class="file-picker"><svg width="38" height="38" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 26V8m-7 7 7-7 7 7M8 25v8h24v-8"/></svg><div><label for="report-files">Choose reports</label><p id="file-help">PDF, JPG, PNG, WebP or HEIC · up to 10 MB each</p><p id="multiple-file-help">Choose several files at once, or add them one at a time before uploading.</p></div><input id="report-files" type="file" accept="application/pdf,image/jpeg,image/png,image/webp,image/heic,image/heif,.pdf,.jpg,.jpeg,.png,.webp,.heic,.heif" multiple aria-describedby="file-help multiple-file-help" /></div><ul id="upload-queue" class="upload-queue" aria-label="Selected reports"></ul><div id="upload-actions" class="upload-actions" hidden><button class="primary" type="submit" id="upload-submit">Upload reports</button><button class="secondary" type="button" id="clear-selection">Clear selection</button></div></form><p id="upload-status" class="upload-status" role="status" aria-live="polite"></p><div class="upload-note"><strong>Your reports stay separate from the sample.</strong><p>Your original files are saved. For now, access is tied to this browser. Clearing browser data loses access; sign-in will come later. Once two reports are saved, open My summary to compare them. Clear photos and scanned PDFs can be read too.</p></div></section><section class="saved-reports" aria-labelledby="saved-title"><div class="saved-heading"><h2 id="saved-title">Your uploaded reports</h2><span id="report-count-label"></span></div><div id="reports-list"><p class="loading-message">Prepare for conversation with your doctor</p></div></section>`;
   root.classList.add('premium-reports');
   const uploadPanel=root.querySelector('.upload-panel'), savedPanel=root.querySelector('.saved-reports');
   uploadPanel.id='add-reports-panel';uploadPanel.hidden=true;
@@ -49,6 +50,7 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
   const submit = root.querySelector('#upload-submit');
   const clear = root.querySelector('#clear-selection');
   const list = root.querySelector('#reports-list');
+  let conversionChain=Promise.resolve();
   let queue = [], saved = [], busy = false, loaded = false, sessionKey, client, editingId = null, deletedReports = [], trashCursor = null, trashDone = true, trashPageCount = 1, reportControlsReady = false, searchTerm = '', reportFilter = 'all';
   let reportSort = localStorage.getItem('healthstats-report-sort') || 'upload-newest';
   if (!['upload-newest','upload-oldest','report-newest','report-oldest'].includes(reportSort)) reportSort = 'upload-newest';
@@ -83,9 +85,9 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
     queueEl.innerHTML = queue.map(item => `<li><div><strong>${escape(item.file.name)}</strong><span>${sizeLabel(item.file.size)}</span></div><span class="queue-state ${item.state==='error'?'is-error':''}">${escape(item.message || 'Ready to upload')}</span></li>`).join('');
     actions.hidden = queue.length === 0;
     root.querySelector('label[for="report-files"]').textContent = queue.length ? 'Add more reports' : 'Choose reports';
-    const pending = queue.filter(item => item.state !== 'saved').length;
+    const pending = queue.filter(item => item.state !== 'saved'&&!item.conversionFailed).length;
     submit.textContent = busy ? 'Uploading…' : `Upload ${pending} ${pending===1?'report':'reports'}`;
-    submit.disabled = busy || pending === 0 || !loaded;
+    submit.disabled = busy || pending === 0 || !loaded || queue.some(item=>item.state==='converting');
     input.disabled = busy || !loaded;
     clear.disabled = busy;
   }
@@ -205,20 +207,26 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
     if (busy) return;
     const errors = [];
     const additions = Array.from(input.files).flatMap(file => {
-      const error = fileError(file.size, file.type);
+      const heic=isHeicPhoto(file);
+      const error = heic?(file.size===0?'This file is empty. Choose another report.':file.size>MAX_FILE_SIZE?'This file is larger than 10 MB. Choose a smaller copy.':null):fileError(file.size, file.type);
       if (error) { errors.push(`${file.name}: ${error}`); return []; }
-      return [{file, uploadId:crypto.randomUUID(), state:'ready', message:''}];
+      return [{file, uploadId:crypto.randomUUID(), state:heic?'converting':'ready', message:heic?'Converting HEIC to JPEG on your device…':''}];
     });
     queue = [...queue.filter(item => item.state !== 'saved'), ...additions];
     input.value=''; renderQueue(); message(errors.join(' '), errors.length>0);
+    for(const item of additions.filter(item=>item.state==='converting'))conversionChain=conversionChain.then(async()=>{
+      try{item.file=await convertHeicUpload(item.file);item.state='ready';item.message='HEIC converted to JPEG on your device.';}
+      catch(error){item.state='error';item.message=error.message;item.conversionFailed=true;}
+      if(queue.includes(item))renderQueue();
+    });
   });
   clear.addEventListener('click', () => { queue=[]; renderQueue(); message('Selection cleared. Uploaded reports are unchanged.'); });
   root.querySelector('#upload-form').addEventListener('submit', async event => {
     event.preventDefault();
-    if (busy || !loaded || !queue.length) return;
+    if (busy || !loaded || !queue.length || queue.some(item=>item.state==='converting')) return;
     busy=true; message('Uploading your reports…'); renderQueue();
     for (const item of queue) {
-      if (item.state === 'saved') continue;
+      if (item.state === 'saved'||item.conversionFailed) continue;
       item.state='uploading'; item.message='Uploading…'; renderQueue();
       const form = new FormData(); form.append('sessionKey', sessionKey); form.append('file',item.file); form.append('uploadId',item.uploadId);
       try {

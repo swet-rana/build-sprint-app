@@ -1,3 +1,4 @@
+import {decodeLocalImage} from './scan-image.js';
 import { ocrPage } from './ocr-page.js';
 import {scanPageCheck} from './scan-screening.js';
 export async function makeOcrReader(onStatus=()=>{}){
@@ -21,11 +22,12 @@ export async function makeOcrReader(onStatus=()=>{}){
 }
 export async function imageCanvas(blob){
  let bitmap;
- try{bitmap=await createImageBitmap(blob);}catch{throw Error('This photo could not be opened. Upload a valid JPG, PNG or WebP image.');}
+ try{bitmap=await decodeLocalImage(blob);}catch{throw Error('This photo could not be opened. Upload a valid JPG, PNG or WebP image.');}
  try{
-  if(bitmap.width*bitmap.height>40000000)throw Error('This image is too large to read. Upload a smaller full-page photo.');
-  const scale=Math.min(2,2400/Math.max(bitmap.width,bitmap.height));
-  const canvas=document.createElement('canvas');canvas.width=Math.round(bitmap.width*scale);canvas.height=Math.round(bitmap.height*scale);
-  const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);return canvas;
+  const source=bitmap.image,width=source.width??source.naturalWidth,height=source.height??source.naturalHeight;
+  if(width*height>40000000)throw Error('This image is too large to read. Upload a smaller full-page photo.');
+  const scale=Math.min(2,2400/Math.max(width,height));
+  const canvas=document.createElement('canvas');canvas.width=Math.round(width*scale);canvas.height=Math.round(height*scale);
+  const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(source,0,0,canvas.width,canvas.height);return canvas;
  }finally{bitmap.close();}
 }
