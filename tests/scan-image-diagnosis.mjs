@@ -1,3 +1,5 @@
+import {nodeTestTarget} from './test-target-node.mjs';
+nodeTestTarget('scan-image-diagnosis.mjs','IMAGE_DIAGNOSIS_CONVEX_URL'); // Local-only work; validate any explicitly supplied cloud target first.
 // Local rendering only. Never uploads the report or prints its contents.
 import {readFile} from 'node:fs/promises';import {createCanvas,DOMMatrix,ImageData,Path2D} from '@napi-rs/canvas';import {encodeScanImage} from '../src/scan-image.js';
 if(!process.env.IMAGE_DIAGNOSIS_FILE)throw Error('Set IMAGE_DIAGNOSIS_FILE to a local PDF.');Object.assign(globalThis,{DOMMatrix,ImageData,Path2D});const {getDocument}=await import('pdfjs-dist/legacy/build/pdf.mjs');const task=getDocument({data:new Uint8Array(await readFile(process.env.IMAGE_DIAGNOSIS_FILE)),isEvalSupported:false,useSystemFonts:true,disableFontFace:true});

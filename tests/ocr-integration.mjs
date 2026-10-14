@@ -1,3 +1,5 @@
+import {nodeTestTarget} from './test-target-node.mjs';
+nodeTestTarget('ocr-integration.mjs','OCR_TEST_CONVEX_URL'); // Local-only work; validate any explicitly supplied cloud target first.
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createWorker} from 'tesseract.js';

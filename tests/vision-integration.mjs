@@ -1,3 +1,4 @@
+import {nodeTestTarget} from './test-target-node.mjs';
 // Real PDF -> real OCR rejection -> Convex action -> OpenAI vision -> production comparison data.
 // Uses only fictional data in a fresh isolated session; no API key is read by this script.
 import assert from 'node:assert/strict';
@@ -11,7 +12,7 @@ import {ocrPage} from '../src/ocr-page.js';
 import {scanPageCheck} from '../src/scan-screening.js';
 import {mergeScanResults} from '../src/scan-results.js';
 import {execFileSync} from 'node:child_process';
-const url=process.env.VISION_TEST_CONVEX_URL;if(!url)throw Error('Set VISION_TEST_CONVEX_URL to the deployment being tested.');
+const url=nodeTestTarget('vision-integration.mjs','VISION_TEST_CONVEX_URL');
 const client=new ConvexHttpClient(url),sessionKey=randomBytes(32).toString('hex'),other=randomBytes(32).toString('hex'),site=url.replace('.cloud','.site');
 const bytes=await readFile(new URL('./fixtures/scan-filter-sample.pdf',import.meta.url));
 const form=new FormData();form.set('sessionKey',sessionKey);form.set('uploadId',randomUUID());form.set('file',new File([bytes],'fictional-27-page-scan.pdf',{type:'application/pdf'}));

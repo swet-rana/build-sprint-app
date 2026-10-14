@@ -1,3 +1,5 @@
+import {nodeTestTarget} from './test-target-node.mjs';
+nodeTestTarget('reference-layout-audit.mjs','LAYOUT_AUDIT_CONVEX_URL'); // Local-only work; validate any explicitly supplied cloud target first.
 // Optional local audit. Personal PDFs/results stay local; stdout contains counts only.
 import {readFile,readdir} from 'node:fs/promises';
 import {build} from 'esbuild';

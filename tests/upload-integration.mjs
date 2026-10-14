@@ -1,11 +1,11 @@
+import {nodeTestTarget} from './test-target-node.mjs';
 // Uses only a fictional fixture and a new isolated browser key.
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { ConvexHttpClient } from 'convex/browser';
 import { api } from '../convex/_generated/api.js';
-const env = Object.fromEntries((await readFile('.env.local','utf8')).split('\n').filter(line=>line.includes('=')&&!line.startsWith('#')).map(line=>{const i=line.indexOf('=');return [line.slice(0,i).trim(),line.slice(i+1).trim().replace(/^"|"$/g,'')];}));
-const cloud=env.VITE_CONVEX_URL || env.CONVEX_URL;
+const cloud=nodeTestTarget('upload-integration.mjs','UPLOAD_TEST_CONVEX_URL');
 const site=cloud.replace('.convex.cloud','.convex.site');
 const client=new ConvexHttpClient(cloud);
 const owner=randomBytes(32).toString('hex'), other=randomBytes(32).toString('hex');

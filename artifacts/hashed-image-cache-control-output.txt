@@ -1,0 +1,4 @@
+/images/categories/heart-cholesterol-e0792d9a37918aa0.webp -> public, max-age=31536000, immutable
+/images/categories/fertility-e364055a5ed9c9ee.webp -> public, max-age=31536000, immutable
+/images/home-glass-ribbons-aef1d6930e7d2b83.png -> public, max-age=31536000, immutable
+/images/healthstats-logo-animated-b0f89d7dac129365.gif -> public, max-age=31536000, immutable

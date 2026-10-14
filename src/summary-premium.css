@@ -2,13 +2,13 @@
 @media screen {
  body:has(#summary-view:not([hidden])) {min-height:100vh;background:radial-gradient(ellipse at 48% 25%,#fff 0%,#f8f7ff 52%,transparent 85%),radial-gradient(ellipse at 0 35%,#eee9ff,transparent 65%),radial-gradient(ellipse at 100% 70%,#e4dcff,transparent 65%),#f8f7ff;background-attachment:fixed;color:#17145c;--blue:#493dbb;--muted:#62658c}
  body:has(#summary-view:not([hidden])) {height:100dvh;overflow:hidden;isolation:isolate}
- body:has(#summary-view:not([hidden]))::before {content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:url('/images/reports-background-curves.svg') center/100% 100% no-repeat;opacity:.85}
+ body:has(#summary-view:not([hidden]))::before {content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:url('/images/reports-background-curves-73b35c41805d18cb.svg') center/100% 100% no-repeat;opacity:.85}
  @media(max-width:760px) {body:has(#summary-view:not([hidden]))::before {background-size:auto 100%;opacity:.7}}
  #app:has(#summary-view:not([hidden])) {display:flex;flex-direction:column;height:100dvh;overflow:hidden}
  #app:has(#summary-view:not([hidden]))>.topbar {max-width:1480px;width:100%;height:108px;padding-inline:48px;flex-shrink:0}
  #app:has(#summary-view:not([hidden]))>main {max-width:1480px;width:100%;flex:1;min-height:0;margin:12px auto calc(100px + env(safe-area-inset-bottom));padding:0 48px 28px;overflow-y:auto;overscroll-behavior-y:contain;scroll-padding-block:20px;scrollbar-width:thin;scrollbar-color:#d7d0f2 transparent}
  #app:has(#summary-view:not([hidden])) .intro {position:relative;min-height:144px;margin:0 0 24px;padding:12px 290px 12px 0;isolation:isolate}
- #app:has(#summary-view:not([hidden])) .intro::after {content:"";position:absolute;z-index:-1;right:0;top:-10px;width:250px;height:190px;background:url('/images/reports-floating-documents.svg?v=imaging') center/contain no-repeat;opacity:.48;pointer-events:none}
+ #app:has(#summary-view:not([hidden])) .intro::after {content:"";position:absolute;z-index:-1;right:0;top:-10px;width:250px;height:190px;background:url('/images/reports-floating-documents-0514aab68a9de3d3.svg') center/contain no-repeat;opacity:.48;pointer-events:none}
  #app:has(#summary-view:not([hidden])) .summary-title-with-art {gap:20px}
  #app:has(#summary-view:not([hidden])) .summary-heading-art {width:130px;height:146px}
  #app:has(#summary-view:not([hidden])) .intro #page-title {font-size:28px;line-height:1.2;color:#35328b;letter-spacing:-.035em;margin-bottom:3px;max-width:25ch;text-wrap:balance}

@@ -1,11 +1,11 @@
+import {nodeTestTarget} from './test-target-node.mjs';
 // Explicit live check using fictional fixtures and a fresh isolated browser session.
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {randomBytes,randomUUID} from 'node:crypto';
 import {ConvexHttpClient} from 'convex/browser';
 import {api} from '../convex/_generated/api.js';
-const url=process.env.EVALUATION_TEST_CONVEX_URL;
-if(!url)throw Error('Set EVALUATION_TEST_CONVEX_URL to the deployment being tested.');
+const url=nodeTestTarget('evaluation-integration.mjs','EVALUATION_TEST_CONVEX_URL');
 const client=new ConvexHttpClient(url),sessionKey=randomBytes(32).toString('hex'),otherSession=randomBytes(32).toString('hex');
 const site=url.replace('.convex.cloud','.convex.site');
 const reportIds=[];

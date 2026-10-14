@@ -1,3 +1,4 @@
+import {imageUrl} from './image-assets.js';
 import React, {useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {useConvexAuth, useQuery} from 'convex/react';
@@ -33,7 +34,7 @@ function Profile({continueWithoutAccount}) {
   }
   async function logOut(){setBusy(true);setNotice('');try{await signOut();}catch{setNotice('Could not sign out. Please try again.');}finally{setBusy(false);}}
   return <section className="profile-card" aria-labelledby="profile-title">
-    <div className="profile-title-with-art"><img className="profile-heading-art" src="/images/profile-card.png" alt="" width="88" height="88" loading="lazy" decoding="async" /><h1 id="profile-title">My profile</h1></div>
+    <div className="profile-title-with-art"><img className="profile-heading-art" src={imageUrl('/images/profile-card.png')} alt="" width="88" height="88" loading="lazy" decoding="async" /><h1 id="profile-title">My profile</h1></div>
     {isLoading?<p role="status">Loading your profile…</p>:isAuthenticated?<>
       <p>You’re signed in{user?.name?` as ${user.name}`:''}.</p>
       {user?<dl className="profile-details"><dt>Name</dt><dd>{user.name||'Not added'}</dd><dt>Email</dt><dd>{user.email}</dd></dl>:<p role="status">Loading account details…</p>}

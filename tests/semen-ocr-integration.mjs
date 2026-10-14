@@ -1,3 +1,5 @@
+import {nodeTestTarget} from './test-target-node.mjs';
+nodeTestTarget('semen-ocr-integration.mjs','SEMEN_TEST_CONVEX_URL'); // Local-only work; validate any explicitly supplied cloud target first.
 // Fictional local image fixtures; no personal reports or remote recognition service.
 import assert from 'node:assert/strict';
 import {mkdir,writeFile} from 'node:fs/promises';

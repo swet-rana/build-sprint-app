@@ -1,10 +1,10 @@
+import {nodeTestTarget} from './test-target-node.mjs';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {randomBytes,randomUUID} from 'node:crypto';
 import {ConvexHttpClient} from 'convex/browser';
 import {api} from '../convex/_generated/api.js';
-const env=Object.fromEntries((await readFile('.env.local','utf8')).split('\n').filter(l=>l.includes('=')&&!l.startsWith('#')).map(l=>{const i=l.indexOf('=');return [l.slice(0,i).trim(),l.slice(i+1).trim().replace(/^"|"$/g,'')];}));
-const cloud=process.env.MATCHING_TEST_CONVEX_URL??env.VITE_CONVEX_URL,client=new ConvexHttpClient(cloud),sessionKey=randomBytes(32).toString('hex');
+const cloud=nodeTestTarget('test-matching-integration.mjs','MATCHING_TEST_CONVEX_URL'),client=new ConvexHttpClient(cloud),sessionKey=randomBytes(32).toString('hex');
 const body=new FormData();body.append('sessionKey',sessionKey);body.append('uploadId',randomUUID());body.append('file',new Blob([await readFile('tests/fixtures/sample-blood-report.pdf')],{type:'application/pdf'}),'Fictional matching check.pdf');
 const response=await fetch(cloud.replace('.convex.cloud','.convex.site')+'/reports/upload',{method:'POST',headers:{Origin:'http://localhost:5173'},body});assert.equal(response.status,201);const {reportId}=await response.json();
 try{

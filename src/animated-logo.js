@@ -1,7 +1,8 @@
+import {imageUrl} from './image-assets.js';
 // Keep the original wordmark and tagline. Smooth vector shapes preserve the
 // icon's proportions without the bitmap's rough edges and patched dot areas.
 export function animatedLogo() {
- const artwork='/images/healthstats-logo-lavender.png';
+ const artwork=imageUrl('/images/healthstats-logo-lavender.png');
  const image=`<image href="${artwork}" width="1530" height="1028"/>`;
  return `<svg class="healthstats-logo animated-logo" viewBox="0 0 1530 1028" width="500" height="336" role="img" aria-label="HealthStats — Track. Compare. Move forward.">
  <defs>

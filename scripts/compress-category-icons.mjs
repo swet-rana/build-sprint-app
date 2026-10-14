@@ -18,3 +18,4 @@ for(const [category,name] of Object.entries(CATEGORY_ART)){
 }
 console.log(`All category WebP files, including mobile variants: ${total} bytes`);
 if(total>=100000)throw Error('Category illustrations exceed the 100 KB budget.');
+await import('./hash-images.mjs');
