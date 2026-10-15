@@ -12,6 +12,8 @@ test('PDF cards stay unopened; central selection and private image previews work
   const dom = new JSDOM('<div id="reports"></div>', {url:'http://localhost:5173'});
   const previous = Object.fromEntries(['window','document','localStorage','fetch','FormData'].map(key=>[key,globalThis[key]]));
   Object.assign(globalThis,{window:dom.window,document:dom.window.document,localStorage:dom.window.localStorage,FormData:dom.window.FormData});
+  const uploadScrolls=[];window.matchMedia=()=>({matches:false});
+  window.HTMLElement.prototype.scrollIntoView=function(options){uploadScrolls.push({id:this.id,...options});};
   const downloads=[],uploads=[],mutations=[],selections=[];let summaries=0;const previousObserver=globalThis.IntersectionObserver;
   globalThis.__reportHarness={reports,mutations};
   globalThis.fetch=async(url,options)=>{
@@ -80,7 +82,14 @@ test('PDF cards stay unopened; central selection and private image previews work
     await new Promise(resolve=>setTimeout(resolve,25));
     assert.deepEqual(downloads,['pdf-1','photo-2'],'Opening the thumbnail image or reopening a PDF reuses the shared original');
     root.querySelector('#show-upload').click();
+    assert.deepEqual(uploadScrolls.at(-1),{id:'add-reports-panel',behavior:'smooth',block:'start'},'Opening upload must reveal the visible panel, not its one-pixel file input');
     assert.equal(root.querySelector('.reports-selection-bar').nextElementSibling.id,'add-reports-panel','The summary action stays above the expanded upload form');
+    const scrollCount=uploadScrolls.length;
+    root.querySelector('#show-upload').click();
+    assert.equal(uploadScrolls.length,scrollCount,'Closing upload must not move the page');
+    window.matchMedia=()=>({matches:true});
+    root.querySelector('#show-upload').click();
+    assert.deepEqual(uploadScrolls.at(-1),{id:'add-reports-panel',behavior:'instant',block:'start'},'Reduced motion must reveal the same panel without animation');
     const picker=root.querySelector('#report-files');
     assert.equal(picker.multiple,true,'The native picker must allow multiple files');
     const choose=files=>{Object.defineProperty(picker,'files',{value:files,configurable:true});picker.dispatchEvent(new window.Event('change',{bubbles:true}));};

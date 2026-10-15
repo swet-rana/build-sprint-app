@@ -152,3 +152,6 @@ body:has(#uploads-view.premium-reports:not([hidden]))::before{content:'';positio
 
 #uploads-view .report-preview.has-thumbnail{position:relative}
 #uploads-view .report-preview.has-thumbnail>.report-format-icon{position:absolute;right:4px;bottom:4px;width:25px;height:30px;padding:2px;background:white;border-radius:5px}
+
+/* Reveal the upload panel with breathing room above its Choose reports control. */
+#uploads-view .upload-panel{scroll-margin-top:16px}

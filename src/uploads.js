@@ -43,7 +43,10 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
   root.querySelector('.saved-heading').after(root.querySelector('#upload-status'));
   root.querySelector('#show-upload').addEventListener('click',event=>{
     uploadPanel.hidden=!uploadPanel.hidden;event.currentTarget.setAttribute('aria-expanded',String(!uploadPanel.hidden));
-    if(!uploadPanel.hidden)root.querySelector('#report-files').focus();
+    if(!uploadPanel.hidden){
+      root.querySelector('#report-files').focus({preventScroll:true});
+      uploadPanel.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
+    }
   });
   const input = root.querySelector('#report-files');
   const queueEl = root.querySelector('#upload-queue');

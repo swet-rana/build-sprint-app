@@ -47,7 +47,7 @@ const home=mountHome(document.querySelector('#home-view'),()=>{
  if(uploadButton.getAttribute('aria-expanded')!=='true')uploadButton.click();
  const fileInput=document.querySelector('#report-files');
  fileInput.focus({preventScroll:true});
- fileInput.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'center'});
+ document.querySelector('#add-reports-panel').scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
 },()=>{
  switchView('reports');
  const uploadButton=document.querySelector('#show-upload');
