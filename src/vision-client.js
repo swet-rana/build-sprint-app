@@ -12,12 +12,13 @@ export function finishVisionReading(reportIds,failed=false){
  if(failed)save({...state,status:'failed'});else localStorage.removeItem(stateKey());
 }
 // The query owns the page status/result. Closing a tab never cancels its server action.
-export function awaitVisionJob(client,sessionKey,jobId,onStatus=()=>{}){
+export function awaitVisionJob(client,sessionKey,jobId,onStatus=()=>{},minimumAttempt=1){
  return new Promise((resolve,reject)=>{
   const watch=client.watchQuery(api.visionJobs.get,{sessionKey,jobId});let stop=()=>{};
   const update=()=>{try{
    const job=watch.localQueryResult();if(job===undefined)return;
    if(!job){stop();reject(Error(VISION_FAILURE));return;}
+   if((job.attempt??1)<minimumAttempt)return;
    onStatus({...job,jobId});
    if(job.status==='succeeded'){stop();resolve(job.result);}
    else if(job.status==='failed'){stop();reject(Error(VISION_FAILURE));}
@@ -26,19 +27,19 @@ export function awaitVisionJob(client,sessionKey,jobId,onStatus=()=>{}){
  });
 }
 // No provider request or provider key ever enters the browser.
-export function visionReading(reportIds,{onStatus=()=>{},resume=false}={}){
+export function visionReading(reportIds,{onStatus=()=>{},resume=false,retryFailed=false}={}){
  const url=import.meta.env.VITE_CONVEX_URL,sessionKey=localStorage.getItem('health-history-upload-session');
  if(!url||!sessionKey)return null;
  const client=authClient();let reading,state=savedVisionReading(reportIds);
- if(!resume&&state&&Date.now()-state.startedAt>3600000)state=null;
+ // Preserve the preparation ID so completed page jobs are reused, even after a later retry.
  return async(canvas,page,file,diagnostics)=>{
   state??={reportIds,requestKey:crypto.randomUUID(),status:'reading',startedAt:Date.now()};save({...state,status:'reading'});
-  reading??=client.mutation(api.vision.begin,{sessionKey,reportIds,requestKey:state.requestKey});
+  reading??=client.mutation(api.vision.begin,{sessionKey,reportIds,requestKey:state.requestKey,retry:retryFailed});
   try{
    const readingId=await reading;state={...state,readingId,status:'reading'};save(state);
    const {image,metadata}=await encodeScanImage(canvas);console.info('Scan page image',{page,...metadata});
-   const jobId=await client.mutation(api.visionJobs.enqueue,{sessionKey,readingId,reportId:file.id,page,image,imageMetadata:metadata,retry:!resume,...(diagnostics?{ocrDiagnostics:JSON.stringify(diagnostics)}:{})});
-   return await awaitVisionJob(client,sessionKey,jobId,onStatus);
+   const {jobId,attempt}=await client.mutation(api.visionJobs.enqueueAttempt,{sessionKey,readingId,reportId:file.id,page,image,imageMetadata:metadata,retry:retryFailed,...(diagnostics?{ocrDiagnostics:JSON.stringify(diagnostics)}:{})});
+   return await awaitVisionJob(client,sessionKey,jobId,onStatus,attempt);
   }catch{const failure=Error(VISION_FAILURE);failure.code='VISION_STOP';throw failure;}
  };
 }

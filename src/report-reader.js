@@ -64,7 +64,7 @@ export async function readLabPdf(blob,onProgress=()=>{},options={}){
   }
   const attempts=[...scanned,...nativeFallback].sort((a,b)=>a-b);
   if(!attempts.length)return parseReport(pages);
-  coverage=coverageFor(attempts.length);
+  coverage={...coverageFor(attempts.length),pdfTotal:pdf.numPages};
   const {makeOcrReader}=await import('./ocr-reader.js');
   reader=await makeOcrReader(status=>onProgress(attempts[0],pdf.numPages,status));
   for(const n of attempts){

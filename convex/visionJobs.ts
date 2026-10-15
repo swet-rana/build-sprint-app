@@ -22,12 +22,12 @@ async function owned(ctx:QueryCtx|MutationCtx,sessionKey:string,readingId:Id<'vi
  if(!isSessionKey(sessionKey)||!reading||reading.sessionKey!==sessionKey||reading.owner!==owner)throw new ConvexError('Report not found in this browser.');
  return reading;
 }
-export const enqueue=mutation({args:{...readArgs,retry:v.optional(v.boolean())},returns:v.id('visionJobs'),handler:async(ctx,args)=>{
+async function enqueuePage(ctx:MutationCtx,args:any){
  const reading=await owned(ctx,args.sessionKey,args.readingId),report=await ctx.db.get('reports',args.reportId);
  if(!reading.reportIds.includes(args.reportId)||!report||report.sessionKey!==args.sessionKey||report.deleted||!Number.isInteger(args.page)||args.page<1||args.page>100)throw new ConvexError('Report not found in this browser.');
  if(args.image.length>750000||args.ocrDiagnostics&&args.ocrDiagnostics.length>100000)throw new ConvexError(READING_FAILURE);
  const previous=await ctx.db.query('visionJobs').withIndex('by_reading_report_page',q=>q.eq('readingId',args.readingId).eq('reportId',args.reportId).eq('page',args.page)).unique();
- if(previous&&(previous.status!=='failed'||!args.retry))return previous._id;
+ if(previous&&(previous.status!=='failed'||!args.retry))return {jobId:previous._id,attempt:previous.attempt};
  const {retry,...request}=args,attempt=(previous?.attempt??0)+1;
  let jobId:Id<'visionJobs'>;
  if(previous){jobId=previous._id;await ctx.db.patch('visionJobs',jobId,{...request,status:'reading',attempt,startedAt:undefined,finishedAt:undefined,result:undefined,error:undefined});}
@@ -35,8 +35,11 @@ export const enqueue=mutation({args:{...readArgs,retry:v.optional(v.boolean())},
  await ctx.scheduler.runAfter(0,internal.visionJobs.run,{jobId,attempt});
  // A killed/timed-out scheduled action must not leave the screen stuck forever.
  await ctx.scheduler.runAfter(180000,internal.visionJobs.expire,{jobId,attempt});
- return jobId;
-}});
+ return {jobId,attempt};
+}
+// Keep the existing ID-only endpoint for older clients and diagnostics.
+export const enqueue=mutation({args:{...readArgs,retry:v.optional(v.boolean())},returns:v.id('visionJobs'),handler:async(ctx,args)=>(await enqueuePage(ctx,args)).jobId});
+export const enqueueAttempt=mutation({args:{...readArgs,retry:v.optional(v.boolean())},returns:v.object({jobId:v.id('visionJobs'),attempt:v.number()}),handler:enqueuePage});
 export const get=query({args:{sessionKey:v.string(),jobId:v.id('visionJobs')},returns:v.union(v.null(),v.object({status,attempt:v.number(),reportId:v.id('reports'),page:v.number(),result:v.optional(scanValidator),error:v.optional(v.string()),failureReason:v.optional(v.string())})),handler:async(ctx,{sessionKey,jobId})=>{
  const job=await ctx.db.get('visionJobs',jobId);if(!job||job.sessionKey!==sessionKey)return null;
  await owned(ctx,sessionKey,job.readingId);

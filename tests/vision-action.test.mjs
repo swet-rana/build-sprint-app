@@ -78,3 +78,11 @@ test('Apollo-sized preparation can continue beyond 30 vision pages without raisi
  const daily=quotaContext({globalPages:150});daily.rows.get('reading-0').pages=30;
  await assert.rejects(reserve._handler(daily.ctx,daily.args(0)),/150 vision pages/);assert.equal(daily.writes.length,0);
 });
+
+test('explicit retry renews an expired preparation without resetting its spent page count',async()=>{
+ const {begin}=await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}`),q=quotaContext({globalPages:40}),reading=q.rows.get('reading-0');
+ reading.createdAt=Date.now()-7200000;reading.pages=30;reading.requestKey='same-request';
+ q.ctx.db.query=()=>({withIndex:()=>({first:async()=>reading})});
+ const id=await begin._handler(q.ctx,{sessionKey:q.sessions[0],reportIds:['report-0'],requestKey:'same-request',retry:true});
+ assert.equal(id,'reading-0');assert.equal(reading.pages,30);assert(Date.now()-reading.createdAt<1000);assert.equal(q.usage(),40);
+});

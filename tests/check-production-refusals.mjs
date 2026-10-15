@@ -14,9 +14,9 @@ for(const script of scripts){
  assert.equal(result.status,1,raw);assert(raw.startsWith(`REFUSED ${script}:`),raw);assert(!raw.includes('NETWORK ATTEMPT'),raw);
  console.log(`$ node tests/${script} --convex-url ${PROD_CONVEX_URL}`);process.stdout.write(raw);
 }
-for(const script of ['phone-browser-check.html','phone-error-frame.html','ocr-cdn-browser.html','vision-reconnect-browser.html']){
+for(const script of ['phone-browser-check.html','phone-error-frame.html','ocr-cdn-browser.html','vision-reconnect-browser.html','vision-retry-browser.html']){
  const html=await readFile(new URL(script,import.meta.url),'utf8'),contents=html.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
- const output=await build({stdin:{contents,resolveDir:new URL('.',import.meta.url).pathname,sourcefile:script},bundle:true,write:false,format:'esm',platform:'browser',define:{'import.meta.env.VITE_CONVEX_URL':JSON.stringify(PROD_CONVEX_URL)},plugins:[{name:'no-app-imports-before-guard',setup(b){b.onResolve({filter:/^\/src\//},args=>({path:args.path,external:true}));}}]});
+ const output=await build({stdin:{contents,resolveDir:new URL('.',import.meta.url).pathname,sourcefile:script},bundle:true,write:false,format:'esm',platform:'browser',define:{'import.meta.env.VITE_CONVEX_URL':JSON.stringify(PROD_CONVEX_URL)},plugins:[{name:'no-app-imports-before-guard',setup(b){b.onResolve({filter:/^\/(?:src|convex)\//},args=>({path:args.path,external:true}));}}]});
  globalThis.window={location:new URL('http://localhost:5173/tests/'+script)};
  try{await import('data:text/javascript;base64,'+Buffer.from(output.outputFiles[0].text).toString('base64'));assert.fail('Browser harness did not refuse production');}
  catch(error){assert(error.message.startsWith(`REFUSED ${script}:`),error.message);console.log(`$ ${script} with VITE_CONVEX_URL=${PROD_CONVEX_URL}`);console.log(error.message);}

@@ -1,0 +1,50 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Fictional vision retry — dev only</title><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><h1>Fictional vision retry — dev only</h1><button id="start">Start forced-failure test</button><pre id="events"></pre><div id="summary"></div><details><summary>Fictional test receipt</summary><pre id="receipt"></pre></details><script type="module">
+import {guardTestTarget} from './test-target.js';
+const url=guardTestTarget(import.meta.env.VITE_CONVEX_URL,{script:'vision-retry-browser.html',devOnly:true});
+guardTestTarget(location.origin,{script:'vision-retry-browser.html',devOnly:true});
+const [{mountAnalysis},{authClient},{reportCache},{api},{getFunctionName}]=await Promise.all([import('/src/analysis.js'),import('/src/auth-client.js'),import('/src/report-cache.js'),import('/convex/_generated/api.js'),import('convex/server')]);
+const out=document.querySelector('#events'),root=document.querySelector('#summary'),lines=[],client=authClient(),site=url.replace('.cloud','.site'),receipts=new Map(),seen=new Set();let injected=false,sessionKey,analysis,failed=false,completed=false;
+function record(text){lines.push(text);out.textContent=lines.join('\n');console.log(text);}
+const realMutation=client.mutation.bind(client),realWatch=client.watchQuery.bind(client);
+// This test changes only the transport of the first fictional page-4 request.
+// The real server stores its failure before any AI call; the retry uses real OCR diagnostics.
+client.mutation=async(ref,args)=>{
+ const name=getFunctionName(ref);let sent=args;
+ if(name==='visionJobs:enqueueAttempt'&&args.page===4&&!injected){injected=true;sent={...args,ocrDiagnostics:'null'};record('FORCED FAILURE: fictional page 4 sends invalid OCR diagnostics; no provider call for this attempt.');}
+ const result=await realMutation(ref,sent);
+ if(name==='visionJobs:enqueueAttempt'){receipts.set(args.page,{jobId:result.jobId,attempt:result.attempt,readingId:args.readingId});document.querySelector('#receipt').textContent=JSON.stringify({sessionKey,pages:[...receipts]});}
+ return result;
+};
+client.watchQuery=(ref,args,...rest)=>{
+ const watch=realWatch(ref,args,...rest);if(getFunctionName(ref)!=='visionJobs:get')return watch;
+ return {onUpdate:fn=>watch.onUpdate(fn),localQueryResult:()=>{const j=watch.localQueryResult();if(j){const key=`${args.jobId}:${j.attempt}:${j.status}`;if(!seen.has(key)){seen.add(key);record(`STORED JOB page ${j.page}: ${j.status}; attempt ${j.attempt}`);}}return j;}};
+};
+new MutationObserver(()=>{
+ if(failed||root.querySelector('#analysis-status')?.textContent!=="We couldn't finish reading this report. Tap Try again.")return;
+ const reason=root.querySelector('.reading-stopped');if(!reason)return;failed=true;
+ if(reason.closest('details'))throw Error('The stopped-page reason must be visible');
+ record('VISIBLE REASON: '+reason.textContent);record('PAGE COUNTS: '+root.querySelector('#scan-page-coverage > div > p').textContent);record('READY: tap Try again.');
+}).observe(root,{subtree:true,childList:true,characterData:true});
+async function ready(value){if(!value||completed)return;completed=true;
+ try{
+ const p3=receipts.get(3),p4=receipts.get(4);if(!p3||!p4||p3.readingId!==p4.readingId)throw Error('Preparation ID changed');
+ const jobs=await Promise.all([p3,p4].map(p=>client.query(api.visionJobs.get,{sessionKey,jobId:p.jobId})));
+ if(jobs[0].status!=='succeeded'||jobs[0].attempt!==1||jobs[1].status!=='succeeded'||jobs[1].attempt!==2)throw Error('Wrong attempt or stored result');
+ const statuses=await client.query(api.visionJobs.statuses,{sessionKey,readingId:p3.readingId});if(statuses.length!==2)throw Error('Unexpected extra page jobs');
+ if(!root.querySelector('.real-summary-paper'))throw Error('No finished summary');
+ record('PASS: page 3 reused at attempt 1; page 4 retried at attempt 2 and succeeded.');record('PASS: same preparation and same two page jobs; no completed page sent to AI again.');record('PASS: fictional four-page PDF finished; summary displayed; 60/150 caps unchanged.');
+ }catch(error){record('FAIL: '+error.message);}
+}
+document.querySelector('#start').onclick=async()=>{
+ document.querySelector('#start').disabled=true;record('START: dev; fictional 4-page PDF plus fictional January text PDF.');
+ try{
+ const random=new Uint8Array(32);crypto.getRandomValues(random);sessionKey=Array.from(random,b=>b.toString(16).padStart(2,'0')).join('');localStorage.setItem('health-history-upload-session',sessionKey);
+ const reports=[];
+ for(const [i,name] of ['vision-retry-multipage.pdf','blood-sample-january.pdf'].entries()){
+ const bytes=await(await fetch('/tests/fixtures/'+name)).blob(),form=new FormData();form.set('sessionKey',sessionKey);form.set('uploadId',crypto.randomUUID());form.set('file',new File([bytes],name,{type:'application/pdf'}));const response=await fetch(site+'/reports/upload',{method:'POST',body:form});if(!response.ok)throw Error('Fictional dev upload failed');
+ const file={id:(await response.json()).reportId,name,contentType:'application/pdf',size:bytes.size,serial:i+1};reports.push(file);await reportCache(site,sessionKey).remember(file,bytes);
+ }
+ analysis=mountAnalysis(root,ready);analysis.updateReports(reports,reports.map(r=>r.id));await analysis.prepare();
+ }catch(error){record('FAIL: '+error.message);}
+};
+</script></body></html>

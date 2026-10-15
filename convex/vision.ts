@@ -7,14 +7,14 @@ import type {ActionCtx} from './_generated/server';
 import {isSessionKey,matchesFileType} from './fileRules.js';
 import {VISION_MODEL,VISION_PROMPT,VISION_SCHEMA,validateScan,visionDay,visionLimitError} from './visionRules.js';
 export const scanValidator=v.object({reportKind:v.union(v.literal('blood'),v.literal('semen'),v.literal('other')),specimen:v.optional(v.union(v.literal('blood'),v.literal('semen'),v.literal('urine'),v.literal('other'),v.literal('unknown'))),originalReportKind:v.optional(v.literal('other')),patientName:v.union(v.string(),v.null()),reportDate:v.union(v.string(),v.null()),tests:v.array(v.object({name:v.string(),value:v.union(v.string(),v.null()),unit:v.union(v.string(),v.null()),referenceRange:v.union(v.string(),v.null()),readable:v.boolean(),sourceTop:v.union(v.number(),v.null())}))});
-export const begin=mutation({args:{sessionKey:v.string(),reportIds:v.array(v.id('reports')),requestKey:v.optional(v.string())},returns:v.id('visionReadings'),handler:async(ctx,{sessionKey,reportIds,requestKey})=>{
+export const begin=mutation({args:{sessionKey:v.string(),reportIds:v.array(v.id('reports')),requestKey:v.optional(v.string()),retry:v.optional(v.boolean())},returns:v.id('visionReadings'),handler:async(ctx,{sessionKey,reportIds,requestKey,retry})=>{
  if(!isSessionKey(sessionKey)||!reportIds.length||reportIds.length>10)throw new ConvexError('Invalid scan reading request.');
  for(const id of reportIds){const r=await ctx.db.get('reports',id);if(!r||r.sessionKey!==sessionKey||r.deleted)throw new ConvexError('Report not found in this browser.');}
  const userId=await getAuthUserId(ctx),owner=userId?`user:${userId}`:`browser:${sessionKey}`;
  if(requestKey){
   if(requestKey.length>100)throw new ConvexError('Invalid scan request key.');
   const previous=await ctx.db.query('visionReadings').withIndex('by_session_request',q=>q.eq('sessionKey',sessionKey).eq('requestKey',requestKey)).first();
-  if(previous){if(previous.owner!==owner||JSON.stringify(previous.reportIds)!==JSON.stringify(reportIds))throw new ConvexError('Invalid scan reading request.');return previous._id;}
+  if(previous){if(previous.owner!==owner||JSON.stringify(previous.reportIds)!==JSON.stringify(reportIds))throw new ConvexError('Invalid scan reading request.');if(retry&&Date.now()-previous.createdAt>3600000)await ctx.db.patch('visionReadings',previous._id,{createdAt:Date.now()});return previous._id;}
  }
  return ctx.db.insert('visionReadings',{sessionKey,owner,reportIds,pages:0,createdAt:Date.now(),...(requestKey?{requestKey}:{})});
 }});

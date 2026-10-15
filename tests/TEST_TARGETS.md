@@ -32,3 +32,10 @@ never starts an action. Reopen the normal harness URL to restore the saved resul
 `vision-reconnect-observe.mjs --receipt <fictional-receipt.json>` queries that job
 while the reading tab is closed. Both refuse production, even with `--allow-prod`.
 No provider key is used by either test client.
+
+`vision-retry-browser.html` is dev-only. It reads a fictional four-page scan plus
+an existing fictional text PDF through the actual Summary screen. The first
+page-4 request deliberately supplies invalid OCR diagnostics to force a stored
+failure before provider spending. Tap the real Try again button: page 3 stays
+at attempt 1, page 4 succeeds at attempt 2, and the actual summary is displayed.
+The test never modifies an API key, prompt, model, spend counter, or cap.

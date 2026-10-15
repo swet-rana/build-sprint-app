@@ -66,7 +66,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
  function message(text,error=false){status.textContent=text;status.hidden=!text;status.classList.toggle('is-error',error);retry.hidden=!error;}
  function showCoverage(){
   const box=root.querySelector('#scan-page-coverage');box.hidden=!scanCoverage.size;
-  box.innerHTML=[...scanCoverage].map(([id,coverage])=>`<div><h3>${escape(reports.find(r=>r.id===id)?.name??'Scanned report')}</h3><p>${coverage.read} scanned ${coverage.read===1?'page':'pages'} read · ${coverage.skipped.length} skipped · ${coverage.checked} of ${coverage.total} checked. ${coverage.vision} included from AI vision; ${coverage.ocr} from local OCR.</p>${coverage.skipped.length||scanFailureReasons.has(id)?`<details><summary>Why pages were skipped</summary><ul>${coverage.skipped.map(p=>`<li>Page ${p.page}: ${escape(p.reason)}</li>`).join('')}${scanFailureReasons.has(id)?`<li>Reading stopped on page ${scanFailureReasons.get(id).page}: ${escape(scanFailureReasons.get(id).reason)}</li>`:''}</ul></details>`:''}</div>`).join('');
+  box.innerHTML=[...scanCoverage].map(([id,coverage])=>`<div><h3>${escape(reports.find(r=>r.id===id)?.name??'Scanned report')}</h3><p>${coverage.read} scanned ${coverage.read===1?'page':'pages'} read · ${coverage.skipped.length} skipped · ${coverage.checked} of ${coverage.total} scan/fallback pages checked${coverage.pdfTotal?` · PDF total: ${coverage.pdfTotal} pages`:""}. ${coverage.vision} included from AI vision; ${coverage.ocr} from local OCR.</p>${scanFailureReasons.has(id)?`<p class="reading-stopped" role="alert">Reading stopped on page ${scanFailureReasons.get(id).page}: ${escape(scanFailureReasons.get(id).reason)}</p>`:''}${coverage.skipped.length?`<details><summary>Why pages were skipped</summary><ul>${coverage.skipped.map(p=>`<li>Page ${p.page}: ${escape(p.reason)}</li>`).join('')}</ul></details>`:''}</div>`).join('');
  }
  function showPaths(){
   for(const item of selectionList.querySelectorAll('li')){
@@ -147,7 +147,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
    output.querySelector(`input[value="${CSS.escape(key)}"]`).focus();
   });
  }
- async function prepare({resume=false}={}){
+ async function prepare({resume=false,retryFailed=false}={}){
   if(busy)return;
   const ids=[...reportIds],version=selectionVersion;
   const choices=ids.map(id=>reports.find(r=>r.id===id));
@@ -159,7 +159,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   const summaryRun=await logger.begin('summary',ids,'HealthStats comparison and summary renderer v1');
   try{
    const {readLabReport}=await import('./report-reader.js');
-   let parsed=[];const vision=visionReading(ids,{resume,onStatus:job=>{if(job.status==='failed'&&job.failureReason)scanFailureReasons.set(job.reportId,{page:job.page,reason:job.failureReason});readingPaths.set(job.reportId,`scan (AI vision) · page ${job.page}: ${job.status}`);showPaths();message(job.status==='failed'?VISION_FAILURE:`Scan page ${job.page}: ${job.status==='succeeded'?'finished':'reading on the server'}…`,job.status==='failed');}});
+   let parsed=[];const vision=visionReading(ids,{resume,retryFailed,onStatus:job=>{if(job.status==='failed'&&job.failureReason)scanFailureReasons.set(job.reportId,{page:job.page,reason:job.failureReason});readingPaths.set(job.reportId,`scan (AI vision) · page ${job.page}: ${job.status}`);showPaths();message(job.status==='failed'?VISION_FAILURE:`Scan page ${job.page}: ${job.status==='succeeded'?'finished':'reading on the server'}…`,job.status==='failed');}});
    for(let i=0;i<choices.length;i++){
     message(`Opening report ${i+1} of ${choices.length}…`);
     const file=choices[i];
@@ -204,8 +204,8 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   }catch(error){finishVisionReading(ids,true);await logger.finish(summaryRun,null,error);message(error.name==='TimeoutError'?'A report took too long to download. Check your connection and try Prepare summary again.':error.message==='Failed to fetch'?'Could not read the report. Check your connection and try again.':error.message,true);}
   finally{busy=false;setBusyControls();button.innerHTML='Prepare summary <span aria-hidden="true">→</span>';}
  }
- root.querySelector('#analysis-form').addEventListener('submit',event=>{event.preventDefault();prepare();});
- retry.addEventListener('click',prepare);
+ root.querySelector('#analysis-form').addEventListener('submit',event=>{event.preventDefault();prepare({retryFailed:true});});
+ retry.addEventListener('click',()=>prepare({retryFailed:true}));
  output.addEventListener('click',async event=>{
   const link=event.target.closest('[data-source]');if(!link||link.disabled)return;
   const report=reports.find(r=>r.id===link.dataset.source);if(!report)return;

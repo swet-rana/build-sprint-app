@@ -62,3 +62,13 @@ test('failed job keeps friendly message and exposes the saved cap reason without
  const result=await jobs.get._handler(h.ctx,{sessionKey:h.args.sessionKey,jobId:id});
  assert.equal(result.error,jobs.READING_FAILURE);assert.equal(result.failureReason,reason);assert(!result.failureReason.includes('at handler'));
 });
+
+test('retry receipt identifies the new attempt while successful pages keep their original attempt',async()=>{
+ const h=harness(),first=await jobs.enqueueAttempt._handler(h.ctx,h.args);
+ assert.equal(first.attempt,1);await jobs.finish._handler(h.ctx,{jobId:first.jobId,attempt:1,result:scan});
+ const success=await jobs.enqueueAttempt._handler(h.ctx,{...h.args,retry:true});assert.deepEqual(success,first);
+ const failed=await jobs.enqueueAttempt._handler(h.ctx,{...h.args,page:4});await jobs.finish._handler(h.ctx,{jobId:failed.jobId,attempt:1,error:'Invalid OCR details.'});
+ const next=await jobs.enqueueAttempt._handler(h.ctx,{...h.args,page:4,retry:true});assert.equal(next.jobId,failed.jobId);assert.equal(next.attempt,2);
+ await jobs.finish._handler(h.ctx,{jobId:next.jobId,attempt:2,result:scan});assert.equal(h.rows.get(first.jobId).attempt,1);assert.equal(h.rows.get(next.jobId).status,'succeeded');
+ console.log('RETRY RECEIPT: succeeded page attempt=1 reused; failed page attempt=1 -> attempt=2 -> succeeded.');
+});

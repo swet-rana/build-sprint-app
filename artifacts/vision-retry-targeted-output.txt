@@ -1,0 +1,84 @@
+✔ Summary preserves selected originals, waits for a click and offers retry after a download error (189.501083ms)
+✔ A scan limit or AI service failure stops preparation with its clear message and retry (72.276584ms)
+UI PROOF: friendly error retained; stored cap reason visible outside collapsed details; PDF total shown; no stack trace.
+✔ saved scan failure shows its real cap reason under Why pages were skipped and keeps the friendly error (65.73625ms)
+Scan image check {
+  page: 1,
+  width: null,
+  height: null,
+  fileType: 'image/jpeg',
+  byteSize: 4,
+  dataUrlCharacters: 31,
+  rejected: false,
+  rule: 'image.length>750000 || !/^data:image\\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(image)'
+}
+Scan image check {
+  page: 1,
+  width: null,
+  height: null,
+  fileType: 'image/jpeg',
+  byteSize: 562500,
+  dataUrlCharacters: 750023,
+  rejected: true,
+  rule: 'image.length>750000 || !/^data:image\\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(image)'
+}
+Scan image check {
+  page: 1,
+  width: null,
+  height: null,
+  fileType: 'image/jpeg',
+  byteSize: 4,
+  dataUrlCharacters: 31,
+  rejected: false,
+  rule: 'image.length>750000 || !/^data:image\\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(image)'
+}
+Scan image check {
+  page: 2,
+  width: 1600,
+  height: 1200,
+  fileType: 'image/jpeg',
+  byteSize: 562500,
+  dataUrlCharacters: 750023,
+  rejected: true,
+  rule: 'image.length>750000 || !/^data:image\\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(image)'
+}
+✔ The server action stops on provider failure and saves its raw request, response and OCR rejection (42.712167ms)
+✔ Actual server reservation permits page 60, blocks page 61 and shares the hard 150-page cap across users (31.403125ms)
+✔ The new global counter includes earlier daily reservations once and does not retain a ten-call user limit (0.3425ms)
+✔ The app-wide server cap prevents storage and provider calls before the action sends a page (0.610916ms)
+✔ Rejected image size saves page dimensions, format, byte count and exact rule without calling AI or reserving a vision page (0.719208ms)
+✔ scheduled quota reservation keeps the verified signed-in owner without browser auth (0.700542ms)
+✔ Apollo-sized preparation can continue beyond 30 vision pages without raising the daily limit (1.12525ms)
+✔ explicit retry renews an expired preparation without resetting its spent page count (0.924709ms)
+✔ the screen waits through disconnect and gets the saved result from the query (7.649958ms)
+✔ failed jobs and query errors never expose raw Convex errors (0.435875ms)
+✔ retry ignores the cached old failed attempt until the newly scheduled attempt finishes (0.491417ms)
+Scan page image { page: 4 }
+✔ explicit retry preserves an older preparation and requests the new attempt, rather than forgetting successful jobs (95.349625ms)
+STATUS reading -> succeeded; reconnect reused the same job and result; new AI calls: 0.
+STATUS reading -> failed -> reading -> succeeded; Try again is explicit; raw Convex error hidden.
+Scan image check {
+  page: 3,
+  width: null,
+  height: null,
+  fileType: 'image/jpeg',
+  byteSize: 4,
+  dataUrlCharacters: 31,
+  rejected: false,
+  rule: 'image.length>750000 || !/^data:image\\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(image)'
+}
+RETRY RECEIPT: succeeded page attempt=1 reused; failed page attempt=1 -> attempt=2 -> succeeded.
+✔ enqueue atomically saves reading and schedules once; completed page is reused after reconnect (3.382125ms)
+✔ failed jobs show plain error, retry explicitly and ignore stale completion (1.528125ms)
+✔ job access is private and an interrupted scheduler cannot leave reading forever (2.261625ms)
+✔ scheduled action writes the real reader result and cannot call the provider twice (47.99175ms)
+✔ failed job keeps friendly message and exposes the saved cap reason without a stack trace (0.24675ms)
+✔ retry receipt identifies the new attempt while successful pages keep their original attempt (0.614708ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1714.336666
