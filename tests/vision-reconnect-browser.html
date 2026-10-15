@@ -1,0 +1,38 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Fictional scan reconnect test</title></head><body><h1>Fictional scan reconnect test — dev only</h1><button id="start">Start fictional multi-page PDF</button><button id="close-test">Start close-during-read test</button><pre id="progress"></pre><pre id="status">Not started</pre><pre id="events"></pre><details><summary>Fictional test receipt</summary><pre id="receipt"></pre></details><script type="module">
+import {guardTestTarget} from './test-target.js';
+const url=guardTestTarget(import.meta.env.VITE_CONVEX_URL,{script:'vision-reconnect-browser.html',devOnly:true});
+guardTestTarget(location.origin,{script:'vision-reconnect-browser.html',devOnly:true});
+const [{readLabReport},{visionReading,savedVisionReading,finishVisionReading},{reportCache}]=await Promise.all([import('/src/report-reader.js'),import('/src/vision-client.js'),import('/src/report-cache.js')]);
+const recordKey='fictional-vision-reconnect-report',eventsKey='fictional-vision-reconnect-events';
+let report=JSON.parse(localStorage.getItem(recordKey)||'null'),events=JSON.parse(localStorage.getItem(eventsKey)||'[]');
+const out=document.querySelector('#status'),history=document.querySelector('#events');history.textContent=events.join('\n');
+function record(line){events.push(line);localStorage.setItem(eventsKey,JSON.stringify(events));history.textContent=events.join('\n');console.log(line);}
+async function run(resume){
+ document.querySelector('#start').disabled=true;
+ if(!resume){events=[];localStorage.setItem(eventsKey,'[]');record('START: fictional 3-page PDF');}
+ try{
+  if(!report){
+   const random=new Uint8Array(32);crypto.getRandomValues(random);localStorage.setItem('health-history-upload-session',Array.from(random,b=>b.toString(16).padStart(2,'0')).join(''));
+   const blob=await(await fetch('/tests/fixtures/vision-reconnect-multipage.pdf')).blob(),form=new FormData();form.set('sessionKey',localStorage.getItem('health-history-upload-session'));form.set('uploadId',crypto.randomUUID());form.set('file',new File([blob],'fictional-reconnect-3-pages.pdf',{type:'application/pdf'}));
+   const response=await fetch(url.replace('.cloud','.site')+'/reports/upload',{method:'POST',body:form});if(!response.ok)throw Error('Fictional dev upload failed');
+   report={id:(await response.json()).reportId,name:'fictional-reconnect-3-pages.pdf',contentType:'application/pdf',size:blob.size};localStorage.setItem(recordKey,JSON.stringify(report));await reportCache(url.replace('.cloud','.site'),localStorage.getItem('health-history-upload-session')).remember(report,blob);
+  }
+  if(resume)record('REOPENED: resuming the saved reading');
+  const vision=visionReading([report.id],{resume,onStatus:job=>{
+   const line=`SERVER STATUS page ${job.page}: ${job.status}; attempt ${job.attempt}`;
+   if(events.at(-1)!==line)record(line);out.textContent=line;
+   const state=savedVisionReading([report.id]);const receipt={sessionKey:localStorage.getItem('health-history-upload-session'),reportId:report.id,readingId:state.readingId,jobId:job.jobId};document.querySelector('#receipt').textContent=JSON.stringify(receipt);localStorage.setItem('fictional-vision-reconnect-receipt',JSON.stringify(receipt));
+   if(job.status==='reading'&&new URL(location.href).searchParams.has('close-on-reading')){record('TAB CLOSING while saved status=reading');window.close();}
+  }});
+  const blob=await reportCache(url.replace('.cloud','.site'),localStorage.getItem('health-history-upload-session')).original(report);
+  const result=await readLabReport(blob,(_p,_n,step)=>document.querySelector('#progress').textContent=step,'application/pdf',{vision:(canvas,page,diagnostics)=>vision(canvas,page,report,diagnostics)});
+  if(result.pageCount!==3||result.date!=='2026-07-15'||JSON.stringify(result.markers.map(m=>m.value))!=='[13.2,3,24]')throw Error('The fictional result does not match the original');
+  finishVisionReading([report.id]);out.textContent='PASS: 3-page fictional PDF; 3 expected values; saved result restored';record(out.textContent);
+ }catch(e){finishVisionReading(report?[report.id]:[],true);out.textContent='FAIL: '+e.message;record(out.textContent);document.querySelector('#start').disabled=false;}
+}
+document.querySelector('#start').onclick=()=>run(false);
+document.querySelector('#close-test').onclick=()=>window.open('/tests/vision-reconnect-browser.html?close-on-reading=1','_blank');
+window.addEventListener('storage',()=>{history.textContent=localStorage.getItem(eventsKey)||'';document.querySelector('#receipt').textContent=localStorage.getItem('fictional-vision-reconnect-receipt')||'';});
+if(new URL(location.href).searchParams.has('close-on-reading'))run(false);
+else if(!new URL(location.href).searchParams.has('observer')&&report&&savedVisionReading([report.id])?.status==='reading')run(true);
+</script></body></html>

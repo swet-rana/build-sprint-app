@@ -2,7 +2,7 @@ import {CATEGORY_ART,categoryIllustration} from './category-art.js';
 import {reportCache} from './report-cache.js';
 import {normalizeReportTests,originalResultTitle} from './test-matching.js';
 import {testMatching} from './test-match-client.js';
-import {visionReading} from './vision-client.js';
+import {visionReading,savedVisionReading,finishVisionReading,VISION_FAILURE} from './vision-client.js';
 import { evaluationLogger } from './evaluation-log.js';
 import { MAX_ANALYSIS_REPORTS, analysisCountError } from './analysis-rules.js';
 import { openReportViewer } from './report-viewer.js';
@@ -147,7 +147,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
    output.querySelector(`input[value="${CSS.escape(key)}"]`).focus();
   });
  }
- async function prepare(){
+ async function prepare({resume=false}={}){
   if(busy)return;
   const ids=[...reportIds],version=selectionVersion;
   const choices=ids.map(id=>reports.find(r=>r.id===id));
@@ -159,7 +159,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   const summaryRun=await logger.begin('summary',ids,'HealthStats comparison and summary renderer v1');
   try{
    const {readLabReport}=await import('./report-reader.js');
-   let parsed=[];const vision=visionReading(ids);
+   let parsed=[];const vision=visionReading(ids,{resume,onStatus:job=>{readingPaths.set(job.reportId,`scan (AI vision) · page ${job.page}: ${job.status}`);showPaths();message(job.status==='failed'?VISION_FAILURE:`Scan page ${job.page}: ${job.status==='succeeded'?'finished':'reading on the server'}…`,job.status==='failed');}});
    for(let i=0;i<choices.length;i++){
     message(`Opening report ${i+1} of ${choices.length}…`);
     const file=choices[i];
@@ -174,6 +174,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
      if(report.scanCoverage){scanCoverage.set(file.id,report.scanCoverage);showCoverage();}
      await logger.finish(readingRun,report);parsed.push({...report,id:file.id,fileName:file.name});
     }catch(error){
+     if(error.message.includes(VISION_FAILURE)){error.message=VISION_FAILURE;error.code='VISION_STOP';}
      if(error.pageCoverage){scanCoverage.set(file.id,error.pageCoverage);showCoverage();}
      await logger.finish(readingRun,null,error);
      const reason=error.name==='TimeoutError'?'The file took too long to download. Try again.':error.message==='Failed to fetch'?'Could not download the file. Check your connection and try again.':error.message.includes('confidently')?'The scan is too unclear to read safely. Upload a clearer copy.':error.message.includes('No supported dated')?'Could not find a readable, dated blood or semen results table.':error.message;
@@ -193,14 +194,14 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
    selected=new Set(preferred.map(prefix=>comparison.comparable.find(m=>m.key.split('|')[0]===prefix)?.key).filter(Boolean));
    for(const marker of comparison.comparable){if(selected.size>=6)break;selected.add(marker.key);}
    if(parsed.length===1)selected=new Set(parsed[0].markers.map(m=>m.key));
-   render();await logger.finish(summaryRun,{comparison,failedFiles:failures,selectedTestKeys:[...selected],summaryHtml:output.querySelector('.real-summary-paper').outerHTML});const readingWarnings=comparison.reports.flatMap(r=>r.warnings).filter(w=>w.startsWith('Reading error'));message(`${parsed.length} ${parsed.length===1?'report read; showing its results only. No trend can be calculated.':`reports read · ${comparison.comparable.length} matching tests found.`} ${failures.length?`${failures.length} file${failures.length===1?'':'s'} could not be read; see the file errors above. `:''}${readingWarnings.length?'Reading error: some scanned pages could not be read and were excluded. See What was included and check the originals.':'Check values against their original source reports.'}`,readingWarnings.length>0||failures.length>0);onReady(true);
+   render();finishVisionReading(ids);await logger.finish(summaryRun,{comparison,failedFiles:failures,selectedTestKeys:[...selected],summaryHtml:output.querySelector('.real-summary-paper').outerHTML});const readingWarnings=comparison.reports.flatMap(r=>r.warnings).filter(w=>w.startsWith('Reading error'));message(`${parsed.length} ${parsed.length===1?'report read; showing its results only. No trend can be calculated.':`reports read · ${comparison.comparable.length} matching tests found.`} ${failures.length?`${failures.length} file${failures.length===1?'':'s'} could not be read; see the file errors above. `:''}${readingWarnings.length?'Reading error: some scanned pages could not be read and were excluded. See What was included and check the originals.':'Check values against their original source reports.'}`,readingWarnings.length>0||failures.length>0);onReady(true);
    if(!root.hidden){
     const heading=output.querySelector('#category-title');
     heading.setAttribute('tabindex','-1');
     heading.focus({preventScroll:true});
     heading.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
    }
-  }catch(error){await logger.finish(summaryRun,null,error);message(error.name==='TimeoutError'?'A report took too long to download. Check your connection and try Prepare summary again.':error.message==='Failed to fetch'?'Could not read the report. Check your connection and try again.':error.message,true);}
+  }catch(error){finishVisionReading(ids,true);await logger.finish(summaryRun,null,error);message(error.name==='TimeoutError'?'A report took too long to download. Check your connection and try Prepare summary again.':error.message==='Failed to fetch'?'Could not read the report. Check your connection and try again.':error.message,true);}
   finally{busy=false;setBusyControls();button.innerHTML='Prepare summary <span aria-hidden="true">→</span>';}
  }
  root.querySelector('#analysis-form').addEventListener('submit',event=>{event.preventDefault();prepare();});
@@ -225,6 +226,8 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   showFailures();showPaths();showCoverage();loadThumbnails();setBusyControls();
   if(reportIds.length>MAX_ANALYSIS_REPORTS)message(analysisCountError(reportIds.length),true);
   if(choices.length&&choices.length<2)message('Select at least two reports to compare.');
+  const pending=savedVisionReading(reportIds);
+  if(!busy&&canPrepare()&&pending?.status==='reading'){busy=true;queueMicrotask(()=>{busy=false;prepare({resume:true});});}
 
  }};
 }

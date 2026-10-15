@@ -19,6 +19,7 @@ import type * as reports from "../reports.js";
 import type * as testMappingRules from "../testMappingRules.js";
 import type * as testMatching from "../testMatching.js";
 import type * as vision from "../vision.js";
+import type * as visionJobs from "../visionJobs.js";
 import type * as visionRules from "../visionRules.js";
 
 import type {
@@ -39,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   testMappingRules: typeof testMappingRules;
   testMatching: typeof testMatching;
   vision: typeof vision;
+  visionJobs: typeof visionJobs;
   visionRules: typeof visionRules;
 }>;
 

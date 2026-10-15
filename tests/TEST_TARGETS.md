@@ -24,3 +24,11 @@ it never opens the first report in a real user's browser session.
 against production without the permission flag. Child-process network access
 is blocked. The HTML module guards are executed locally, before app imports.
 Ordinary `npm test` uses local fixtures and mocked transports, not live data.
+
+`tests/vision-reconnect-browser.html` is dev-only and uses the fictional three-page
+`vision-reconnect-multipage.pdf`. Its close-during-read button opens a reading tab
+that closes itself as soon as the saved job query says `reading`. The observer tab
+never starts an action. Reopen the normal harness URL to restore the saved result.
+`vision-reconnect-observe.mjs --receipt <fictional-receipt.json>` queries that job
+while the reading tab is closed. Both refuse production, even with `--allow-prod`.
+No provider key is used by either test client.

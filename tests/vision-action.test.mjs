@@ -62,3 +62,11 @@ test('Rejected image size saves page dimensions, format, byte count and exact ru
  const image='data:image/jpeg;base64,'+'/9j/'.padEnd(750000,'A');
  try{await assert.rejects(read._handler(ctx,{sessionKey:'a'.repeat(64),readingId:'fictional',reportId:'fictional',page:2,image,imageMetadata:{width:1600,height:1200,sourceWidth:4032,sourceHeight:3024,fileType:'image/jpeg',byteSize:562500,dataUrlCharacters:image.length}}),/too large or invalid/);assert.equal(calls.length,2);assert.match(calls[0].engine,/image validation/);assert.match(calls[1].error,/too large or invalid/);const saved=JSON.parse(await blobs[0].text());assert.equal(saved.imageCheck.width,1600);assert.equal(saved.imageCheck.height,1200);assert.equal(saved.imageCheck.byteSize,562500);assert.equal(saved.imageCheck.fileType,'image/jpeg');assert.equal(saved.rejected,true);assert(saved.rule.includes('image.length>750000'));assert.equal(saved.image,undefined);}finally{if(oldKey===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=oldKey;}
 });
+
+test('scheduled quota reservation keeps the verified signed-in owner without browser auth',async()=>{
+ const q=quotaContext({globalPages:0});q.rows.get('reading-0').owner='user:fictional-user';
+ q.rows.set('scheduled-job',{...q.args(0),status:'reading',startedAt:Date.now()});
+ await reserve._handler(q.ctx,{...q.args(0),jobId:'scheduled-job'});assert.equal(q.usage(),1);assert.equal(q.rows.get('reading-0').pages,1);
+ q.rows.get('scheduled-job').reportId='another-report';const before=q.usage();
+ await assert.rejects(reserve._handler(q.ctx,{...q.args(0),jobId:'scheduled-job'}),/Invalid scheduled scan job/);assert.equal(q.usage(),before);
+});

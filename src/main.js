@@ -1,4 +1,5 @@
 import {imageUrl} from './image-assets.js';
+import {savedVisionReading} from './vision-client.js';
 import { evaluationLogger } from './evaluation-log.js';
 import { installModuleReload } from './module-reload.js';
 import { mountProfile } from './profile.jsx';
@@ -40,7 +41,7 @@ function placePrintButton(){
  printButton.hidden=!(currentView==='sample'||currentView==='summary'&&summaryReady);
 }
 
-let currentView='home', summaryReady=false;
+let currentView='home', summaryReady=false,restoredReading=false;
 const home=mountHome(document.querySelector('#home-view'),()=>{
  switchView('reports');
  const uploadButton=document.querySelector('#show-upload');
@@ -67,7 +68,7 @@ const analysis=mountAnalysis(document.querySelector('#summary-view'),ready=>{
   summaryReady=ready;
   placePrintButton();
 },{onAddReports:()=>switchView('reports'),onRemoveReport:id=>uploads.removeFromAnalysis(id)});
-const uploads=mountUploads(document.querySelector('#uploads-view'),(reports,ids)=>analysis.updateReports(reports,ids),goToPrepareSummary);
+const uploads=mountUploads(document.querySelector('#uploads-view'),(reports,ids)=>{analysis.updateReports(reports,ids);if(!restoredReading&&savedVisionReading(ids)?.status==='reading'){restoredReading=true;switchView('summary');}},goToPrepareSummary);
 function goToPrepareSummary(){
  switchView('summary');
  const prepareButton=document.querySelector('#prepare-summary');

@@ -36,12 +36,12 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blu
    }
    if(kind==='vision'||kind==='scan-filter'){
     builder.onResolve({filter:/vision-client\.js$/},()=>({path:'fictional-vision-transport',namespace:'fictional-vision'}));
-    builder.onLoad({filter:/.*/,namespace:'fictional-vision'},()=>({contents:`export const visionRequests=[];export function visionReading(){return async(canvas,page)=>{visionRequests.push(page);return ({reportKind:'blood',patientName:'Sample Patient',reportDate:'2026-07-15',tests:[{name:'Haemoglobin',value:'13.2',unit:'g/dL',referenceRange:'12 - 16',readable:true,sourceTop:0.27},{name:'CRP',value:'3.0',unit:'mg/L',referenceRange:'0 - 5',readable:true,sourceTop:0.32},{name:'Vitamin D',value:'24',unit:'ng/mL',referenceRange:'30 - 100',readable:true,sourceTop:0.37},{name:'Unreadable fictional marker',value:'999',unit:'mg/L',referenceRange:null,readable:false,sourceTop:null}]});};}`}));
+    builder.onLoad({filter:/.*/,namespace:'fictional-vision'},()=>({contents:`export const visionRequests=[];let resuming=false;export const enableResume=()=>{resuming=true;};export const savedVisionReading=()=>resuming?{status:'reading'}:null;export const finishVisionReading=()=>{resuming=false;};export const VISION_FAILURE="We couldn't finish reading this report. Tap Try again.";export function visionReading(){return async(canvas,page)=>{visionRequests.push(page);return ({reportKind:'blood',patientName:'Sample Patient',reportDate:'2026-07-15',tests:[{name:'Haemoglobin',value:'13.2',unit:'g/dL',referenceRange:'12 - 16',readable:true,sourceTop:0.27},{name:'CRP',value:'3.0',unit:'mg/L',referenceRange:'0 - 5',readable:true,sourceTop:0.32},{name:'Vitamin D',value:'24',unit:'ng/mL',referenceRange:'30 - 100',readable:true,sourceTop:0.37},{name:'Unreadable fictional marker',value:'999',unit:'mg/L',referenceRange:null,readable:false,sourceTop:null}]});};}`}));
    }
 
    builder.onResolve({filter:/evaluation-log\.js$/},()=>({path:'captured-logging',namespace:'captured-logging'}));
    builder.onLoad({filter:/.*/,namespace:'captured-logging'},()=>({contents:'export const capturedEvaluations=[];export function evaluationLogger(){return {begin:async kind=>kind,finish:async(kind,output,error)=>capturedEvaluations.push({kind,output,error})};}'}));
-   builder.onLoad({filter:/[\\/]src[\\/]analysis\.js$/},async args=>({contents:(await readFile(args.path,'utf8'))+"\nexport {capturedEvaluations} from './evaluation-log.js';"+(kind==='scan-filter'?"\nexport {visionRequests} from './vision-client.js';":''),resolveDir:new URL('../src/',import.meta.url).pathname}));
+   builder.onLoad({filter:/[\\/]src[\\/]analysis\.js$/},async args=>({contents:(await readFile(args.path,'utf8'))+"\nexport {capturedEvaluations} from './evaluation-log.js';"+(['vision','scan-filter'].includes(kind)?"\nexport {visionRequests,enableResume} from './vision-client.js';":''),resolveDir:new URL('../src/',import.meta.url).pathname}));
    // Node replaces only browser worker paths and canvas byte transport.
    // Production readLabReport, OCR mapping, parser and renderer remain real.
    if(expected.ocr||kind==='scanned'||kind==='mixed'){
@@ -55,12 +55,18 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blu
   }
  }]});
  try{
-  const {mountAnalysis,capturedEvaluations,visionRequests}=await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}`);
+  const {mountAnalysis,capturedEvaluations,visionRequests,enableResume}=await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}`);
   capturedEvaluations.length=0;
+  if(visionRequests)visionRequests.length=0;
   const root=document.querySelector('#summary');const analysis=mountAnalysis(root,()=>{});
+  if(kind==='vision')enableResume();
   analysis.updateReports(['july','january'].map((id,i)=>({id,serial:i+1,name:kind==='confidence-partial'?expected.files[id==='january'?0:1]:`${kind}-sample-${id}.pdf`,contentType:'application/pdf',size:files[id==='january'?0:1].length})),['july','january']);
   assert.equal(downloads.length,0);
-  await analysis.prepare();
+  if(kind==='vision'){
+   for(let attempt=0;attempt<600&&!root.querySelector('.real-summary-paper');attempt++)await new Promise(resolve=>setTimeout(resolve,50));
+   assert(root.querySelector('.real-summary-paper'),'Reopening must resume and show the finished summary without pressing Prepare summary');
+   console.log('RESUME PROOF: the saved reading automatically restored a finished summary without pressing Prepare summary.');
+  }else await analysis.prepare();
   if(expected.mode==='reject'||expected.mode==='partial'){
    assert.deepEqual(downloads,['july','january'],'A failed file must not prevent the other download');
    const readings=capturedEvaluations.filter(run=>run.kind==='report-reading');assert.equal(readings.length,2);

@@ -1,0 +1,26 @@
+✔ the screen waits through disconnect and gets the saved result from the query (1.135875ms)
+✔ failed jobs and query errors never expose raw Convex errors (0.407708ms)
+STATUS reading -> succeeded; reconnect reused the same job and result; new AI calls: 0.
+STATUS reading -> failed -> reading -> succeeded; Try again is explicit; raw Convex error hidden.
+Scan image check {
+  page: 3,
+  width: null,
+  height: null,
+  fileType: 'image/jpeg',
+  byteSize: 4,
+  dataUrlCharacters: 31,
+  rejected: false,
+  rule: 'image.length>750000 || !/^data:image\\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(image)'
+}
+✔ enqueue atomically saves reading and schedules once; completed page is reused after reconnect (1.616375ms)
+✔ failed jobs show plain error, retry explicitly and ignore stale completion (0.375875ms)
+✔ job access is private and an interrupted scheduler cannot leave reading forever (0.828458ms)
+✔ scheduled action writes the real reader result and cannot call the provider twice (12.281708ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 182.270833

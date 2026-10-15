@@ -1,0 +1,3 @@
+TAB CLOSED: server status=succeeded; attempt=1
+PASS: server finished with the tab closed; 3 known values and date match the fictional PDF.
+PASS: exactly one saved page job; attempt 1.
