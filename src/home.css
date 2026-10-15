@@ -255,3 +255,32 @@ body:has(#home-view:not([hidden])){min-height:100vh}
 @media(min-width:1280px){
  .home-ribbon-art{position:absolute;top:0;right:0;width:100%;height:auto;object-fit:contain;opacity:.86;mask-image:linear-gradient(to bottom,#000 0%,#000 65%,rgba(0,0,0,.75) 80%,transparent 100%)}
 }
+/* Keep the primary action clear of the fixed navigation on shorter screens. */
+@media screen and (min-width:761px) and (max-height:800px){
+ #app:has(#home-view:not([hidden])) .topbar{height:120px}
+ #home-view .healthstats-home{padding-top:0}
+ #home-view .home-resting{padding-top:0}
+ #home-view .home-resting-copy>p{margin-top:12px}
+ #home-view .home-journey{margin-top:20px}
+ #home-view .home-journey button{gap:8px;padding-bottom:4px}
+ #home-view .home-step-number{margin-top:0}
+ #home-view .home-tutorial{margin-top:4px}
+}
+@media screen and (min-width:761px) and (max-height:700px){
+ #app:has(#home-view:not([hidden])) .topbar{height:116px}
+ #home-view .home-resting-copy>p{margin-top:8px}
+ #home-view .home-journey{margin-top:12px}
+ #home-view .home-journey button{gap:6px}
+ #home-view .home-tutorial{margin-top:0}
+}
+@media screen and (max-width:760px){
+ #home-view .home-resting{padding-top:0}
+ #home-view .home-journey{margin-top:26px}
+}
+@media screen and (max-width:760px) and (max-height:780px){
+ #home-view .home-resting-copy>p{margin-top:8px}
+ #home-view .home-journey{margin-top:16px;row-gap:8px}
+ #home-view .home-journey button{gap:2px;padding-bottom:2px}
+ #home-view .home-step-number{margin-top:0}
+ #home-view .home-tutorial{margin-top:0}
+}
