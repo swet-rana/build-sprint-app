@@ -39,3 +39,9 @@ page-4 request deliberately supplies invalid OCR diagnostics to force a stored
 failure before provider spending. Tap the real Try again button: page 3 stays
 at attempt 1, page 4 succeeds at attempt 2, and the actual summary is displayed.
 The test never modifies an API key, prompt, model, spend counter, or cap.
+
+`vision-report-identity-browser.html` is dev-only. Its fictional scanned PDF has
+identity on the cover alone and separate results on pages 2 and 3. It checks
+that actual vision jobs return missing identity on those result pages, while
+whole-report reading retains their known results and completes comparison.
+Its output prints counts and status only, with no names, dates or medical values.

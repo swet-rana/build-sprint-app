@@ -1,0 +1,11 @@
+START: development; fictional 3-page scanned PDF; identity printed only on page 1.
+STORED JOB page 2: reading; attempt 1
+STORED JOB page 2: succeeded; attempt 1
+AI PAGE 2: name missing; date missing; 2 readable result rows.
+STORED JOB page 3: reading; attempt 1
+STORED JOB page 3: succeeded; attempt 1
+AI PAGE 3: name missing; date missing; 1 readable result rows.
+PASS: printed name and date taken from page 1; no identity guessed.
+PASS: page 1 skipped for result reading; pages 2 and 3 retained; 3 expected results match their source pages.
+PASS: missing name/date on result pages did not reject the report; comparison finished.
+PASS: prompt, model, caching and 60/150 caps unchanged; no medical values printed.

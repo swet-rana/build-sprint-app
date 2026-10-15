@@ -14,7 +14,26 @@ test('vision caps sixty pages per reading and 150 pages across the app per IST d
  assert.equal(visionLimitError(30,30),null);assert.equal(visionLimitError(44,44),null);assert.equal(visionLimitError(59,149),null);assert.match(visionLimitError(60,0),/60 vision pages/);assert.match(visionLimitError(0,150),/150 vision pages/);
  assert.equal(visionDay(Date.parse('2026-10-13T18:29:59Z')),'2026-10-13');assert.equal(visionDay(Date.parse('2026-10-13T18:30:00Z')),'2026-10-14');
 });
-test('vision cannot silently merge different people, dates or conflicting values',()=>{
+test('vision cannot silently merge different people or conflicting values',()=>{
  const first=mergeScanResults([{page:1,result:validateScan(scan)}],null,2);
- for(const change of [{patientName:'Someone Else'},{reportDate:'2026-07-16'},{tests:[{...scan.tests[0],value:'15'}]}])assert.throws(()=>mergeScanResults([{page:2,result:validateScan({...scan,...change})}],first,2));
+ for(const change of [{patientName:'Someone Else'},{tests:[{...scan.tests[0],value:'15'}]}])assert.throws(()=>mergeScanResults([{page:2,result:validateScan({...scan,...change})}],first,2));
+});
+
+test('report identity from the first page applies to later scan results with missing identity',()=>{
+ const second={...scan,patientName:null,reportDate:null,tests:[{name:'CRP',value:'3',unit:'mg/L',referenceRange:'0-5',readable:true,sourceTop:.4}]};
+ const result=mergeScanResults([{page:2,result:second},{page:1,result:scan}],null,2);
+ assert.equal(result.patientName,scan.patientName);assert.equal(result.date,scan.reportDate);assert.equal(result.markers.length,2);assert(result.usedPages.includes(2));
+});
+test('a cover-page identity can supply missing details without being a result page',()=>{
+ const result=mergeScanResults([{page:2,result:{...scan,patientName:null,reportDate:null}}],null,2,[{page:1,patientName:scan.patientName,reportDate:scan.reportDate}]);
+ assert.equal(result.patientName,scan.patientName);assert.equal(result.date,scan.reportDate);assert.equal(result.markers.length,1);assert.deepEqual(result.usedPages,[2]);
+});
+test('missing whole-file identity and conflicting names on a non-result page are rejected',()=>{
+ assert.throws(()=>mergeScanResults([{page:2,result:{...scan,patientName:null,reportDate:null}}],null,2),/patient name and report date/);
+ assert.throws(()=>mergeScanResults([{page:1,result:scan},{page:2,result:{reportKind:'other',specimen:'other',patientName:'Different Person',reportDate:null,tests:[]}}],null,2),/different patient names/);
+});
+
+test('different printed dates for the same patient use the first report date with a source-check warning',()=>{
+ const result=mergeScanResults([{page:1,result:scan},{page:2,result:{...scan,reportDate:'2026-07-16'}}],null,2);
+ assert.equal(result.date,'2026-07-15');assert(result.warnings.some(w=>w.includes('More than one printed date')));
 });

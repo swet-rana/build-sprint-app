@@ -1,16 +1,14 @@
 import {classifyScanPage,isStandardBloodTest} from './blood-page-classification.js';
-import {normalizePatient} from './lab-parser.js';
+import {resolveReportIdentity} from './report-identity.js';
 import {testIdentity} from './test-names.js';
 import {semenIdentity} from './semen-markers.js';
-function validDate(date){if(!/^\d{4}-\d{2}-\d{2}$/.test(date??''))return false;const parsed=new Date(date+'T00:00:00Z');return Number.isFinite(parsed.getTime())&&parsed.toISOString().slice(0,10)===date;}
-export function mergeScanResults(scans,native,pageCount){
+export function mergeScanResults(scans,native,pageCount,identityPages=[]){
+ const identity=resolveReportIdentity([...identityPages,...scans.map(({page,result})=>({page,patientName:result.patientName,reportDate:result.reportDate})),...(native?[{page:native.usedPages[0],patientName:native.patientName,reportDate:native.date}]:[])]);
  let result=native?{...native,markers:[...native.markers],warnings:[...native.warnings],usedPages:[...native.usedPages],unreadable:[...(native.unreadable??[])]}:null;
  for(const {page,result:originalScan} of scans){
   const scan=classifyScanPage(originalScan);
   if(scan.reportKind==='other')continue;
-  if(!validDate(scan.reportDate)||!scan.patientName?.trim())throw Error(`Page ${page}: the scan reader could not read the patient name and report date. Upload a clearer full-page copy.`);
-  if(result&&(result.date!==scan.reportDate||normalizePatient(result.patientName)!==normalizePatient(scan.patientName)))throw Error('The scanned pages contain different patient names or dates. Upload each dated report separately.');
-  result??={reportKind:scan.reportKind,date:scan.reportDate,patientName:scan.patientName,patientId:null,patientIdIssuer:null,labName:'',markers:[],usedPages:[],excludedPages:[],pageCount,warnings:[],unreadable:[]};
+  result??={reportKind:scan.reportKind,date:identity.reportDate,patientName:identity.patientName,patientId:null,patientIdIssuer:null,labName:'',markers:[],usedPages:[],excludedPages:[],pageCount,warnings:[],unreadable:[]};
   for(const row of scan.tests){
    if(scan.originalReportKind==='other'&&!isStandardBloodTest(row.name,row.unit)){result.warnings.push(`Page ${page}: ${row.name} is not a recognized blood test on this page; excluded.`);continue;}
    if(!row.readable||row.value===null){result.unreadable.push({name:row.name,value:null,page,reason:'Unreadable in scan'});continue;}
@@ -26,6 +24,7 @@ export function mergeScanResults(scans,native,pageCount){
   if(scan.tests.some(row=>row.readable&&row.value!==null)&&!result.usedPages.includes(page))result.usedPages.push(page);
  }
  if(!result?.markers.length)throw Error('No readable, dated blood or semen values were found in the scan. Upload a clearer result page.');
+ result.date=identity.reportDate;result.patientName=identity.patientName;result.identitySources=identity.identitySources;result.warnings.push(...identity.warnings);
  result.excludedPages=Array.from({length:pageCount},(_,i)=>i+1).filter(n=>!result.usedPages.includes(n));
  result.reportKind=result.markers.every(m=>m.specimen==='semen')?'semen':result.markers.some(m=>m.specimen==='semen')?'mixed':'blood';
  result.readingPaths=[...(native?.readingPaths??[]),...(scans.length?['scan (AI vision)']:[])];

@@ -1,3 +1,4 @@
+import {identityFromItems,resolveReportIdentity} from './report-identity.js';
 import {textPageNeedsVision} from './text-page-fallback.js';
 import {classifyScanPage} from './blood-page-classification.js';
 import './pdf-stream-compat.js';
@@ -53,13 +54,13 @@ export async function readLabPdf(blob,onProgress=()=>{},options={}){
  try{
   const pdf=await task.promise;
   if(pdf.numPages>100)throw Error('This preview reads up to 100 pages per file. Split the PDF into smaller dated lab reports.');
-  const pages=[],scanned=[],nativeFallback=[],unreadablePages=[],visionPages=[],ocrDiagnostics=[];
+  const reportIdentities=[],pages=[],scanned=[],nativeFallback=[],unreadablePages=[],visionPages=[],ocrDiagnostics=[];
   for(let n=1;n<=pdf.numPages;n++){
    onProgress(n,pdf.numPages,'Text path · PDF text');
    const page=await pdf.getPage(n),viewport=page.getViewport({scale:1});
    const items=(await page.getTextContent()).items.map(item=>({...item,sourceTop:viewport.convertToViewportPoint(item.transform[4],item.transform[5])[1]/viewport.height}));
    if(items.map(i=>i.str).join('').trim().length<30)scanned.push(n);
-   pages.push({page:n,items});
+   pages.push({page:n,items});reportIdentities.push(identityFromItems({page:n,items}));
    if(options.vision&&!scanned.includes(n)&&textPageNeedsVision(pages[n-1]).eligible)nativeFallback.push(n);
   }
   const attempts=[...scanned,...nativeFallback].sort((a,b)=>a-b);
@@ -73,7 +74,7 @@ export async function readLabPdf(blob,onProgress=()=>{},options={}){
    const canvas=document.createElement('canvas');canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);
    await page.render({canvas,canvasContext:canvas.getContext('2d'),viewport}).promise;
    try{
-    const ocr=await reader.read(canvas,n,{screen:!!options.vision});coverage.checked++;
+    const ocr=await reader.read(canvas,n,{screen:!!options.vision});coverage.checked++;if(ocr.reportIdentity)reportIdentities.push(ocr.reportIdentity);
     if(ocr.exclusionReason){pages[n-1]=ocr;skipPage(coverage,n,ocr.exclusionReason);}
     else if(nativeFallback.includes(n)){
      onProgress(n,pdf.numPages,'Text fallback · AI vision');
@@ -81,6 +82,7 @@ export async function readLabPdf(blob,onProgress=()=>{},options={}){
      if(result.reportKind==='other')skipPage(coverage,n,'AI vision found no supported blood or semen result table.');
     }else pages[n-1]=ocr;
    }catch(error){
+    if(error.reportIdentity)reportIdentities.push(error.reportIdentity);
     if(error.screening)coverage.checked++;
     if(options.vision&&error.screening?.hasTestContent){
      if(error.diagnostics)ocrDiagnostics.push(error.diagnostics);
@@ -92,10 +94,12 @@ export async function readLabPdf(blob,onProgress=()=>{},options={}){
    }finally{canvas.width=canvas.height=0;}
 
   }
-  let native;
-  try{native=parseReport(pages);}catch(error){if(!visionPages.length||!error.message.startsWith('No supported dated'))throw error;}
+  let native,identityForPages,reportIdentity;
+  if(scanned.length){reportIdentity=resolveReportIdentity([...reportIdentities,...visionPages.map(({page,result})=>({page,patientName:result.patientName,reportDate:result.reportDate}))]);identityForPages=new Map(scanned.map(n=>[n,reportIdentity]));}
+  try{native=parseReport(pages,{identityForPages});}catch(error){if(!visionPages.length||!error.message.startsWith('No supported dated'))throw error;}
+  if(native&&reportIdentity){native.identitySources=reportIdentity.identitySources;native.warnings.push(...reportIdentity.warnings);}
   if(native)native.readingPaths=[...(scanned.length<pages.length?['text']:[]),...(scanned.length>visionPages.length?['scan (OCR)']:[])];
-  const result=visionPages.length?mergeScanResults(visionPages,native,pdf.numPages):native;
+  const result=visionPages.length?mergeScanResults(visionPages,native,pdf.numPages,reportIdentities):native;
   finishCoverage(coverage,result,attempts,visionPages);
   if(visionPages.some(p=>nativeFallback.includes(p.page))){
    result.readingPaths=(result.readingPaths??[]).filter(path=>path!=='scan (AI vision)'||visionPages.some(p=>scanned.includes(p.page)));

@@ -1,0 +1,19 @@
+✔ printed identity can be assembled from separate pages, and conflicting names are rejected (1.308667ms)
+✔ OCR identity from a cover respects the unchanged 80-percent confidence rule (0.927333ms)
+✔ OCR table rows without identity use the printed whole-report identity and retain their source page (61.764333ms)
+✔ vision excludes unsure values, keeps exact known values, date, page and scan provenance (5.921833ms)
+✔ vision refuses invalid dates, missing patient identity, non-blood/semen and malformed results (1.796833ms)
+✔ vision caps sixty pages per reading and 150 pages across the app per IST day (0.15675ms)
+✔ vision cannot silently merge different people or conflicting values (0.219625ms)
+✔ report identity from the first page applies to later scan results with missing identity (0.152709ms)
+✔ a cover-page identity can supply missing details without being a result page (1.16975ms)
+✔ missing whole-file identity and conflicting names on a non-result page are rejected (0.9965ms)
+✔ different printed dates for the same patient use the first report date with a source-check warning (0.127084ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 591.353416

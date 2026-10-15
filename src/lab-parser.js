@@ -21,7 +21,7 @@ export function rangeStatus(value,text) {
   if(range.high!==null&&(value>range.high||(!range.highInclusive&&value===range.high)))return 'above';
   return 'within';
 }
-function parseDate(value){
+export function parseDate(value){
   const match=value.match(/\b(\d{1,2})(?:[\/-]|\s+)([A-Za-z]{3}|\d{1,2})(?:[\/-]|\s+)(\d{4})\b/);if(!match)return null;
   const day=Number(match[1]),month=months[match[2].toLowerCase()]??Number(match[2]),year=Number(match[3]);
   const date=new Date(Date.UTC(year,month-1,day));
@@ -36,7 +36,7 @@ export function rowsFromItems(items){
  }
  return rows.sort((a,b)=>b.y-a.y).map(r=>({...r,items:r.items.sort((a,b)=>a.transform[4]-b.transform[4]),text:clean(r.items.map(i=>i.str).join(' '))}));
 }
-function field(rows,label){
+export function field(rows,label){
  for(const row of rows){
   const index=row.items.findIndex(i=>new RegExp(`^${label}\\s*:?$`,'i').test(clean(i.str)));
   if(index>=0){const next=row.items.slice(index+1).find(i=>clean(i.str)!==':');if(next)return clean(next.str).replace(/^:\s*/,'').split('|')[0].trim();}
@@ -55,10 +55,11 @@ function resultCells(header,allowSeparateReference=false){
   return row=>{const out=['','','','',''];for(const i of row.items){const centre=i.transform[4]+i.width/2;const position=bounds.findIndex(b=>centre<b);const index=columns[position<0?columns.length-1:position].index;out[index]=clean(out[index]+' '+i.str);}return out;};
 }
 const laterPanel=/^(?:Liver Function Test|Iron Studies(?:,?\s*Basic)?|Complete Blood Count|Kidney Function Test|Renal Function Test|Lipid Profile)$/i;
-export function parseReport(pages){
+export function parseReport(pages,{identityForPages}={}){
  const candidates=[],identities=[],dates=[],usedPages=new Set(),warnings=[],labNames=new Set();
  for(const page of pages){
-  const rows=rowsFromItems(page.items),footerCollection=rows.find(r=>/^Sample Collected on \(SCT\)\s*:/i.test(r.text))?.text.replace(/^Sample Collected on \(SCT\)\s*:\s*/i,''),rawPatientName=field(rows,'Patient Name')??field(rows,'Name')??field(rows,'Patient'),patientId=field(rows,'UHID/MR No')??field(rows,'Patient ID'),patientIdIssuer=field(rows,'UHID/MR No')?'apollo':field(rows,'Collection Date')?'tata-1mg':null,date=parseDate(field(rows,'Collected')??field(rows,'Collection Date')??field(rows,'Test date')??footerCollection??''),patientName=footerCollection?rawPatientName?.replace(/\s*\(\d+Y\/[MF]\)\s*$/i,''):rawPatientName;
+  const inheritedIdentity=identityForPages?.get(page.page);
+  const rows=rowsFromItems(page.items),footerCollection=rows.find(r=>/^Sample Collected on \(SCT\)\s*:/i.test(r.text))?.text.replace(/^Sample Collected on \(SCT\)\s*:\s*/i,''),rawPatientName=field(rows,'Patient Name')??field(rows,'Name')??field(rows,'Patient'),patientId=field(rows,'UHID/MR No')??field(rows,'Patient ID'),patientIdIssuer=field(rows,'UHID/MR No')?'apollo':field(rows,'Collection Date')?'tata-1mg':null,date=inheritedIdentity?.reportDate??parseDate(field(rows,'Collected')??field(rows,'Collection Date')??field(rows,'Test date')??footerCollection??''),patientName=inheritedIdentity?.patientName??(footerCollection?rawPatientName?.replace(/\s*\(\d+Y\/[MF]\)\s*$/i,''):rawPatientName);
   if(!date||!patientName)continue;
   if(rows.some(r=>/COMPLETE URINE EXAMINATION|URINE ANALYSIS|URINALYSIS/i.test(r.text)))continue;
   const semen=rows.some(r=>/\bSEMEN (?:ANALYSIS|EXAMINATION)|\bSPERM DNA FRAGMENTATION\b/i.test(r.text));

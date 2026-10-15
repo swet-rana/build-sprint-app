@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Whole-report identity — dev only</title></head><body><h1>Whole-report identity — fictional dev test</h1><button id="start">Read fictional multi-page PDF</button><pre id="events"></pre><details><summary>Fictional test receipt</summary><pre id="receipt"></pre></details><script type="module">
+import {guardTestTarget} from './test-target.js';
+const url=guardTestTarget(import.meta.env.VITE_CONVEX_URL,{script:'vision-report-identity-browser.html',devOnly:true});
+guardTestTarget(location.origin,{script:'vision-report-identity-browser.html',devOnly:true});
+const [{readLabReport},{visionReading,savedVisionReading,finishVisionReading},{compareReportSeries}]=await Promise.all([import('/src/report-reader.js'),import('/src/vision-client.js'),import('/src/lab-parser.js')]);
+const events=[],seen=new Set();function record(text){events.push(text);document.querySelector('#events').textContent=events.join('\n');console.log(text);}
+document.querySelector('#start').onclick=async()=>{
+ document.querySelector('#start').disabled=true;let report;
+ try{
+ record('START: development; fictional 3-page scanned PDF; identity printed only on page 1.');
+ const bytes=await(await fetch('/tests/fixtures/vision-report-identity.pdf')).blob(),random=new Uint8Array(32);crypto.getRandomValues(random);const sessionKey=Array.from(random,b=>b.toString(16).padStart(2,'0')).join('');localStorage.setItem('health-history-upload-session',sessionKey);
+ const form=new FormData();form.set('sessionKey',sessionKey);form.set('uploadId',crypto.randomUUID());form.set('file',new File([bytes],'fictional-identity-only-page-one.pdf',{type:'application/pdf'}));const response=await fetch(url.replace('.cloud','.site')+'/reports/upload',{method:'POST',body:form});if(!response.ok)throw Error('Fictional upload failed');report={id:(await response.json()).reportId};
+ const vision=visionReading([report.id],{onStatus:job=>{
+ const key=`${job.page}:${job.attempt}:${job.status}`;if(seen.has(key))return;seen.add(key);record(`STORED JOB page ${job.page}: ${job.status}; attempt ${job.attempt}`);
+ if(job.status==='succeeded'){if(job.result.patientName!==null||job.result.reportDate!==null)throw Error('Fictional result page unexpectedly returned identity');record(`AI PAGE ${job.page}: name missing; date missing; ${job.result.tests.filter(t=>t.readable&&t.value!==null).length} readable result rows.`);}
+ const state=savedVisionReading([report.id]);document.querySelector('#receipt').textContent=JSON.stringify({sessionKey,reportId:report.id,readingId:state.readingId,jobId:job.jobId});
+ }});
+ const result=await readLabReport(bytes,()=>{},'application/pdf',{vision:(canvas,page,diagnostics)=>vision(canvas,page,report,diagnostics)});
+ if(result.patientName!=='Sample Patient'||result.date!=='2026-07-15'||result.markers.length!==3||result.identitySources.patientPage!==1||result.identitySources.datePage!==1||JSON.stringify(result.usedPages)!=='[2,3]')throw Error('Whole-report identity or retained page results did not match');
+ const expected=new Map([['Haemoglobin',[13.2,2]],['CRP',[3,2]],['Vitamin D',[24,3]]]);for(const m of result.markers){const key=m.name==='C-reactive protein'?'CRP':m.name;const row=expected.get(key);if(!row||m.value!==row[0]||m.page!==row[1])throw Error('Fictional source result mismatch');}
+ const early=await readLabReport(await(await fetch('/tests/fixtures/blood-sample-january.pdf')).blob(),()=>{},'application/pdf');const comparison=compareReportSeries([early,result]);if(comparison.reports.length!==2||!comparison.comparable.length)throw Error('Comparison did not finish');
+ finishVisionReading([report.id]);record('PASS: printed name and date taken from page 1; no identity guessed.');record('PASS: page 1 skipped for result reading; pages 2 and 3 retained; 3 expected results match their source pages.');record('PASS: missing name/date on result pages did not reject the report; comparison finished.');record('PASS: prompt, model, caching and 60/150 caps unchanged; no medical values printed.');
+ }catch(error){if(report)finishVisionReading([report.id],true);record('FAIL: '+error.message);}
+};
+</script></body></html>
