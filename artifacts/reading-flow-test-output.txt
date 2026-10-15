@@ -1,0 +1,136 @@
+
+> build-sprint-app@1.0.0 test
+> node --test tests/*.test.mjs
+
+✔ analysis accepts two through ten reports and rejects fewer or more (1.647708ms)
+✔ logger saves original inputs and full output, then clears the retry queue (3.28925ms)
+✔ offline begin and finish survive logger recreation and save once after reconnection (0.499083ms)
+✔ failed finish retries its original server run and preserves errors (0.361458ms)
+✔ retry delay increases to one minute and another session’s jobs stay untouched (0.647833ms)
+✔ failed OCR reading preserves rejected words and scores through offline retry (0.559666ms)
+✔ reads both fictional fertility PDFs with inline identity, spaced dates and four printed columns (243.501708ms)
+✔ only supported nonempty files within the size limit are accepted (2.8415ms)
+✔ renaming a text file does not make it a PDF or photo (0.437375ms)
+✔ browser access keys must contain 32 random bytes in hexadecimal (0.145792ms)
+✔ finished summary matches the original PDFs: fertility, selected backwards (655.704708ms)
+✔ finished summary matches the original PDFs: blood, selected backwards (111.929917ms)
+✔ finished summary matches the original PDFs: semen, selected backwards (103.423375ms)
+✔ finished summary matches the original PDFs: crosslab, selected backwards (82.915875ms)
+✔ finished summary matches the original PDFs: scanned, selected backwards (2480.252875ms)
+✔ finished summary matches the original PDFs: mixed, selected backwards (1170.612708ms)
+✔ finished summary matches the original PDFs: blurred, selected backwards (2324.625666ms)
+✔ finished summary matches the original PDFs: tilted, selected backwards (2421.096959ms)
+✔ failed reports are excluded while readable reports still produce a summary: blur-rejected, selected backwards (1947.6975ms)
+✔ failed reports are excluded while readable reports still produce a summary: rotation-rejected, selected backwards (2519.6055ms)
+✔ finished summary matches the original PDFs: layout, selected backwards (105.892583ms)
+✔ finished summary matches the original PDFs: multipage, selected backwards (63.474083ms)
+✔ finished summary matches the original PDFs: footer, selected backwards (86.249875ms)
+✔ finished summary matches the original PDFs: panels, selected backwards (95.794334ms)
+✔ finished summary matches the original PDFs: confidence-partial, selected backwards (1046.961833ms)
+✔ footer layout keeps collection date, patient, split result name, range categories and physical source row (5.328875ms)
+✔ missing separate reference remains missing and method numbers cannot become results (1.820458ms)
+✔ release date cannot replace missing or invalid sample collection date (1.040666ms)
+✔ footer layout still rejects different patients or collection dates in one file (1.786875ms)
+✔ inline reference block stays with its result and does not consume the next split-name result (0.875334ms)
+✔ gender-specific blocks stay descriptive rather than picking a range (1.0765ms)
+✔ negative bounds in an inline range keep their minus sign (0.344958ms)
+✔ maps common Indian panel names and aliases to the right categories (4.754875ms)
+✔ allows shared tests and separates inflammation from heart and iron tests (3.617875ms)
+✔ fertility groups recorded blood hormones but not pregnancy tests or unrelated vitamins (0.605625ms)
+✔ longevity groups established long-term health markers without treating all inflammation as cardiac risk (0.285625ms)
+✔ Home automatically progresses through five demo stages then stays on Home after seven seconds (0.84075ms)
+✔ reads dated result columns, commas and source pages without extracting notes (9.702625ms)
+✔ lab names require printed branding rather than generic patient and date labels (4.242542ms)
+✔ different titles for the same patient compare in date order without inventing missing tests (0.754125ms)
+✔ different patients, same dates and incompatible units are not merged (2.043125ms)
+✔ range boundaries respect printed less-than and less-than-or-equal symbols (0.595667ms)
+✔ undated attachments and urine tests cannot enter blood-test comparisons (0.833916ms)
+✔ reads Tata collection labels and compares names across lab-specific patient IDs (3.003333ms)
+✔ keeps wrapped reference categories without borrowing the next test or notes (0.342709ms)
+✔ three reports are ordered by date and missing results remain empty (15.858583ms)
+✔ page-number footers cannot become a wrapped reference range (0.268291ms)
+✔ alternate cholesterol names compare with their own source pages and reject conflicting aliases (0.636209ms)
+✔ compares four, ten and twenty reports chronologically without a three-report limit (5.441917ms)
+✔ a failed dynamic import reloads once, including after the page restarts (1.217375ms)
+✔ unrelated loading errors do not reload or prevent normal error handling (0.849042ms)
+✔ unavailable session storage does not risk a reload loop (0.307958ms)
+✔ explicit later panel resumes after comments and preserves its numeric source row (7.662958ms)
+✔ a repeated full header resumes with its own reordered columns (0.998ms)
+✔ notes never resume extraction without an explicit result-panel or table header (2.361625ms)
+✔ OCR coordinates preserve patient, collection date, test, decimal value and reference (5.012333ms)
+✔ unreadable and uncertain OCR output fails rather than inventing results (1.989083ms)
+✔ recognized information pages are excluded without a reading error (2.301917ms)
+✔ OCR rejects below 80 and retains exact low words, scores, page and boxes (0.51425ms)
+✔ result confidence rejection saves only the low-confidence result words (0.317667ms)
+✔ uploads and originals permit both local preview ports and configured hosted app (1.427042ms)
+✔ Safari stream iteration preserves chunks and releases its reader on completion (16.51475ms)
+✔ Safari stream iteration cancels on early exit and releases locks on reading errors (0.690917ms)
+✔ PDF compatibility leaves native stream iteration unchanged (0.136333ms)
+✔ report details use the collection date and patient, with unknown labs left blank (6.047166ms)
+✔ existing category lists become short descriptions while custom wording is preserved (0.702458ms)
+✔ a temporary reading failure does not save blank details and can be retried after reload (2.127916ms)
+✔ reports uploaded during a details read are included in the same pass (3.549ms)
+✔ missing details are allowed but impossible dates and oversized values are rejected (3.904375ms)
+✔ duplicates use file contents and reference the original stable report number (0.6245ms)
+✔ identical bytes match even with different names; different bytes do not match (15.746667ms)
+✔ report sorting supports both dates and directions without changing numbering or input (2.199041ms)
+✔ missing or invalid report dates stay last in either direction and ties are stable (0.521417ms)
+✔ report search combines report type, lab and document type in any order (5.158375ms)
+✔ report search recognizes photo and image words and JPG/JPEG (0.934792ms)
+✔ report search preserves filename, patient, date, serial and empty searches (0.674208ms)
+PROOF: PDF cards remain unopened; central summary preserves selected IDs; visible image thumbnails load privately once.
+✔ PDF cards stay unopened; central selection and private image previews work (484.32875ms)
+✔ semen tables preserve printed values, units, references and source pages (8.269875ms)
+✔ semen concentration, total count and motility conditions remain separate (24.104917ms)
+✔ semen units and preparation must be explicit and DFI assays cannot merge (1.588334ms)
+✔ qualitative and bounded semen results stay out of numeric trends with an omission notice (0.636791ms)
+✔ semen and blood rows with the same printed name cannot merge (2.20175ms)
+✔ each result preserves its own physical source page and row through date sorting (29.70375ms)
+✔ missing source coordinates remain missing rather than guessing a row (0.390625ms)
+✔ source links open the physical PDF page, highlight its row, and clear the highlight on other pages (261.156875ms)
+✔ Summary preserves selected originals, waits for a click and offers retry after a download error (303.939417ms)
+✔ single-report tests are selectable with dates and source pages but no change (1.201208ms)
+✔ equivalent lab names get the same identity while retaining printed names (5.192625ms)
+✔ different analytes, conditions, ratios and units are never merged (0.376ms)
+✔ explicit full names match their abbreviations with compatible units (0.802541ms)
+✔ normal-only trends retain purple, including reference boundaries (1.992833ms)
+✔ transitions in either direction show red outside and green within range (0.401291ms)
+✔ missing values and unknown ranges never become green; source ranges are respected (0.275709ms)
+ℹ tests 93
+ℹ suites 0
+ℹ pass 93
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 16431.80025
+
+> build-sprint-app@1.0.0 test:ocr
+> node scripts/prepare-ocr.mjs && node scripts/create-ocr-fixtures.mjs && node tests/ocr-integration.mjs
+
+Local photo-reading assets prepared.
+Fictional photos, scanned PDFs and blank image created.
+Native scan text items: 0
+Scanned PDF: correct patient, date and values.
+Photo: correct patient, date and values.
+Unreadable image: correct reading error.
+
+> build-sprint-app@1.0.0 test:semen
+> node scripts/prepare-ocr.mjs && node tests/semen-ocr-integration.mjs
+
+Local photo-reading assets prepared.
+Two semen photos: real recognition, identities, source references and comparison passed.
+
+> build-sprint-app@1.0.0 test:storage
+> node tests/upload-integration.mjs
+
+Passed: upload saved; original bytes preserved; another browser denied; retry creates no duplicate; fake, unsupported and oversized files rejected.
+
+> build-sprint-app@1.0.0 check
+> tsc --noEmit -p convex/tsconfig.json
+
+report-reading: Convex saved full output; retries reused the record and preserved its output; another session cannot access it.
+summary: Convex saved full output; retries reused the record and preserved its output; another session cannot access it.
+Reading error saved correctly.
+Failed OCR reading saved its exact rejected words and scores; another session cannot access them.
+Cross-session input rejected; fictional test uploads moved to their isolated session’s trash.

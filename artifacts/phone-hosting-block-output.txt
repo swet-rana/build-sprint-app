@@ -1,0 +1,3 @@
+✖ Failed to run function "lib:getUrls":
+Error: [Request ID: a8bbcca8f323e8a4] Server Error
+You have exceeded the free plan limits, so your deployments have been disabled. Please upgrade to a Pro plan or reach out to us at support@convex.dev for help.

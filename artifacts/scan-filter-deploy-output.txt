@@ -1,0 +1,330 @@
+
+> build-sprint-app@1.0.0 predeploy
+> npm run verify && node scripts/setup-auth.mjs --prod --site-url=https://zealous-kiwi-423.convex.site --skip-push
+
+
+> build-sprint-app@1.0.0 verify
+> npm test && npm run check && npm audit --omit=dev
+
+
+> build-sprint-app@1.0.0 test
+> node --test tests/*.test.mjs
+
+✔ analysis accepts two through ten reports and rejects fewer or more (1.730292ms)
+✔ logger saves original inputs and full output, then clears the retry queue (3.382209ms)
+✔ offline begin and finish survive logger recreation and save once after reconnection (0.532ms)
+✔ failed finish retries its original server run and preserves errors (0.298541ms)
+✔ retry delay increases to one minute and another session’s jobs stay untouched (3.31275ms)
+✔ failed OCR reading preserves rejected words and scores through offline retry (1.742375ms)
+✔ failed scan reading preserves checked pages and exact skip reasons through offline retry (0.956834ms)
+✔ reads both fictional fertility PDFs with inline identity, spaced dates and four printed columns (287.311542ms)
+✔ only supported nonempty files within the size limit are accepted (1.831417ms)
+✔ renaming a text file does not make it a PDF or photo (0.33275ms)
+✔ browser access keys must contain 32 random bytes in hexadecimal (0.585667ms)
+✔ finished summary matches the original PDFs: fertility, selected backwards (785.934166ms)
+✔ finished summary matches the original PDFs: blood, selected backwards (92.06975ms)
+✔ finished summary matches the original PDFs: semen, selected backwards (124.963708ms)
+✔ finished summary matches the original PDFs: crosslab, selected backwards (87.320125ms)
+✔ finished summary matches the original PDFs: scanned, selected backwards (3304.580334ms)
+✔ finished summary matches the original PDFs: mixed, selected backwards (1171.856916ms)
+✔ finished summary matches the original PDFs: blurred, selected backwards (2358.650209ms)
+✔ finished summary matches the original PDFs: tilted, selected backwards (3166.935625ms)
+✔ failed reports are excluded while readable reports still produce a summary: blur-rejected, selected backwards (2075.567458ms)
+✔ failed reports are excluded while readable reports still produce a summary: rotation-rejected, selected backwards (2575.807084ms)
+✔ finished summary matches the original PDFs: layout, selected backwards (101.940416ms)
+✔ finished summary matches the original PDFs: multipage, selected backwards (109.575542ms)
+✔ finished summary matches the original PDFs: footer, selected backwards (114.485792ms)
+✔ finished summary matches the original PDFs: panels, selected backwards (123.729167ms)
+✔ finished summary matches the original PDFs: confidence-partial, selected backwards (1137.786625ms)
+✔ finished summary matches the original PDFs: vision, selected backwards (1298.037334ms)
+✔ finished summary matches the original PDFs: scan-filter, selected backwards (21973.441458ms)
+✔ footer layout keeps collection date, patient, split result name, range categories and physical source row (4.055042ms)
+✔ missing separate reference remains missing and method numbers cannot become results (2.35675ms)
+✔ release date cannot replace missing or invalid sample collection date (1.406833ms)
+✔ footer layout still rejects different patients or collection dates in one file (1.374875ms)
+✔ inline reference block stays with its result and does not consume the next split-name result (1.610458ms)
+✔ gender-specific blocks stay descriptive rather than picking a range (1.02275ms)
+✔ negative bounds in an inline range keep their minus sign (0.636583ms)
+✔ maps common Indian panel names and aliases to the right categories (8.541167ms)
+✔ allows shared tests and separates inflammation from heart and iron tests (4.837791ms)
+✔ fertility groups recorded blood hormones but not pregnancy tests or unrelated vitamins (0.246208ms)
+✔ longevity groups established long-term health markers without treating all inflammation as cardiac risk (0.22275ms)
+✔ Home automatically progresses through five demo stages then stays on Home after seven seconds (0.756541ms)
+✔ reads dated result columns, commas and source pages without extracting notes (2.847292ms)
+✔ lab names require printed branding rather than generic patient and date labels (10.490375ms)
+✔ different titles for the same patient compare in date order without inventing missing tests (1.426375ms)
+✔ different patients, same dates and incompatible units are not merged (2.943542ms)
+✔ range boundaries respect printed less-than and less-than-or-equal symbols (1.582625ms)
+✔ undated attachments and urine tests cannot enter blood-test comparisons (1.350791ms)
+✔ reads Tata collection labels and compares names across lab-specific patient IDs (1.258125ms)
+✔ keeps wrapped reference categories without borrowing the next test or notes (0.764334ms)
+✔ three reports are ordered by date and missing results remain empty (36.451042ms)
+✔ page-number footers cannot become a wrapped reference range (0.279875ms)
+✔ alternate cholesterol names compare with their own source pages and reject conflicting aliases (1.277583ms)
+✔ compares four, ten and twenty reports chronologically without a three-report limit (4.081583ms)
+✔ a failed dynamic import reloads once, including after the page restarts (1.604708ms)
+✔ unrelated loading errors do not reload or prevent normal error handling (0.499ms)
+✔ unavailable session storage does not risk a reload loop (0.135416ms)
+✔ explicit later panel resumes after comments and preserves its numeric source row (6.072209ms)
+✔ a repeated full header resumes with its own reordered columns (0.831125ms)
+✔ notes never resume extraction without an explicit result-panel or table header (4.597708ms)
+✔ OCR coordinates preserve patient, collection date, test, decimal value and reference (7.707125ms)
+✔ unreadable and uncertain OCR output fails rather than inventing results (1.614542ms)
+✔ recognized information pages are excluded without a reading error (3.974333ms)
+✔ OCR rejects below 80 and retains exact low words, scores, page and boxes (0.611916ms)
+✔ result confidence rejection saves only the low-confidence result words (0.318792ms)
+✔ uploads and originals permit both local preview ports and configured hosted app (0.95075ms)
+✔ Safari stream iteration preserves chunks and releases its reader on completion (10.777ms)
+✔ Safari stream iteration cancels on early exit and releases locks on reading errors (2.428917ms)
+✔ PDF compatibility leaves native stream iteration unchanged (0.233709ms)
+✔ report details use the collection date and patient, with unknown labs left blank (3.404291ms)
+✔ existing category lists become short descriptions while custom wording is preserved (0.247708ms)
+✔ a temporary reading failure does not save blank details and can be retried after reload (5.429208ms)
+✔ reports uploaded during a details read are included in the same pass (0.903416ms)
+✔ missing details are allowed but impossible dates and oversized values are rejected (2.976875ms)
+✔ duplicates use file contents and reference the original stable report number (1.992458ms)
+✔ identical bytes match even with different names; different bytes do not match (19.372917ms)
+✔ report sorting supports both dates and directions without changing numbering or input (8.603458ms)
+✔ missing or invalid report dates stay last in either direction and ties are stable (0.439417ms)
+✔ report search combines report type, lab and document type in any order (2.344083ms)
+✔ report search recognizes photo and image words and JPG/JPEG (5.265542ms)
+✔ report search preserves filename, patient, date, serial and empty searches (0.198917ms)
+PROOF: PDF cards remain unopened; central summary preserves selected IDs; visible image thumbnails load privately once.
+✔ PDF cards stay unopened; central selection and private image previews work (622.829083ms)
+✔ OCR screening skips blank pages, covers, dates, addresses and image captions without test-like results (7.089ms)
+✔ OCR screening accepts numbers with lab units or printed ranges without relaxing result confidence (0.329875ms)
+✔ semen tables preserve printed values, units, references and source pages (9.329625ms)
+✔ semen concentration, total count and motility conditions remain separate (50.048459ms)
+✔ semen units and preparation must be explicit and DFI assays cannot merge (9.034458ms)
+✔ qualitative and bounded semen results stay out of numeric trends with an omission notice (6.547875ms)
+✔ semen and blood rows with the same printed name cannot merge (5.325583ms)
+✔ each result preserves its own physical source page and row through date sorting (31.554958ms)
+✔ missing source coordinates remain missing rather than guessing a row (0.753334ms)
+✔ source links open the physical PDF page, highlight its row, and clear the highlight on other pages (354.985291ms)
+✔ Summary preserves selected originals, waits for a click and offers retry after a download error (305.110125ms)
+✔ A scan limit or AI service failure stops preparation with its clear message and retry (109.29275ms)
+✔ single-report tests are selectable with dates and source pages but no change (4.875875ms)
+✔ equivalent lab names get the same identity while retaining printed names (10.839375ms)
+✔ different analytes, conditions, ratios and units are never merged (0.693125ms)
+✔ explicit full names match their abbreviations with compatible units (2.780625ms)
+✔ normal-only trends retain purple, including reference boundaries (1.696584ms)
+✔ transitions in either direction show red outside and green within range (0.514542ms)
+✔ missing values and unknown ranges never become green; source ranges are respected (1.285667ms)
+✔ The server action stops on provider failure and saves its raw request, response and OCR rejection (33.971959ms)
+✔ Actual server reservation permits page 30, blocks page 31 and shares the hard 150-page cap across users (2.521792ms)
+✔ The new global counter includes earlier daily reservations once and does not retain a ten-call user limit (0.751042ms)
+✔ The app-wide server cap prevents storage and provider calls before the action sends a page (0.760458ms)
+✔ vision excludes unsure values, keeps exact known values, date, page and scan provenance (10.67625ms)
+✔ vision refuses invalid dates, missing patient identity, non-blood/semen and malformed results (0.890209ms)
+✔ vision caps thirty pages per reading and 150 pages across the app per IST day (0.379958ms)
+✔ vision cannot silently merge different people, dates or conflicting values (1.859917ms)
+ℹ tests 107
+ℹ suites 0
+ℹ pass 107
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 42002.974709
+
+> build-sprint-app@1.0.0 check
+> tsc --noEmit -p convex/tsconfig.json
+
+found 0 vulnerabilities
+Account sign-up and sign-in configured. Reload HealthStats.
+
+> build-sprint-app@1.0.0 deploy
+> npx @convex-dev/static-hosting deploy
+
+
+🚀 Convex + Static Files Deployment
+═══════════════════════════════════════════════════════════
+
+Step 1: Getting deployment URLs...
+   ✓ https://zealous-kiwi-423.convex.site
+
+Step 2: Building frontend...
+   Build command: npm run build
+   VITE_CONVEX_URL=https://zealous-kiwi-423.convex.cloud
+   STATIC_HOSTING_BASE_PATH=/
+
+
+> build-sprint-app@1.0.0 prebuild
+> node scripts/prepare-ocr.mjs
+
+Local photo-reading assets prepared.
+
+> build-sprint-app@1.0.0 build
+> vite build
+
+vite v6.4.3 building for production...
+transforming...
+node_modules/@convex-dev/auth/dist/react/index.js (6:0): Module level directives cause errors when bundled, "use client" in "node_modules/@convex-dev/auth/dist/react/index.js" was ignored.
+✓ 177 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                              1.06 kB │ gzip:   0.59 kB
+dist/assets/pdf.worker.min-Dkey6ZUl.mjs  1,321.31 kB
+dist/assets/index-BpWUwtig.css             112.64 kB │ gzip:  20.24 kB
+dist/assets/pdf.worker.min-OGYDhRwp.js       0.07 kB │ gzip:   0.09 kB
+dist/assets/ocr-reader-CSNTJh7j.js           7.29 kB │ gzip:   3.54 kB
+dist/assets/report-reader-9byQwIEI.js        8.06 kB │ gzip:   3.26 kB
+dist/assets/index-DMATQj7C.js               15.89 kB │ gzip:   6.80 kB
+dist/assets/index-zIBGMy0C.js              427.33 kB │ gzip: 133.41 kB
+dist/assets/pdf-q-5ow4VI.js                541.88 kB │ gzip: 164.25 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.32s
+
+   ✓ Build complete
+
+Step 3: Deploying Convex backend...
+
+▌ Deploying code to deployment:
+▌ [Production] swet-sahay:build-sprint-app:production (prod) (dashboard: https://dashboard.convex.dev/t/swet-sahay/build-sprint-app/zealous-kiwi-423)
+▌ └─ https://zealous-kiwi-423.convex.cloud
+You're currently developing against your dev deployment
+
+  elegant-schnauzer-503 (set in CONVEX_DEPLOYMENT)
+
+Your prod deployment zealous-kiwi-423 serves traffic at:
+
+  VITE_CONVEX_URL=https://zealous-kiwi-423.convex.cloud
+
+Make sure that your published client is configured with this URL (for instructions see https://docs.convex.dev/hosting)
+
+? Do you want to push your code to your prod deployment zealous-kiwi-423 now?
+(Y/n)[1A[85G[86G[1B[2K[1A[2K[G? Do you want to push your code to your prod deployment zealous-kiwi-423 now?
+(Y/n) y[1A[86G[85G[1B[2K[1A[2K[G✔ Do you want to push your code to your prod deployment zealous-kiwi-423 now?
+Yes[1A[82G[1B
+[?25h- Deploying to https://zealous-kiwi-423.convex.cloud...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+Your projects are above the Free plan limits.
+Decrease your usage or upgrade to avoid service interruption.
+Visit https://dashboard.convex.dev/t/swet-sahay to learn more.
+✔ No indexes are deleted by this push
+Uploading functions to Convex...
+Generating TypeScript bindings...
+Running TypeScript...
+Pushing code to your Convex deployment...
+Schema validation complete.
+Finalizing push...
+✔ Deployed Convex functions to https://zealous-kiwi-423.convex.cloud
+
+   ✓ Convex backend deployed
+
+Step 4: Deploying static files to Convex storage...
+
+📦 Uploading static files to Convex storage...
+
+🚀 Deploying to production environment
+🔒 Using secure internal functions (requires Convex CLI auth)
+Uploading 87 files with deployment ID: 0fefea8d-a0c2-48f7-9ab3-8520a06d1b13
+Component: staticHosting
+
+  Generating 87 upload URLs...
+  [1/87] /assets/ocr-reader-CSNTJh7j.js (storage)
+  [2/87] /assets/index-DMATQj7C.js (storage)
+  [3/87] /assets/index-BpWUwtig.css (storage)
+  [4/87] /assets/report-reader-9byQwIEI.js (storage)
+  [5/87] /assets/pdf-q-5ow4VI.js (storage)
+  [6/87] /assets/index-zIBGMy0C.js (storage)
+  [7/87] /assets/pdf.worker.min-OGYDhRwp.js (storage)
+  [8/87] /fonts/Manrope-LICENSE.txt (storage)
+  [9/87] /fonts/inter-LICENSE.txt (storage)
+  [10/87] /assets/pdf.worker.min-Dkey6ZUl.mjs (storage)
+  [11/87] /fonts/inter-latin-variable.woff2 (storage)
+  [12/87] /fonts/manrope-latin-600-normal.woff2 (storage)
+  [13/87] /fonts/manrope-latin-400-normal.woff2 (storage)
+  [14/87] /fonts/plus-jakarta-sans-LICENSE.txt (storage)
+  [15/87] /fonts/plus-jakarta-sans-latin-variable.woff2 (storage)
+  [16/87] /images/blood-clotting.png (storage)
+  [17/87] /images/blood-sugar.png (storage)
+  [18/87] /images/blood-counts.png (storage)
+  [19/87] /images/bone-minerals.png (storage)
+  [20/87] /images/healthstats-logo-animated-still.png (storage)
+  [21/87] /images/allergy-markers.png (storage)
+  [22/87] /images/healthstats-logo-animated.gif (storage)
+  [23/87] /images/fertility.png (storage)
+  [24/87] /images/electrolytes.png (storage)
+  [25/87] /images/healthstats-logo-lavender.png (storage)
+  [26/87] /images/heart-cholesterol.png (storage)
+  [27/87] /images/home-realistic-compare-still.png (storage)
+  [28/87] /images/home-realistic-orbit-still.png (storage)
+  [29/87] /images/home-glass-ribbons.png (storage)
+  [30/87] /images/home-realistic-storage-still.png (storage)
+  [31/87] /images/home-realistic-orbit.gif (storage)
+  [32/87] /images/home-realistic-compare.gif (storage)
+  [33/87] /images/home-realistic-thumb-still.png (storage)
+  [34/87] /images/home-static-document.png (storage)
+  [35/87] /images/home-static-doctor.png (storage)
+  [36/87] /images/home-realistic-storage.gif (storage)
+  [37/87] /images/home-static-dots.png (storage)
+  [38/87] /images/home-realistic-thumb.gif (storage)
+  [39/87] /images/home-static-files.png (storage)
+  [40/87] /images/home-static-trend-axes.png (storage)
+  [41/87] /images/home-storage-3d.png (storage)
+  [42/87] /images/home-static-trend.png (storage)
+  [43/87] /images/home-storage-still.png (storage)
+  [44/87] /images/home-storage.gif (storage)
+  [45/87] /images/home-thumb-3d.png (storage)
+  [46/87] /images/home-thumb-still.png (storage)
+  [47/87] /images/home-thumb.gif (storage)
+  [48/87] /images/home-tick-3d.png (storage)
+  [49/87] /images/home-tick-still.png (storage)
+  [50/87] /images/home-trend-3d.png (storage)
+  [51/87] /images/home-trend.gif (storage)
+  [52/87] /images/home-tick.gif (storage)
+  [53/87] /images/home-trend-still.png (storage)
+  [54/87] /images/inflammation.png (storage)
+  [55/87] /images/iron.png (storage)
+  [56/87] /images/kidney.png (storage)
+  [57/87] /images/liver.png (storage)
+  [58/87] /images/longevity.png (storage)
+  [59/87] /images/other-tests.png (storage)
+  [60/87] /images/reports-background-curves.svg (storage)
+  [61/87] /images/profile-card.png (storage)
+  [62/87] /images/reports-floating-documents.svg (storage)
+  [63/87] /images/numbered-report.png (storage)
+  [64/87] /images/pancreas-digestion.png (storage)
+  [65/87] /images/reproductive-hormones.png (storage)
+  [66/87] /images/reports-summary.png (storage)
+  [67/87] /index.html (storage/html)
+  [68/87] /images/thyroid.png (storage)
+  [69/87] /images/summary-trendlines.png (storage)
+  [70/87] /legal.css (storage)
+  [71/87] /images/vitamins.png (storage)
+  [72/87] /ocr/core/tesseract-core-lstm.wasm (storage)
+  [73/87] /ocr/core/tesseract-core-simd-lstm.wasm (storage)
+  [74/87] /ocr/core/tesseract-core-simd-lstm.wasm.js (storage)
+  [75/87] /ocr/core/tesseract-core-lstm.wasm.js (storage)
+  [76/87] /ocr/core/tesseract-core-simd.wasm (storage)
+  [77/87] /ocr/tesseract.esm.min.js (storage)
+  [78/87] /ocr/core/tesseract-core.wasm (storage)
+  [79/87] /ocr/worker.min.js (storage)
+  [80/87] /privacy.html (storage/html)
+  [81/87] /ocr/core/tesseract-core.wasm.js (storage)
+  [82/87] /reports/september.html (storage/html)
+  [83/87] /ocr/lang/eng.traineddata.gz (storage)
+  [84/87] /reports/march.html (storage/html)
+  [85/87] /terms.html (storage/html)
+  [86/87] /ocr/core/tesseract-core-simd.wasm.js (storage)
+  [87/87] /typography.css (storage)
+  Staging manifest chunk 1/1...
+  Publishing deployment...
+
+Cleaned up 87 old storage file(s) from previous deployments
+
+✨ Upload complete!
+
+Your app is now available at: https://zealous-kiwi-423.convex.site
+
+═══════════════════════════════════════════════════════════
+✨ Deployment complete! (79.5s)
+
+Frontend: https://zealous-kiwi-423.convex.site
+

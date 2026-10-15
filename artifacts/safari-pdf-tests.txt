@@ -1,0 +1,67 @@
+
+> build-sprint-app@1.0.0 test
+> node --test tests/*.test.mjs
+
+✔ analysis accepts two through ten reports and rejects fewer or more (1.485375ms)
+✔ reads both fictional fertility PDFs with inline identity, spaced dates and four printed columns (110.000834ms)
+✔ only supported nonempty files within the size limit are accepted (0.807667ms)
+✔ renaming a text file does not make it a PDF or photo (1.353208ms)
+✔ browser access keys must contain 32 random bytes in hexadecimal (0.44275ms)
+✔ maps common Indian panel names and aliases to the right categories (4.817166ms)
+✔ allows shared tests and separates inflammation from heart and iron tests (2.820958ms)
+✔ fertility groups recorded blood hormones but not pregnancy tests or unrelated vitamins (0.5755ms)
+✔ longevity groups established long-term health markers without treating all inflammation as cardiac risk (0.3115ms)
+✔ Home automatically progresses through five demo stages then stays on Home after seven seconds (1.472458ms)
+✔ reads dated result columns, commas and source pages without extracting notes (4.916042ms)
+✔ lab names require printed branding rather than generic patient and date labels (3.794917ms)
+✔ different titles for the same patient compare in date order without inventing missing tests (2.356792ms)
+✔ different patients, same dates and incompatible units are not merged (1.443333ms)
+✔ range boundaries respect printed less-than and less-than-or-equal symbols (1.0335ms)
+✔ undated attachments and urine tests cannot enter blood-test comparisons (2.501459ms)
+✔ reads Tata collection labels and compares names across lab-specific patient IDs (2.44875ms)
+✔ keeps wrapped reference categories without borrowing the next test or notes (0.704334ms)
+✔ three reports are ordered by date and missing results remain empty (18.064875ms)
+✔ page-number footers cannot become a wrapped reference range (0.295667ms)
+✔ alternate cholesterol names compare with their own source pages and reject conflicting aliases (1.635541ms)
+✔ compares four, ten and twenty reports chronologically without a three-report limit (4.304583ms)
+✔ a failed dynamic import reloads once, including after the page restarts (3.294166ms)
+✔ unrelated loading errors do not reload or prevent normal error handling (1.054041ms)
+✔ unavailable session storage does not risk a reload loop (0.916458ms)
+✔ OCR coordinates preserve patient, collection date, test, decimal value and reference (7.519125ms)
+✔ unreadable and uncertain OCR output fails rather than inventing results (3.575541ms)
+✔ recognized information pages are excluded without a reading error (6.746709ms)
+✔ uploads and originals permit both local preview ports and configured hosted app (1.35275ms)
+✔ Safari stream iteration preserves chunks and releases its reader on completion (20.10275ms)
+✔ Safari stream iteration cancels on early exit and releases locks on reading errors (1.469625ms)
+✔ PDF compatibility leaves native stream iteration unchanged (0.233709ms)
+✔ report details use the collection date and patient, with unknown labs left blank (5.719916ms)
+✔ existing category lists become short descriptions while custom wording is preserved (0.458834ms)
+✔ a temporary reading failure does not save blank details and can be retried after reload (1.628792ms)
+✔ reports uploaded during a details read are included in the same pass (1.324459ms)
+✔ missing details are allowed but impossible dates and oversized values are rejected (2.960833ms)
+✔ duplicates use file contents and reference the original stable report number (79.512958ms)
+✔ identical bytes match even with different names; different bytes do not match (33.988584ms)
+✔ report sorting supports both dates and directions without changing numbering or input (7.724959ms)
+✔ missing or invalid report dates stay last in either direction and ties are stable (2.795709ms)
+✔ report search combines report type, lab and document type in any order (9.8635ms)
+✔ report search recognizes photo and image words and JPG/JPEG (7.199333ms)
+✔ report search preserves filename, patient, date, serial and empty searches (2.828709ms)
+PROOF: PDF cards remain unopened; central summary preserves selected IDs; visible image thumbnails load privately once.
+✔ PDF cards stay unopened; central selection and private image previews work (444.809459ms)
+✔ semen tables preserve printed values, units, references and source pages (16.325833ms)
+✔ semen concentration, total count and motility conditions remain separate (23.001459ms)
+✔ semen units and preparation must be explicit and DFI assays cannot merge (1.471583ms)
+✔ qualitative and bounded semen results stay out of numeric trends with an omission notice (0.365583ms)
+✔ semen and blood rows with the same printed name cannot merge (1.130292ms)
+✔ Summary preserves selected originals, waits for a click and offers retry after a download error (171.178083ms)
+✔ single-report tests are selectable with dates and source pages but no change (3.618083ms)
+✔ equivalent lab names get the same identity while retaining printed names (7.434042ms)
+✔ different analytes, conditions, ratios and units are never merged (0.3965ms)
+ℹ tests 54
+ℹ suites 0
+ℹ pass 54
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2203.637916
