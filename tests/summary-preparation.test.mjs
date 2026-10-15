@@ -55,3 +55,21 @@ test('A scan limit or AI service failure stops preparation with its clear messag
   }
  }finally{delete globalThis.scanFailure;dom.window.close();for(const key of keys){if(old[key]===undefined)delete globalThis[key];else globalThis[key]=old[key];}}
 });
+
+test('saved scan failure shows its real cap reason under Why pages were skipped and keeps the friendly error',async()=>{
+ const dom=new JSDOM('<div id="summary"></div>',{url:'http://localhost:5173'}),keys=['window','document','localStorage','MutationObserver','fetch'];const old=Object.fromEntries(keys.map(k=>[k,globalThis[k]]));
+ Object.assign(globalThis,{window:dom.window,document:dom.window.document,localStorage:dom.window.localStorage,MutationObserver:dom.window.MutationObserver});
+ globalThis.fetch=async()=>new Response('fictional PDF',{headers:{'Content-Type':'application/pdf'}});
+ const reason='Scan reading stopped: the limit is 60 vision pages per summary preparation. Choose a smaller set of result pages.';
+ try{
+  const bundle=await build({entryPoints:['src/analysis.js'],bundle:true,write:false,format:'esm',platform:'node',define:{'import.meta.env.VITE_CONVEX_URL':'"https://fictional.convex.cloud"'},loader:{'.css':'empty'},plugins:[{name:'saved-cap-failure',setup(b){
+   b.onResolve({filter:/report-viewer\.js$|report-reader\.js$|vision-client\.js$/},a=>({path:a.path,namespace:'saved-cap'}));
+   b.onLoad({filter:/.*/,namespace:'saved-cap'},a=>({contents:a.path.includes('report-viewer')?'export async function openReportViewer(){}':a.path.includes('vision-client')?`export const VISION_FAILURE="We couldn't finish reading this report. Tap Try again.";export const savedVisionReading=()=>null;export const finishVisionReading=()=>{};export function visionReading(_ids,{onStatus}){return async(_canvas,page,file)=>{onStatus({status:'failed',reportId:file.id,page,failureReason:${JSON.stringify(reason)}});throw Error(VISION_FAILURE);};}`:`export async function readLabReport(_blob,_progress,_type,options){try{await options.vision(null,57);}catch(error){error.pageCoverage={read:0,vision:0,ocr:0,total:44,checked:34,skipped:[{page:1,reason:'No test-like content.'}]};throw error;}}`}));
+  }}]});
+  const {mountAnalysis}=await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}`),root=document.querySelector('#summary'),analysis=mountAnalysis(root,()=>{});
+  analysis.updateReports([{id:'cap-one',serial:1,name:'fictional-cap.pdf',contentType:'application/pdf',size:100},{id:'cap-two',serial:2,name:'fictional-other.pdf',contentType:'application/pdf',size:100}],['cap-one','cap-two']);
+  await analysis.prepare();assert.equal(root.querySelector('#analysis-status').textContent,"We couldn't finish reading this report. Tap Try again.");
+  const details=root.querySelector('#scan-page-coverage details');assert(details);assert.equal(details.querySelector('summary').textContent,'Why pages were skipped');assert(details.textContent.includes(reason));assert(details.textContent.includes('Reading stopped on page 57'));assert(details.textContent.includes('No test-like content.'));assert(!details.textContent.includes('at handler'));
+  assert.equal(root.querySelector('#retry-summary').hidden,false);console.log('UI PROOF: friendly error retained; stored cap reason shown under Why pages were skipped; no stack trace.');
+ }finally{dom.window.close();for(const key of keys){if(old[key]===undefined)delete globalThis[key];else globalThis[key]=old[key];}}
+});

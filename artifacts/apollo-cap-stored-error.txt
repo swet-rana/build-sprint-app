@@ -1,0 +1,10 @@
+Deployment: production (zealous-kiwi-423)
+Table: visionJobs
+Job: kx7b79dtjwndq9604g19yvnbc58gb50v
+Status: failed
+Page: 57
+Per-summary pages reserved: 30 of 30
+App-wide daily pages reserved: 30 of 150
+Stored error:
+Uncaught ConvexError: Scan reading stopped: the limit is 30 vision pages per summary preparation. Choose a smaller set of result pages.
+    at handler (../../convex/vision.ts:33:7)

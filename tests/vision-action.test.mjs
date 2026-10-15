@@ -36,11 +36,11 @@ function quotaContext({globalPages,legacy=[]}={}){
  }};
  return {ctx,rows,writes,sessions,usage:()=>globalPages,args:i=>({sessionKey:sessions[i],readingId:`reading-${i}`,reportId:`report-${i}`,page:1})};
 }
-test('Actual server reservation permits page 30, blocks page 31 and shares the hard 150-page cap across users',async()=>{
- const q=quotaContext({globalPages:149});q.rows.get('reading-0').pages=29;
- await reserve._handler(q.ctx,q.args(0));assert.equal(q.usage(),150);assert.equal(q.rows.get('reading-0').pages,30);
+test('Actual server reservation permits page 60, blocks page 61 and shares the hard 150-page cap across users',async()=>{
+ const q=quotaContext({globalPages:149});q.rows.get('reading-0').pages=59;
+ await reserve._handler(q.ctx,q.args(0));assert.equal(q.usage(),150);assert.equal(q.rows.get('reading-0').pages,60);
  const writes=q.writes.length;
- await assert.rejects(reserve._handler(q.ctx,q.args(0)),/30 vision pages/);
+ await assert.rejects(reserve._handler(q.ctx,q.args(0)),/60 vision pages/);
  await assert.rejects(reserve._handler(q.ctx,q.args(1)),/150 vision pages/);
  assert.equal(q.writes.length,writes,'Blocked requests must not reserve or log another provider attempt');assert.equal(q.rows.get('reading-1').pages,0);
 });
@@ -69,4 +69,12 @@ test('scheduled quota reservation keeps the verified signed-in owner without bro
  await reserve._handler(q.ctx,{...q.args(0),jobId:'scheduled-job'});assert.equal(q.usage(),1);assert.equal(q.rows.get('reading-0').pages,1);
  q.rows.get('scheduled-job').reportId='another-report';const before=q.usage();
  await assert.rejects(reserve._handler(q.ctx,{...q.args(0),jobId:'scheduled-job'}),/Invalid scheduled scan job/);assert.equal(q.usage(),before);
+});
+
+test('Apollo-sized preparation can continue beyond 30 vision pages without raising the daily limit',async()=>{
+ const q=quotaContext({globalPages:30});q.rows.get('reading-0').pages=30;
+ for(let page=31;page<=44;page++)await reserve._handler(q.ctx,{...q.args(0),page});
+ assert.equal(q.rows.get('reading-0').pages,44);assert.equal(q.usage(),44);
+ const daily=quotaContext({globalPages:150});daily.rows.get('reading-0').pages=30;
+ await assert.rejects(reserve._handler(daily.ctx,daily.args(0)),/150 vision pages/);assert.equal(daily.writes.length,0);
 });

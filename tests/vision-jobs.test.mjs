@@ -54,3 +54,11 @@ test('scheduled action writes the real reader result and cannot call the provide
  try{await jobs.run._handler(ctx,{jobId:id,attempt:1});assert.equal(h.rows.get(id).status,'succeeded');assert.equal(h.rows.get(id).result.tests[0].value,'13.2');await jobs.run._handler(ctx,{jobId:id,attempt:1});assert.equal(providerCalls,1);}
  finally{globalThis.fetch=beforeFetch;if(beforeKey===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=beforeKey;}
 });
+
+test('failed job keeps friendly message and exposes the saved cap reason without a stack trace',async()=>{
+ const h=harness(),id=await jobs.enqueue._handler(h.ctx,h.args);
+ const reason='Scan reading stopped: the limit is 30 vision pages per summary preparation. Choose a smaller set of result pages.';
+ await jobs.finish._handler(h.ctx,{jobId:id,attempt:1,error:`Uncaught ConvexError: ${reason}\n    at handler (../../convex/vision.ts:33:7)\n`});
+ const result=await jobs.get._handler(h.ctx,{sessionKey:h.args.sessionKey,jobId:id});
+ assert.equal(result.error,jobs.READING_FAILURE);assert.equal(result.failureReason,reason);assert(!result.failureReason.includes('at handler'));
+});

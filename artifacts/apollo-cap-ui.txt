@@ -1,0 +1,12 @@
+✔ Summary preserves selected originals, waits for a click and offers retry after a download error (356.098083ms)
+✔ A scan limit or AI service failure stops preparation with its clear message and retry (123.076458ms)
+UI PROOF: friendly error retained; stored cap reason shown under Why pages were skipped; no stack trace.
+✔ saved scan failure shows its real cap reason under Why pages were skipped and keeps the friendly error (169.643042ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1177.4905

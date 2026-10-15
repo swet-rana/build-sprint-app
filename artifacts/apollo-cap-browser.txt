@@ -1,0 +1,4 @@
+START: fictional 3-page PDF
+SERVER STATUS page 3: reading; attempt 1
+SERVER STATUS page 3: succeeded; attempt 1
+PASS: 3-page fictional PDF; 3 expected values; saved result restored

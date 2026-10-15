@@ -58,7 +58,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
  const button=root.querySelector('#prepare-summary'),status=root.querySelector('#analysis-status'),output=root.querySelector('#real-summary'),selectionList=root.querySelector('#selected-analysis-reports');
  let failures=[],reports=[],reportIds=[],comparison=null,selected=new Set(),busy=false,activeCategory='all',selectionVersion=0;
  const retry=root.querySelector('#retry-summary'),addReports=root.querySelector('#add-analysis-reports'),preparationHelp=root.querySelector('.preparation-help');
- const thumbnails=new Map(),readingPaths=new Map(),scanCoverage=new Map();
+ const thumbnails=new Map(),readingPaths=new Map(),scanCoverage=new Map(),scanFailureReasons=new Map();
  addReports.addEventListener('click',onAddReports);
  selectionList.addEventListener('click',event=>{const remove=event.target.closest('[data-summary-remove]');if(remove&&!busy)onRemoveReport(remove.dataset.summaryRemove);});
  function canPrepare(){return reportIds.length>=2&&reportIds.length<=MAX_ANALYSIS_REPORTS&&reportIds.every(id=>reports.some(r=>r.id===id));}
@@ -66,7 +66,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
  function message(text,error=false){status.textContent=text;status.hidden=!text;status.classList.toggle('is-error',error);retry.hidden=!error;}
  function showCoverage(){
   const box=root.querySelector('#scan-page-coverage');box.hidden=!scanCoverage.size;
-  box.innerHTML=[...scanCoverage].map(([id,coverage])=>`<div><h3>${escape(reports.find(r=>r.id===id)?.name??'Scanned report')}</h3><p>${coverage.read} scanned ${coverage.read===1?'page':'pages'} read · ${coverage.skipped.length} skipped · ${coverage.checked} of ${coverage.total} checked. ${coverage.vision} included from AI vision; ${coverage.ocr} from local OCR.</p>${coverage.skipped.length?`<details><summary>Why pages were skipped</summary><ul>${coverage.skipped.map(p=>`<li>Page ${p.page}: ${escape(p.reason)}</li>`).join('')}</ul></details>`:''}</div>`).join('');
+  box.innerHTML=[...scanCoverage].map(([id,coverage])=>`<div><h3>${escape(reports.find(r=>r.id===id)?.name??'Scanned report')}</h3><p>${coverage.read} scanned ${coverage.read===1?'page':'pages'} read · ${coverage.skipped.length} skipped · ${coverage.checked} of ${coverage.total} checked. ${coverage.vision} included from AI vision; ${coverage.ocr} from local OCR.</p>${coverage.skipped.length||scanFailureReasons.has(id)?`<details><summary>Why pages were skipped</summary><ul>${coverage.skipped.map(p=>`<li>Page ${p.page}: ${escape(p.reason)}</li>`).join('')}${scanFailureReasons.has(id)?`<li>Reading stopped on page ${scanFailureReasons.get(id).page}: ${escape(scanFailureReasons.get(id).reason)}</li>`:''}</ul></details>`:''}</div>`).join('');
  }
  function showPaths(){
   for(const item of selectionList.querySelectorAll('li')){
@@ -154,12 +154,12 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   const countError=analysisCountError(ids.length);if(countError){message(countError,true);return;}
   if(choices.some(r=>r?.duplicateOf&&ids.includes(reports.find(p=>p.serial===r.duplicateOf)?.id))){message('Untick duplicate reports before analyzing. Each report date should appear once.',true);return;}
   if(!canPrepare()||choices.some(r=>!r)||new Set(ids).size!==ids.length){message('Tick at least two different lab reports in My reports.',true);return;}
-  failures=[];readingPaths.clear();scanCoverage.clear();showCoverage();showPaths();showFailures();busy=true;setBusyControls();button.textContent='Reading reports…';comparison=null;output.innerHTML='';onReady(false);
+  failures=[];readingPaths.clear();scanCoverage.clear();scanFailureReasons.clear();showCoverage();showPaths();showFailures();busy=true;setBusyControls();button.textContent='Reading reports…';comparison=null;output.innerHTML='';onReady(false);
   const logger=evaluationLogger();
   const summaryRun=await logger.begin('summary',ids,'HealthStats comparison and summary renderer v1');
   try{
    const {readLabReport}=await import('./report-reader.js');
-   let parsed=[];const vision=visionReading(ids,{resume,onStatus:job=>{readingPaths.set(job.reportId,`scan (AI vision) · page ${job.page}: ${job.status}`);showPaths();message(job.status==='failed'?VISION_FAILURE:`Scan page ${job.page}: ${job.status==='succeeded'?'finished':'reading on the server'}…`,job.status==='failed');}});
+   let parsed=[];const vision=visionReading(ids,{resume,onStatus:job=>{if(job.status==='failed'&&job.failureReason)scanFailureReasons.set(job.reportId,{page:job.page,reason:job.failureReason});readingPaths.set(job.reportId,`scan (AI vision) · page ${job.page}: ${job.status}`);showPaths();message(job.status==='failed'?VISION_FAILURE:`Scan page ${job.page}: ${job.status==='succeeded'?'finished':'reading on the server'}…`,job.status==='failed');}});
    for(let i=0;i<choices.length;i++){
     message(`Opening report ${i+1} of ${choices.length}…`);
     const file=choices[i];
@@ -215,7 +215,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   reports=saved;
   const next=ids.filter(id=>reports.some(r=>r.id===id));
   if(JSON.stringify(next)!==JSON.stringify(reportIds)){
-   reportIds=next;selectionVersion++;failures=[];readingPaths.clear();scanCoverage.clear();showCoverage();showFailures();comparison=null;output.innerHTML='';onReady(false);
+   reportIds=next;selectionVersion++;failures=[];readingPaths.clear();scanCoverage.clear();scanFailureReasons.clear();showCoverage();showFailures();comparison=null;output.innerHTML='';onReady(false);
    message('Report selection changed. Prepare the summary when ready.');
   }
   const choices=reportIds.map(id=>reports.find(r=>r.id===id));

@@ -7,6 +7,14 @@ import {internal} from './_generated/api';
 import {isSessionKey} from './fileRules.js';
 import {readArgs,readPage,scanValidator} from './vision';
 export const READING_FAILURE="We couldn't finish reading this report. Tap Try again.";
+// Expose the saved operational reason, never a Convex stack trace or arbitrary error payload.
+export function failureReason(error=''){
+ const quota=error.match(/Scan reading stopped: (?:the limit is \d+ vision pages per summary preparation\. Choose a smaller set of result pages\.|HealthStats has reached its app-wide daily limit of \d+ vision pages\. Try again tomorrow\.)/);
+ if(quota)return quota[0];
+ const known=['The scan image is too large or invalid. Upload a smaller clear copy.','Invalid scan image.','Invalid OCR details.','This scan reading expired or the report is unavailable. Prepare the summary again.','Scan reading is unavailable: the server API key is missing.','Scheduled scan did not finish within three minutes.','Scan reading stopped: the AI service did not finish this page. Try again.','Scan reading stopped: the AI service returned no readable results. Upload a clearer copy.','Scan reading stopped: the AI service failed. Try again later.'];
+ const api=error.match(/Scan reading stopped: the AI service could not read this page \(API \d{3}\)\. Try again later\./);
+ return api?.[0]??known.find(reason=>error.includes(reason))??'The server could not finish this page. Try again.';
+}
 const status=v.union(v.literal('reading'),v.literal('succeeded'),v.literal('failed'));
 async function owned(ctx:QueryCtx|MutationCtx,sessionKey:string,readingId:Id<'visionReadings'>){
  const reading=await ctx.db.get('visionReadings',readingId);
@@ -29,11 +37,11 @@ export const enqueue=mutation({args:{...readArgs,retry:v.optional(v.boolean())},
  await ctx.scheduler.runAfter(180000,internal.visionJobs.expire,{jobId,attempt});
  return jobId;
 }});
-export const get=query({args:{sessionKey:v.string(),jobId:v.id('visionJobs')},returns:v.union(v.null(),v.object({status,attempt:v.number(),reportId:v.id('reports'),page:v.number(),result:v.optional(scanValidator),error:v.optional(v.string())})),handler:async(ctx,{sessionKey,jobId})=>{
+export const get=query({args:{sessionKey:v.string(),jobId:v.id('visionJobs')},returns:v.union(v.null(),v.object({status,attempt:v.number(),reportId:v.id('reports'),page:v.number(),result:v.optional(scanValidator),error:v.optional(v.string()),failureReason:v.optional(v.string())})),handler:async(ctx,{sessionKey,jobId})=>{
  const job=await ctx.db.get('visionJobs',jobId);if(!job||job.sessionKey!==sessionKey)return null;
  await owned(ctx,sessionKey,job.readingId);
  const report=await ctx.db.get('reports',job.reportId);if(!report||report.deleted||report.sessionKey!==sessionKey)return null;
- return {status:job.status,attempt:job.attempt,reportId:job.reportId,page:job.page,...(job.status==='succeeded'?{result:job.result}:{}),...(job.status==='failed'?{error:READING_FAILURE}:{})};
+ return {status:job.status,attempt:job.attempt,reportId:job.reportId,page:job.page,...(job.status==='succeeded'?{result:job.result}:{}),...(job.status==='failed'?{error:READING_FAILURE,failureReason:failureReason(job.error)}:{})};
 }});
 export const statuses=query({args:{sessionKey:v.string(),readingId:v.id('visionReadings')},returns:v.array(v.object({jobId:v.id('visionJobs'),reportId:v.id('reports'),page:v.number(),status})),handler:async(ctx,{sessionKey,readingId})=>{
  await owned(ctx,sessionKey,readingId);

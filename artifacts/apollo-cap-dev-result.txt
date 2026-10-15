@@ -1,0 +1,7 @@
+LOCAL OCR: fictional PDF; 3 pages checked; 2 covers skipped; page 3 eligible for vision.
+DEV SETUP: fresh isolated fictional preparation; no quota records modified.
+STORED STATUS: reading; page=3; attempt=1
+STORED STATUS: succeeded; page=3; attempt=1
+STORED RECORD: {"error":null,"reservedPages":1,"status":"succeeded"}
+USER MESSAGE: none
+PASS: same fictional 3-page PDF; 2 covers skipped; vision page succeeded; 3 expected values and printed date match.
