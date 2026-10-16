@@ -45,3 +45,8 @@ identity on the cover alone and separate results on pages 2 and 3. It checks
 that actual vision jobs return missing identity on those result pages, while
 whole-report reading retains their known results and completes comparison.
 Its output prints counts and status only, with no names, dates or medical values.
+
+`scan-highlight-browser.html` is dev-only. It uploads a fictional scanned PDF
+with a same-name section heading above its result row, opens the actual viewer,
+and checks that local OCR boxes enclose the result row. Its second button checks
+that an unmatched name opens the page without a highlight. It makes no AI calls.

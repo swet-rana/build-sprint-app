@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Scan highlight — dev only</title></head><body><main id="app"><h1>Scanned row highlight — fictional dev test</h1><button id="matching">Open scan row below heading</button><button id="missing">Open scan with no reliable match</button><pre id="events"></pre></main><script type="module">
+import {guardTestTarget} from './test-target.js';
+const url=guardTestTarget(import.meta.env.VITE_CONVEX_URL,{script:'scan-highlight-browser.html',devOnly:true});
+guardTestTarget(location.origin,{script:'scan-highlight-browser.html',devOnly:true});
+const [{openReportViewer},{reportCache}]=await Promise.all([import('/src/report-viewer.js'),import('/src/report-cache.js')]);
+const lines=[];let report,cache;function log(text){lines.push(text);document.querySelector('#events').textContent=lines.join('\n');console.log(text);}
+async function original(){
+ if(!report){
+ const random=new Uint8Array(32);crypto.getRandomValues(random);const sessionKey=Array.from(random,b=>b.toString(16).padStart(2,'0')).join(''),site=url.replace('.cloud','.site'),bytes=await(await fetch('/tests/fixtures/scan-highlight-heading.pdf')).blob(),form=new FormData();form.set('sessionKey',sessionKey);form.set('uploadId',crypto.randomUUID());form.set('file',new File([bytes],'fictional-test-under-section-heading.pdf',{type:'application/pdf'}));const response=await fetch(site+'/reports/upload',{method:'POST',body:form});if(!response.ok)throw Error('Fictional dev upload failed');report={id:(await response.json()).reportId,name:'fictional-test-under-section-heading.pdf',contentType:'application/pdf',size:bytes.size};cache=reportCache(site,sessionKey);await cache.remember(report,bytes);log('DEV: fictional scanned PDF uploaded; existing original-file cache used.');
+ }
+ return cache.original(report);
+}
+async function open(missing){
+ try{
+ log(missing?'START: scan with no matching test name.':'START: scan result directly below a same-name section heading.');
+ await openReportViewer({name:'Fictional scanned report',page:1,sourceTop:.24,sourceName:missing?'Unprinted test':'Calcium',sourceOcrName:missing?'Unprinted test':'Calcium',readPath:'vision',load:original});
+ const box=document.querySelector('.viewer-source-highlight');
+ if(missing){if(box||!document.querySelector('.viewer-document canvas'))throw Error('Missing-name case must open the page with no box');log('PASS: unmatched test opened on the correct page with no highlight; AI estimate was not used.');}
+ else{if(!box)throw Error('No row box found');const top=parseFloat(box.style.top)/100,bottom=top+parseFloat(box.style.height)/100;if(!(top>.26&&bottom<.31))throw Error('Box did not enclose the printed result row');log('PASS: OCR box encloses the test row below the heading; the section heading is outside the box.');log('PASS: scanned highlight ignored the model position; no AI call, prompt, model, caching or cap change.');}
+ }catch(error){log('FAIL: '+error.message);}
+}
+document.querySelector('#matching').onclick=()=>open(false);document.querySelector('#missing').onclick=()=>open(true);
+</script></body></html>

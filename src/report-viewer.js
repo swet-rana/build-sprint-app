@@ -2,7 +2,7 @@ import './pdf-stream-compat.js';
 import './report-viewer.css';
 
 // Keep the underlying app mounted so selections and summary state survive Back.
-export async function openReportViewer({name, load, page = 1, sourceTop, sourceName, sampleUrl}) {
+export async function openReportViewer({name, load, page = 1, sourceTop, sourceName, readPath, sourceOcrName, sampleUrl}) {
   const app = document.querySelector('#app');
   const previousFocus = document.activeElement, previousScroll = window.scrollY;
   const viewer = document.createElement('section');
@@ -12,24 +12,33 @@ export async function openReportViewer({name, load, page = 1, sourceTop, sourceN
   viewer.querySelector('h1').textContent = name;
   const content = viewer.querySelector('.viewer-document'), status = viewer.querySelector('.viewer-status');
   const controls = viewer.querySelector('.viewer-controls');
-  let closed = false, pdf, loadingTask, objectUrl, renderTask, rendering = false;
+  let closed = false, pdf, loadingTask, objectUrl, renderTask, rendering = false, sourceReader;
   const sourcePage=Number(page);
-  const hasSource=Number.isFinite(sourceTop)&&sourceTop>=0&&sourceTop<=1;
+  const scannedSource=readPath==='vision';
+  const hasSource=scannedSource?!!(sourceOcrName||sourceName):Number.isFinite(sourceTop)&&sourceTop>=0&&sourceTop<=1;
   const sourceNote=document.createElement('p');sourceNote.className='viewer-source-note';sourceNote.hidden=true;
   controls.after(sourceNote);
-  function showSource(documentElement){
+  function showSource(documentElement,bounds){
     if(!hasSource||Number(page)!==sourcePage){sourceNote.hidden=true;return;}
+    if(scannedSource&&!bounds){sourceNote.textContent='The selected page is open. No reliable test-row position was found, so no highlight is shown.';sourceNote.hidden=false;return;}
     const highlight=document.createElement('div');highlight.className='viewer-source-highlight';
-    highlight.style.top=`${Math.max(0,sourceTop-.012)*100}%`;
+    if(scannedSource){for(const key of ['top','left','width','height'])highlight.style[key]=`${bounds[key]*100}%`;highlight.style.minHeight='0';}
+    else highlight.style.top=`${Math.max(0,sourceTop-.012)*100}%`;
     highlight.setAttribute('aria-label',`${sourceName||'Selected result'} source row`);
     documentElement.append(highlight);
     sourceNote.textContent=`Showing ${sourceName||'the selected result'} on page ${page}. Highlight marks its original row.`;sourceNote.hidden=false;
     requestAnimationFrame(()=>{if(!closed)highlight.scrollIntoView({behavior:'instant',block:'center'});});
   }
+  function fitScanPage(element,width){if(scannedSource){element.style.width=`${width}px`;element.style.maxWidth='100%';element.style.marginInline='auto';}}
+  async function closeSourceReader(){const reader=sourceReader;sourceReader=null;try{await reader?.close();}catch{}}
+  async function scanBounds(canvas){
+    if(!scannedSource||!hasSource||Number(page)!==sourcePage)return null;
+    try{const {makeOcrReader}=await import('./ocr-reader.js');sourceReader=await makeOcrReader();if(closed)return null;return await sourceReader.locate(canvas,sourceOcrName||sourceName);}catch{return null;}finally{await closeSourceReader();}
+  }
   const oldHidden = app.hidden;
   function close() {
     if (closed) return;
-    closed = true; renderTask?.cancel(); void loadingTask?.destroy();
+    closed = true; void closeSourceReader();renderTask?.cancel(); void loadingTask?.destroy();
     if (objectUrl) URL.revokeObjectURL(objectUrl);
     viewer.remove(); app.hidden = oldHidden;
     window.scrollTo(0, previousScroll); previousFocus?.focus({preventScroll:true});
@@ -55,8 +64,8 @@ export async function openReportViewer({name, load, page = 1, sourceTop, sourceN
       renderTask = original.render({canvas,canvasContext:canvas.getContext('2d'),viewport:sized});
       await renderTask.promise;
       if (closed) return;
-      const documentPage=document.createElement('div');documentPage.className='viewer-page';documentPage.append(canvas);
-      content.replaceChildren(documentPage); status.hidden = true;showSource(documentPage);
+      const documentPage=document.createElement('div');documentPage.className='viewer-page';documentPage.append(canvas);fitScanPage(documentPage,canvas.width);
+      content.replaceChildren(documentPage); status.hidden = true;const bounds=await scanBounds(canvas);if(closed)return;showSource(documentPage,bounds);
       controls.querySelector('span').textContent = `Page ${page} of ${pdf.numPages}`;
     } finally {
       rendering = false;
@@ -91,7 +100,7 @@ export async function openReportViewer({name, load, page = 1, sourceTop, sourceN
       const photo=document.createElement('img');photo.src=objectUrl;photo.alt=name;
       photo.addEventListener('error',()=>{status.hidden=false;status.textContent='This photo could not be displayed. Go back and try again.';});
       const documentPage=document.createElement('div');documentPage.className='viewer-page';documentPage.append(photo);content.append(documentPage);
-      photo.addEventListener('load',()=>{if(!closed)showSource(documentPage);});status.hidden=true;
+      photo.addEventListener('load',async()=>{if(closed)return;fitScanPage(documentPage,photo.naturalWidth);let bounds;if(scannedSource){const canvas=document.createElement('canvas'),scale=Math.min(1,2400/Math.max(photo.naturalWidth,photo.naturalHeight));canvas.width=Math.round(photo.naturalWidth*scale);canvas.height=Math.round(photo.naturalHeight*scale);canvas.getContext('2d').drawImage(photo,0,0,canvas.width,canvas.height);bounds=await scanBounds(canvas);canvas.width=canvas.height=0;}if(!closed)showSource(documentPage,bounds);});status.hidden=true;
     }
   } catch(error) {
     if(!closed){status.hidden=false;status.textContent=error.message==='Failed to fetch'?'Could not open the report. Check your connection and try again.':`Could not open the report. ${error.message}`;}

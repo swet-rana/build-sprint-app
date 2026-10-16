@@ -1,0 +1,14 @@
+✔ scan row comes from OCR boxes beneath the heading, never the model estimate (1.238541ms)
+✔ uncertain, missing, different or repeated names produce no box (0.558917ms)
+✔ position matching relies on the confident name, without accepting the OCR numeric result (0.083542ms)
+✔ source links open the physical PDF page, highlight its row, and clear the highlight on other pages (150.0715ms)
+VIEWER PROOF: scan uses OCR bounds; uncertain scan opens with no box; text PDF keeps its original 70.8% position and performs no OCR.
+✔ vision highlights use OCR row boxes and never fall back to the model estimate (27.721791ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 606.855541

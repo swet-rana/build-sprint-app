@@ -106,7 +106,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
  async function fetchReport(report){
   return reportCache(site,localStorage.getItem('health-history-upload-session')).original(report);
  }
- function sourceButton(marker,report){return `${marker.readPath==='vision'?'<small class="scan-value-notice">read from scan, please check against the original</small>':''}<button class="source-button" type="button" data-source="${report.id}" data-page="${marker.page}" data-source-top="${Number.isFinite(marker.sourceTop)?marker.sourceTop:''}" data-source-name="${escape(marker.name)}">View original report <span class="sr-only"> for ${escape(marker.name)}, ${dateLabel(report.date)}</span></button>`;}
+ function sourceButton(marker,report){return `${marker.readPath==='vision'?'<small class="scan-value-notice">read from scan, please check against the original</small>':''}<button class="source-button" type="button" data-source="${report.id}" data-page="${marker.page}" data-source-top="${Number.isFinite(marker.sourceTop)?marker.sourceTop:''}" data-source-name="${escape(marker.name)}" data-source-path="${marker.readPath==='vision'?'vision':''}" data-source-ocr-name="${escape(marker.original?.name??marker.rawName??marker.name)}">View original report <span class="sr-only"> for ${escape(marker.name)}, ${dateLabel(report.date)}</span></button>`;}
  function render(){
   if(!comparison)return;
   const c=comparison,dates=c.reports.map(r=>dateLabel(r.date)),tests=summaryTests(c),markers=tests.filter(m=>selected.has(m.key));
@@ -209,7 +209,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
  output.addEventListener('click',async event=>{
   const link=event.target.closest('[data-source]');if(!link||link.disabled)return;
   const report=reports.find(r=>r.id===link.dataset.source);if(!report)return;
-  await openReportViewer({name:`Report #${report.serial} · ${report.name}`,page:link.dataset.page,sourceTop:link.dataset.sourceTop===''?undefined:Number(link.dataset.sourceTop),sourceName:link.dataset.sourceName,load:()=>fetchReport(report)});
+  await openReportViewer({name:`Report #${report.serial} · ${report.name}`,page:link.dataset.page,sourceTop:link.dataset.sourceTop===''?undefined:Number(link.dataset.sourceTop),sourceName:link.dataset.sourceName,readPath:link.dataset.sourcePath,sourceOcrName:link.dataset.sourceOcrName,load:()=>fetchReport(report)});
  });
  return {prepare,updateReports(saved,ids=[]){
   reports=saved;
