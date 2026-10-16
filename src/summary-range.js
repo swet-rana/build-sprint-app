@@ -4,8 +4,12 @@ import {parseRange} from './lab-parser.js';
 export function parseSummaryRange(text){
  const input=String(text??'').replace(/\s+/g,' ').trim();
  const plain=parseRange(input);if(plain)return plain;
- const labels=[...input.matchAll(/([A-Za-z][A-Za-z ()/-]*?)\s*:\s*/g)];
- const preferred=/^(?:normal(?: range| values?)?|reference(?: range| interval)?|desirable(?: range)?|within range)$/i;
+ const labels=[...input.matchAll(/(\d+(?:\s*[-–]\s*\d+)?\s*(?:years?|yrs?|months?|mos?|days?)|[A-Za-z][A-Za-z ()/-]*?)\s*:\s*/gi)];
+ const adult=/^adults?$/i;
+ const ageLabel=/^(?:adults?|child(?:ren)?|p[ae]ediatric(?:s)?|infants?|neonates?|newborns?|adolescents?|\d.*(?:years?|yrs?|months?|mos?|days?))$/i;
+ const hasAdult=labels.some(match=>adult.test(match[1].trim()));
+ if(!hasAdult&&labels.some(match=>ageLabel.test(match[1].trim())))return null;
+ const preferred=hasAdult?adult:/^(?:normal(?: range| values?)?|reference(?: range| interval)?|desirable(?: range)?|within range)$/i;
  const candidates=labels.flatMap((match,i)=>preferred.test(match[1].trim())?[parseRange(input.slice(match.index+match[0].length,labels[i+1]?.index??input.length).replace(/[;,|\s]+$/,''))]:[]);
  if(!candidates.length||candidates.some(r=>!r)||candidates.some(r=>JSON.stringify(r)!==JSON.stringify(candidates[0])))return null;
  return candidates[0];

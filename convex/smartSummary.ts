@@ -18,7 +18,7 @@ export const write=action({args:{sessionKey:v.string(),summaryKey:v.string()},re
   const blob=await ctx.storage.get(saved.storageId);if(!blob||blob.size>8000000)return {available:false};const {comparison}=JSON.parse(await blob.text());
   if(!comparison?.reports?.every((report:any)=>saved.reportIds.includes(report.id))||new Set(comparison.reports.map((r:any)=>r.id)).size!==comparison.reports.length)return {available:false};
   facts=smartFacts(comparison);
-  if(!facts.hits.length&&!facts.misses.length)return {available:true,hits:[],misses:[],questions:[],single:facts.single,stayed:facts.stayed,totalHits:0,totalMisses:0,unclassified:facts.unclassified};
+  if(!facts.hits.length&&!facts.misses.length)return {available:true,hits:[],misses:[],questions:[],single:facts.single,stayed:facts.stayed,onlyInOneReport:facts.onlyInOneReport,totalHits:0,totalMisses:0,unclassified:facts.unclassified};
   runId=await ctx.runMutation(api.evaluations.begin,{sessionKey:args.sessionKey,kind:'summary',reportIds:saved.reportIds,engine:'OpenAI gpt-4.1-mini Hits and Misses'});
   // Constrained wording is intentional: the model can order and phrase verified
   // facts, but cannot emit new values, medical conclusions or treatment advice.
@@ -27,7 +27,7 @@ export const write=action({args:{sessionKey:v.string(),summaryKey:v.string()},re
   if(!response.ok||rawResponse.status!=='completed')throw Error('Smart summary unavailable right now');
   const text=rawResponse.output?.flatMap((item:any)=>item.content??[]).filter((part:any)=>part.type==='output_text').map((part:any)=>part.text).join('');const reply=validateSmartReply(JSON.parse(text),facts);
   const attach=(category:'hits'|'misses')=>reply[category].map((item:any)=>({...item,sources:facts[category].find((fact:any)=>fact.id===item.id).sources}));
-  const result={available:true,hits:attach('hits'),misses:attach('misses'),questions:reply.questions,single:facts.single,stayed:facts.stayed,totalHits:facts.totalHits,totalMisses:facts.totalMisses,unclassified:facts.unclassified};
+  const result={available:true,hits:attach('hits'),misses:attach('misses'),questions:reply.questions,single:facts.single,stayed:facts.stayed,onlyInOneReport:facts.onlyInOneReport,totalHits:facts.totalHits,totalMisses:facts.totalMisses,unclassified:facts.unclassified};
   const outputStorageId=await ctx.storage.store(new Blob([JSON.stringify({request,rawResponse,result})],{type:'application/json'}));await ctx.runMutation(internal.evaluations.complete,{sessionKey:args.sessionKey,runId,outputStorageId});return result;
  }catch{
   if(runId)try{const outputStorageId=await ctx.storage.store(new Blob([JSON.stringify({request:request??null,rawResponse:rawResponse??null,error:'Smart summary unavailable right now'})],{type:'application/json'}));await ctx.runMutation(internal.evaluations.complete,{sessionKey:args.sessionKey,runId,outputStorageId,error:'Smart summary unavailable right now'});}catch{}

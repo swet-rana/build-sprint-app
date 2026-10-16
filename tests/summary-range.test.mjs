@@ -2,6 +2,11 @@ import test from 'node:test';import assert from 'node:assert/strict';
 import {parseSummaryRange,summaryRangeStatus} from '../src/summary-range.js';
 import {trendPointStates} from '../src/trend-point-states.js';
 const bands='Normal: < 150 Borderline High: 150-199 High: 200-499 Very High: > 500';
+test('adult-labelled ranges are selected explicitly without borrowing a child band',()=>{
+ assert.equal(summaryRangeStatus(0.8,'Adults: 0.3-1.2'),'within');
+ for(const text of ['ADULT: 3.5-5.2 Child: 4.0-5.8','ADULT: 3.5-5.2 1-18 YEARS: 4.0-5.8','Child: 4.0-5.8 ADULT: 3.5-5.2'])assert.deepEqual(parseSummaryRange(text),parseSummaryRange('3.5-5.2'));
+ for(const text of ['Child: 4.0-5.8','1-18 YEARS: 4.0-5.8','Child: 4.0-5.8 Normal: 3.5-5.2','Adults: see original Child: 4.0-5.8','Adult: 3.5-5.2 Adults: 4.0-5.8'])assert.equal(parseSummaryRange(text),null);
+});
 test('summary uses only the explicitly normal band and keeps its strict boundary',()=>{
  assert.deepEqual(parseSummaryRange(bands),{low:null,high:150,lowInclusive:false,highInclusive:false});
  assert.equal(summaryRangeStatus(149,bands),'within');assert.equal(summaryRangeStatus(150,bands),'above');

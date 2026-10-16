@@ -12,14 +12,15 @@ export function smartFacts(comparison){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(report.date)||!Array.isArray(report.markers)||report.markers.length>1000)throw Error('Invalid saved results.');
   report.markers.forEach((marker,markerIndex)=>{if(typeof marker.key!=='string')throw Error('Invalid saved result identity.');const group=groups.get(marker.key)??[];group.push({marker,report,reportIndex,markerIndex});groups.set(marker.key,group);});
  });
- const hits=[],misses=[],stayed=[];
+ const hits=[],misses=[],stayed=[],onlyInOneReport=[];
  const latestDate=reports.map(r=>r.date).sort().at(-1);
  for(const observations of groups.values()){
   observations.sort((a,b)=>a.report.date.localeCompare(b.report.date));const latest=observations.at(-1),previous=observations.at(-2),m=latest.marker,name=String(m.name??'').trim();
   const range=parseRange(m.referenceText),status=rangeStatus(m.value,m.referenceText);
-  if(latest.report.date!==latestDate){unclassified++;continue;}
   // Written results, ambiguous ranges and unknown source pages stay in the plain summary.
   if(typeof m.value!=='number'||!Number.isFinite(m.value)||status==='unknown'||!validRange(range)||!name||name.length>120||/[\r\n<>]/.test(name)||/\b(?:diagnos\w*|prescrib\w*|medicine|treatment|ignore|instructions)\b/i.test(name)||!Number.isInteger(m.page)||m.page<1||m.page>(latest.report.pageCount??100)){unclassified++;continue;}
+  if(reports.length>1&&observations.length===1){onlyInOneReport.push({id:`r${latest.reportIndex}m${latest.markerIndex}`,name,sources:[{reportIndex:latest.reportIndex,markerIndex:latest.markerIndex}]});continue;}
+  if(latest.report.date!==latestDate){unclassified++;continue;}
   let trend=null;
   if(previous&&typeof previous.marker.value==='number'&&Number.isFinite(previous.marker.value)&&m.unit===previous.marker.unit){
    const before=parseRange(previous.marker.referenceText);
@@ -45,7 +46,7 @@ export function smartFacts(comparison){
   const fact={id:`r${latest.reportIndex}m${latest.markerIndex}`,name,category,lines,sources,evidence:{value:m.value,unit:m.unit,reference:m.referenceText,date:latest.report.date,...(trend?{trend}:{} )}};
   ({hits,misses,stayed})[category].push(fact);
  }
- return {single:reports.length===1,hits:hits.slice(0,6),misses:misses.slice(0,6),stayed:stayed.map(({id,name,lines,sources})=>({id,name,line:lines[0],sources})),totalHits:hits.length,totalMisses:misses.length,unclassified,questions:[...questionChoices,...(reports.length>1?['What might explain the changes between my reports?']:[])]};
+ return {single:reports.length===1,hits:hits.slice(0,6),misses:misses.slice(0,6),stayed:stayed.map(({id,name,lines,sources})=>({id,name,line:lines[0],sources})),onlyInOneReport,totalHits:hits.length,totalMisses:misses.length,unclassified,questions:[...questionChoices,...(reports.length>1?['What might explain the changes between my reports?']:[])]};
 }
 export function smartReplySchema(facts){
  const items=rows=>({anyOf:(rows.length?rows:[{id:'none',lines:['none']}]).map(row=>({type:'object',additionalProperties:false,properties:{id:{type:'string',enum:[row.id]},line:{type:'string',enum:row.lines}},required:['id','line']}))});

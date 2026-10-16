@@ -29,9 +29,9 @@
 #summary-view .smart-source-chevron{display:none;width:15px;height:15px}
 #summary-view .smart-summary .smart-source-direct:hover{background:transparent;color:#342c91}
 #summary-view .smart-summary .smart-source-direct:focus-visible{outline:2px solid #493dbb;outline-offset:3px;border-radius:5px}
-#summary-view .smart-summary-stayed{margin:18px 0 0}
-#summary-view .smart-summary-stayed summary{font-size:13px;color:#817b8e;padding:8px 0}
-#summary-view .smart-summary-stayed .smart-summary-items{margin-top:8px;background:#fff;border:1px solid #e8e5ee;border-radius:16px;overflow:hidden}
+#summary-view :is(.smart-summary-stayed,.smart-summary-only){margin:18px 0 0}
+#summary-view :is(.smart-summary-stayed,.smart-summary-only) summary{font-size:13px;color:#817b8e;padding:8px 0}
+#summary-view :is(.smart-summary-stayed,.smart-summary-only) .smart-summary-items{margin-top:8px;background:#fff;border:1px solid #e8e5ee;border-radius:16px;overflow:hidden}
 #summary-view .smart-summary-note,#summary-view .smart-summary-disclaimer{font-size:12px!important;line-height:1.6!important;color:#898293;margin:16px 0 0}
 #summary-view .smart-summary-empty{padding:0 20px 16px;color:#898293;font-size:14px!important}
 #summary-view .smart-summary-list .smart-summary-note{padding:0 20px 16px}

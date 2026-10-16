@@ -4,6 +4,14 @@ const report=date=>({date,pageCount:1,markers:[{key:'normal',name:'Fictional tes
 const comparison={reports:[report('2026-01-15'),report('2026-07-15')]};
 const source=(m,r)=>`<button class="source-button" type="button" data-source="${r.date}" data-page="${m.page}">View original report</button>`;
 const view=(state,c=comparison)=>new JSDOM(smartSummaryMarkup(state,c,source)).window.document;
+test('Only in one report sits below Misses and preserves normal, high and low pills and source links',()=>{
+ const one=(key,value)=>({key,name:key,value,unit:'mg/L',referenceText:'10-20',page:1});
+ const c={reports:[{date:'2026-01-15',pageCount:1,markers:[one('earlier-normal',15)]},{date:'2026-07-15',pageCount:1,markers:[one('later-high',30),one('later-low',5)]}]};
+ const facts=smartFacts(c),doc=view({available:true,...facts},c),only=doc.querySelector('.smart-summary-only');
+ assert(only);assert.equal(only.previousElementSibling.getAttribute('aria-label'),'Misses');assert.match(only.querySelector('summary').textContent,/Only in one report · 3 tests/);
+ assert.deepEqual([...only.querySelectorAll('.smart-range-pill')].map(p=>p.textContent),['NORMAL','HIGH','LOW']);assert.deepEqual([...only.querySelectorAll('[data-source]')].map(b=>b.dataset.source),['2026-01-15','2026-07-15','2026-07-15']);
+ assert.equal(doc.querySelector('.smart-count-normal').textContent,'0');assert.equal(doc.querySelector('.smart-count-attention').textContent,'0');
+});
 test('always-normal results stay collapsed and are not counted as Back to normal',()=>{
  const f=smartFacts(comparison),doc=view({available:true,...f,questions:[]});const details=doc.querySelector('.smart-summary-stayed');assert(details);assert.equal(details.open,false);assert.equal(details.querySelectorAll('li').length,1);assert.equal(details.querySelectorAll('.source-button').length,1);assert.equal(doc.querySelector('[aria-label="Hits"] li'),null);assert.equal(doc.querySelector('.smart-count-normal').textContent,'0');
 });

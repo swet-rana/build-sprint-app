@@ -13,3 +13,9 @@ test('all-normal multi-report summary preserves the collapsed results without an
  try{const result=await write._handler({runQuery:async()=>({storageId:'saved-summary',reportIds:c.reports.map(r=>r.id)}),storage:{get:async()=>new Blob([JSON.stringify({comparison:c})])},runMutation:async()=>{assert.fail('No writing call needed for deterministic Stayed in range results');}},{sessionKey:'a'.repeat(64),summaryKey:'fictional-normal-only'});assert.equal(result.available,true);assert.equal(result.hits.length,0);assert.equal(result.misses.length,0);assert.equal(result.stayed.length,1);assert.equal(result.stayed[0].sources.length,2);}
  finally{if(before===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=before;}
 });
+test('single-occurrence tests travel outside the AI reply and never trigger a writing call by themselves',async()=>{
+ const before=process.env.OPENAI_API_KEY;process.env.OPENAI_API_KEY='fictional-key';
+ const earlier={...comparison.reports[0],id:'fictional-earlier',date:'2026-01-15',markers:[]},c={reports:[earlier,comparison.reports[0]]};
+ try{const result=await write._handler({runQuery:async()=>({storageId:'saved-summary',reportIds:c.reports.map(r=>r.id)}),storage:{get:async()=>new Blob([JSON.stringify({comparison:c})])},runMutation:async()=>assert.fail('No writing call for single-occurrence results')},{sessionKey:'a'.repeat(64),summaryKey:'fictional-only-results'});assert.equal(result.totalHits,0);assert.equal(result.totalMisses,0);assert.equal(result.onlyInOneReport.length,2);assert(result.onlyInOneReport.every(x=>x.sources.length===1));}
+ finally{if(before===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=before;}
+});

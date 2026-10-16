@@ -1,0 +1,28 @@
+/* Application-only scale. Home keeps its existing type and logo treatment. */
+#app:has(#home-tab[aria-pressed="false"]){
+ --font-primary:Inter,Arial,sans-serif;--type-h1:40px;--type-h2:30px;--type-h3:22px;
+ --type-body:22px;--type-button:22px;--type-navigation:22px;--type-secondary:14px;
+}
+@media screen{
+ #app:has(#home-tab[aria-pressed="false"]) :is(h1,h2,h3,h4,button,summary,input,select,textarea){font-family:Inter,Arial,sans-serif!important}
+ #app:has(#home-tab[aria-pressed="false"]) :is(h1,h2,h3,h4,.health-category strong,.report-filename,.smart-result-name){display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
+ #app:has(#home-tab[aria-pressed="false"]) :is(.health-page-heading p,#page-description){font-size:var(--type-h2)!important;line-height:1.25!important}
+ #app:has(#home-tab[aria-pressed="false"]) #summary-view .smart-summary h2{font-size:var(--type-h2)!important;font-family:Inter,Arial,sans-serif!important}
+ #app:has(#home-tab[aria-pressed="false"]) #summary-view :is(.smart-summary-list h3,.smart-result-name){font-size:var(--type-h3)!important;line-height:1.3!important}
+ #app:has(#home-tab[aria-pressed="false"]) :is(.health-category strong,.report-details p,.selected-report-details strong,.report-filename,.report-number){font-size:var(--type-h3)!important;line-height:1.3!important}
+ #app:has(#home-tab[aria-pressed="false"]) #summary-view :is(.smart-summary-list h3 span,.smart-result-description,.smart-summary-note,.smart-summary-disclaimer,.smart-summary-scan-note,.smart-range-pill,.smart-count-card span){font-size:var(--type-secondary)!important;line-height:1.5!important}
+ #app:has(#home-tab[aria-pressed="false"]) #summary-view :is(.smart-source-direct,.smart-summary-stayed summary,.smart-summary-only summary){font-size:var(--type-button)!important;line-height:1.3!important}
+ #app:has(#home-tab[aria-pressed="false"]) .health-category{min-width:0;height:auto;min-height:110px}
+ #app:has(#home-tab[aria-pressed="false"]) .view-tabs button{min-width:0;padding-inline:8px}
+}
+@media(max-width:760px){
+ #app:has(#home-tab[aria-pressed="false"]){--type-h1:30px;--type-h2:24px;--type-h3:20px;--type-body:20px;--type-button:20px;--type-navigation:20px;--type-secondary:13px}
+ #app:has(#home-tab[aria-pressed="false"]) .health-page-heading{display:grid!important;grid-template-columns:82px minmax(0,1fr)}
+ #app:has(#home-tab[aria-pressed="false"]) .health-page-heading>div{display:contents}
+ #app:has(#home-tab[aria-pressed="false"]) .health-page-heading h1{grid-column:2}
+ #app:has(#home-tab[aria-pressed="false"]) .health-page-heading p{grid-column:1/-1}
+ #app:has(#home-tab[aria-pressed="false"]) .view-tabs{gap:0}
+ #app:has(#home-tab[aria-pressed="false"]) .view-tabs button{padding-inline:3px;letter-spacing:-.025em}
+}
+.original-viewer{--font-primary:Inter,Arial,sans-serif;--type-h1:40px;--type-button:22px;--type-secondary:14px}
+@media(max-width:760px){.original-viewer{--type-h1:30px;--type-button:20px;--type-secondary:13px}}
