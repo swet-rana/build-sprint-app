@@ -1,0 +1,20 @@
+START: development only; one fictional text PDF and one fictional scanned PDF; existing report reader and saved summary logs.
+PASS: two-report summary; 1 Hit, 1 Miss; 1 Stayed in range test collapsed; unchanged groups and source report/page.
+PASS: short lines, red/green status dots and one Source popover per item; scan notice shown once.
+PASS: clinician questions capped at 3; exact medical-advice notice visible; no patient identity sent to the writing model.
+SAMPLE BEGIN
+Hits
+C-reactive protein came back to normal
+Misses
+Vitamin D is still low, but better than last time
+Stayed in range (collapsed)
+Haemoglobin stayed in range
+Questions for your doctor
+How do these results fit with my health history?
+Which results should we discuss first?
+Are any results worth checking again?
+This is not medical advice; discuss with your doctor.
+SAMPLE END
+PASS: one-report summary; 2 In range, 1 Out of range; no Hit or Miss wording; no trend invented; second-report note visible.
+PASS: simulated writing-call failure preserves the plain summary and visibly says Smart summary unavailable right now.
+PASS: report reading, OCR filter, vision limits/model and reading cache unchanged.
