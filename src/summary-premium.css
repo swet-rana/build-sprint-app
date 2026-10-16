@@ -152,3 +152,5 @@
  #app #summary-view .analysis-selected-list .selected-report-file{grid-column:3;grid-row:2;white-space:normal}
  #app #summary-view .analysis-selected-list .remove-analysis-report{grid-column:4;grid-row:1}
 }
+
+#summary-view .test-selection-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
