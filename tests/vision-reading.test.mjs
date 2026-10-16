@@ -37,3 +37,23 @@ test('different printed dates for the same patient use the first report date wit
  const result=mergeScanResults([{page:1,result:scan},{page:2,result:{...scan,reportDate:'2026-07-16'}}],null,2);
  assert.equal(result.date,'2026-07-15');assert(result.warnings.some(w=>w.includes('More than one printed date')));
 });
+
+test('scanned ratios accept blank or dash units but never an unreadable value',()=>{
+ const ratio=(unit,name='A G RATIO',extra={})=>({name,value:'1.4',unit,referenceRange:'1-2',readable:true,sourceTop:.5,...extra});
+ for(const unit of [null,'',' ','-','–','—']){
+  const result=mergeScanResults([{page:1,result:validateScan({...scan,tests:[scan.tests[0],ratio(unit),ratio(unit,'TOTAL CHOLESTEROL/HDL CHOLESTEROL RATIO'),ratio(unit,'LDL/HDL RATIO',{readable:false}),ratio(unit,'Other ratio',{value:null})]})}],null,1);
+  assert.equal(result.markers.length,3);assert(result.markers.slice(1).every(m=>m.unit===''&&m.key.endsWith('|')));
+  assert.equal(result.unreadable.length,2);assert(result.unreadable.every(m=>m.value===null));
+ }
+ const nonRatio=mergeScanResults([{page:1,result:validateScan({...scan,tests:[scan.tests[0],{...scan.tests[0],name:'Calcium',unit:null}]})}],null,1);
+ assert.equal(nonRatio.unreadable[0].reason,'Unit unreadable in scan');
+});
+
+test('unitless scanned ratios compare only to the same ratio with no unit',async()=>{
+ const {compareReportSeries}=await import('../src/lab-parser.js');const {normalizeReportTests}=await import('../src/test-matching.js');
+ const make=(date,unit,name='TOTAL CHOLESTEROL/HDL CHOLESTEROL RATIO')=>mergeScanResults([{page:1,result:validateScan({...scan,reportDate:date,tests:[{name,value:'2.4',unit,referenceRange:'1-4',readable:true,sourceTop:.5}]})}],null,1);
+ const pair=await normalizeReportTests([make('2026-01-15',null),make('2026-07-15','-')],async()=>[]);
+ const c=compareReportSeries(pair);assert.equal(c.comparable.length,1);assert.equal(c.comparable[0].unit,'');assert(c.comparable[0].observations.every(m=>m.unit===''));
+ for(const unit of ['Ratio','%','mg/dL'])assert.throws(()=>compareReportSeries([pair[0],make('2026-07-15',unit)]),/No matching tests/);
+ assert.throws(()=>compareReportSeries([pair[0],make('2026-07-15',null,'A G RATIO')]),/No matching tests/);
+});

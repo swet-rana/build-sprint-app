@@ -1,0 +1,7 @@
+START: development; fictional image-only PDF with two unitless ratios and one unreadable ratio.
+PASS: scanned PDF has no text layer; existing local OCR screening found test-like content.
+STORED JOB: succeeded; attempt 1; physical page 1.
+PASS: 2 known ratio results accepted with empty stored units; 1 unreadable ratio remains unreadable; no values printed.
+PASS: same unitless ratios compare; results with printed units do not combine with them.
+PASS: prompt, model, caching and spend caps unchanged.
+CLEANUP: fictional dev upload moved to its isolated session trash.

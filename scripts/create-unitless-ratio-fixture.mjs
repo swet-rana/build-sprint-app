@@ -1,0 +1,14 @@
+import {createCanvas} from '@napi-rs/canvas';
+import {writeFile} from 'node:fs/promises';
+import {imageOnlyPdf} from './create-ocr-fixtures.mjs';
+const canvas=createCanvas(1800,2400),c=canvas.getContext('2d');c.fillStyle='white';c.fillRect(0,0,1800,2400);c.fillStyle='black';
+const text=(s,x,y,size=28)=>{c.font=`${size}px Arial`;c.fillText(s,x,y);};
+text('FICTIONAL LAB REPORT - NOT FOR CLINICAL USE',70,100,36);
+text('Patient Name: Sample Patient',70,180,34);text('Collection Date: 15 Jul 2026',70,240,34);
+text('Test',70,390);text('Result',1180,390);text('Units',1370,390);text('Reference',1490,390);
+text('A G RATIO',70,500);text('1.4',1180,500);text('1.0 - 2.0',1490,500);
+text('TOTAL CHOLESTEROL/HDL CHOLESTEROL RATIO',70,650);text('2.4',1180,650);text('-',1370,650);text('1.0 - 4.0',1490,650);
+text('LDL/HDL RATIO',70,800);text('???',1180,800);text('1.0 - 4.0',1490,800);
+text('End of fictional report',70,2100);
+await writeFile('tests/fixtures/unitless-ratio-scan.pdf',imageOnlyPdf(canvas.toBuffer('image/jpeg')));
+console.log('Created fictional image-only PDF: two readable unitless ratios and one unreadable ratio.');

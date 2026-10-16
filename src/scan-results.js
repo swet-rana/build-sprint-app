@@ -14,9 +14,13 @@ export function mergeScanResults(scans,native,pageCount,identityPages=[]){
    if(!row.readable||row.value===null){result.unreadable.push({name:row.name,value:null,page,reason:'Unreadable in scan'});continue;}
    if(!/^[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?$/.test(row.value))throw Error(`Page ${page}: ${row.name} has an unclear numeric value. Check the original scan.`);
    const value=Number(row.value.replaceAll(',',''));if(!Number.isFinite(value))throw Error('The scan reader returned an invalid numeric value.');
-   const unit=row.unit??'',identity=scan.reportKind==='semen'?semenIdentity(row.name,unit,''):testIdentity(row.name,unit);
+   const unitlessRatio=scan.reportKind==='blood'&&/\bratio\b/i.test(row.name)&&/^(?:[-–—])?$/.test((row.unit??'').trim());
+   const unit=unitlessRatio?'':row.unit??'',identity=scan.reportKind==='semen'?semenIdentity(row.name,unit,''):testIdentity(row.name,unit);
    if(!identity){result.warnings.push(`Page ${page}: ${row.name} is outside the supported measurements.`);continue;}
-   if(!unit){result.unreadable.push({name:row.name,value:null,page,reason:'Unit unreadable in scan'});continue;}
+   if(!unit&&!unitlessRatio){result.unreadable.push({name:row.name,value:null,page,reason:'Unit unreadable in scan'});continue;}
+   // The existing text reader treats some blank ratio units as "Ratio".
+   // New unitless scan results must instead compare only with other empty units.
+   if(unitlessRatio)identity.key=identity.key.split('|')[0]+'|';
    const prior=result.markers.find(m=>m.key===identity.key);
    if(prior&&prior.value!==value)throw Error(`Conflicting ${row.name} values were read in this file. Check the original.`);
    if(!prior)result.markers.push({...identity,value,unit,referenceText:row.referenceRange??'Not readable in scan',page,sourceTop:row.sourceTop??undefined,sourceText:`${row.name} ${row.value} ${unit}`,readPath:'vision'});

@@ -50,3 +50,8 @@ Its output prints counts and status only, with no names, dates or medical values
 with a same-name section heading above its result row, opens the actual viewer,
 and checks that local OCR boxes enclose the result row. Its second button checks
 that an unmatched name opens the page without a highlight. It makes no AI calls.
+
+`unitless-ratio-integration.mjs` defaults to development and refuses production
+without `--allow-prod`. It uploads one fictional image-only PDF, checks existing
+OCR screening, schedules an actual server vision job, and verifies unitless ratio
+acceptance and unit-sensitive comparison. Output contains counts and reasons only.
