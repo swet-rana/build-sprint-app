@@ -1,4 +1,5 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Scan highlight — dev only</title></head><body><main id="app"><h1>Scanned row highlight — fictional dev test</h1><button id="matching">Open scan row below heading</button><button id="missing">Open scan with no reliable match</button><pre id="events"></pre></main><script type="module">
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Scan highlight — dev only</title></head><body><main id="app"><section id="summary-view"><h1>Scanned row highlight — fictional dev test</h1><button id="matching">Open scan row below heading</button><button id="missing">Open scan with no reliable match</button><pre id="events"></pre></section></main><script type="module">
+import '/src/summary-premium.css';
 import {guardTestTarget} from './test-target.js';
 const url=guardTestTarget(import.meta.env.VITE_CONVEX_URL,{script:'scan-highlight-browser.html',devOnly:true});
 guardTestTarget(location.origin,{script:'scan-highlight-browser.html',devOnly:true});
@@ -13,10 +14,10 @@ async function original(){
 async function open(missing){
  try{
  log(missing?'START: scan with no matching test name.':'START: scan result directly below a same-name section heading.');
- await openReportViewer({name:'Fictional scanned report',page:1,sourceTop:.24,sourceName:missing?'Unprinted test':'Calcium',sourceOcrName:missing?'Unprinted test':'Calcium',readPath:'vision',load:original});
+ await openReportViewer({name:'Fictional scanned report',page:1,sourceTop:.24,sourceName:missing?'Unprinted test':'Calcium',sourceOcrName:missing?'Unprinted test':'Calcium - Serum Colorimetric',readPath:'vision',load:original});
  const box=document.querySelector('.viewer-source-highlight');
  if(missing){if(box||!document.querySelector('.viewer-document canvas'))throw Error('Missing-name case must open the page with no box');log('PASS: unmatched test opened on the correct page with no highlight; AI estimate was not used.');}
- else{if(!box)throw Error('No row box found');const top=parseFloat(box.style.top)/100,bottom=top+parseFloat(box.style.height)/100;if(!(top>.26&&bottom<.31))throw Error('Box did not enclose the printed result row');log('PASS: OCR box encloses the test row below the heading; the section heading is outside the box.');log('PASS: scanned highlight ignored the model position; no AI call, prompt, model, caching or cap change.');}
+ else{if(!box)throw Error('No row box found');const top=parseFloat(box.style.top)/100,bottom=top+parseFloat(box.style.height)/100;if(!(top>.13&&bottom<.155))throw Error('Box did not enclose the printed result row');log('PASS: OCR box encloses the test row below the heading; the section heading is outside the box.');log('PASS: specimen/method suffix matched the short printed test name.');log('PASS: scanned highlight ignored the model position; no AI call, prompt, model, caching or cap change.');}
  }catch(error){log('FAIL: '+error.message);}
 }
 document.querySelector('#matching').onclick=()=>open(false);document.querySelector('#missing').onclick=()=>open(true);

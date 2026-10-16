@@ -1,7 +1,17 @@
 const compact=s=>String(s??'').normalize('NFKD').toLowerCase().replace(/[^a-z0-9]/g,'');
 const numeric=/^[<>≤≥]?[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?$/;
 export function findScanRow(data,width,height,testName){
- const target=compact(testName);if(!target||!Number.isFinite(width)||!Number.isFinite(height)||width<=0||height<=0)return null;
+ const full=findExactRows(data,width,height,testName);
+ if(full.length)return full.length===1?full[0]:null;
+ // Vision can append a specimen and method printed on a separate line.
+ // Keep the complete test identity (e.g. ionized calcium), removing only a known specimen suffix.
+ const label=String(testName??'').split(/\s+-\s+(?:whole\s+blood|serum|plasma|blood|urine)\b/i)[0];
+ if(label===testName)return null;
+ const short=findExactRows(data,width,height,label);
+ return short.length===1?short[0]:null;
+}
+function findExactRows(data,width,height,testName){
+ const target=compact(testName);if(!target||!Number.isFinite(width)||!Number.isFinite(height)||width<=0||height<=0)return [];
  const words=(data.blocks??[]).flatMap(b=>(b.paragraphs??[]).flatMap(p=>(p.lines??[]).flatMap(l=>l.words??[]))).filter(w=>w.text?.trim()&&w.bbox&&[w.bbox.x0,w.bbox.y0,w.bbox.x1,w.bbox.y1].every(Number.isFinite)&&w.bbox.x0>=0&&w.bbox.y0>=0&&w.bbox.x1<=width&&w.bbox.y1<=height&&w.bbox.x1>w.bbox.x0&&w.bbox.y1>w.bbox.y0);
  const rows=[];
  for(const word of words.sort((a,b)=>(a.bbox.y0+a.bbox.y1)-(b.bbox.y0+b.bbox.y1))){
@@ -27,5 +37,5 @@ export function findScanRow(data,width,height,testName){
    }
   }
  }
- return matches.length===1?matches[0]:null;
+ return matches;
 }

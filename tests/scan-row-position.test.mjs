@@ -17,3 +17,10 @@ test('uncertain, missing, different or repeated names produce no box',()=>{
 test('position matching relies on the confident name, without accepting the OCR numeric result',()=>{
  const words=row(250);words[1].confidence=76;assert(findScanRow(data([words]),1000,1000,'Calcium'));
 });
+
+test('scan label matches separately from a specimen and method description',()=>{
+ assert(findScanRow(data([row(250)]),1000,1000,'Calcium - Serum Colorimetric'));
+ assert.equal(findScanRow(data([row(250),row(350)]),1000,1000,'Calcium - Serum Colorimetric'),null);
+ assert.equal(findScanRow(data([row(250)]),1000,1000,'Calcium Ionized - Serum Colorimetric'),null);
+ assert.equal(findScanRow(data([[w('Calcium',40,250)]]),1000,1000,'Calcium - Serum Colorimetric'),null);
+});

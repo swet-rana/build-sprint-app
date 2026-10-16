@@ -1,0 +1,9 @@
+START: scan result directly below a same-name section heading.
+DEV: fictional scanned PDF uploaded; existing original-file cache used.
+PASS: OCR box encloses the test row below the heading; the section heading is outside the box.
+PASS: specimen/method suffix matched the short printed test name.
+PASS: scanned highlight ignored the model position; no AI call, prompt, model, caching or cap change.
+PASS: phone 390 x 844 — wheel/trackpad-style scrolling reached the bottom; scrollTop 369 of 369; no horizontal overflow.
+PASS: desktop 1440 x 900 — scrolling reached the bottom; scrollTop 2293.5 of 2293 (subpixel rounding).
+START: scan with no matching test name.
+PASS: unmatched test opened on the correct page with no highlight; AI estimate was not used.
