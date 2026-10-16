@@ -14,6 +14,7 @@ function finishCoverage(coverage,result,scanned,visionPages){
  coverage.read=scanned.filter(n=>used.has(n)).length;
  coverage.vision=scanned.filter(n=>used.has(n)&&vision.has(n)).length;coverage.ocr=coverage.read-coverage.vision;
  for(const n of scanned)if(!used.has(n))skipPage(coverage,n,'No supported, dated test result table was included from this scanned page.');
+ for(const page of coverage.textPages??[])if(page.tests===null)page.tests=result.markers.filter(marker=>marker.page===page.page).length;
  result.scanCoverage=coverage;
 }
 
@@ -54,18 +55,21 @@ export async function readLabPdf(blob,onProgress=()=>{},options={}){
  try{
   const pdf=await task.promise;
   if(pdf.numPages>100)throw Error('This preview reads up to 100 pages per file. Split the PDF into smaller dated lab reports.');
-  const reportIdentities=[],pages=[],scanned=[],nativeFallback=[],unreadablePages=[],visionPages=[],ocrDiagnostics=[];
+  const reportIdentities=[],pages=[],textPages=[],scanned=[],nativeFallback=[],unreadablePages=[],visionPages=[],ocrDiagnostics=[];
   for(let n=1;n<=pdf.numPages;n++){
    onProgress(n,pdf.numPages,'Text path · PDF text');
    const page=await pdf.getPage(n),viewport=page.getViewport({scale:1});
    const items=(await page.getTextContent()).items.map(item=>({...item,sourceTop:viewport.convertToViewportPoint(item.transform[4],item.transform[5])[1]/viewport.height}));
    if(items.map(i=>i.str).join('').trim().length<30)scanned.push(n);
    pages.push({page:n,items});reportIdentities.push(identityFromItems({page:n,items}));
-   if(options.vision&&!scanned.includes(n)&&textPageNeedsVision(pages[n-1]).eligible)nativeFallback.push(n);
+   if(!scanned.includes(n)){
+    const outcome=options.vision?textPageNeedsVision(pages[n-1]):null;
+    if(outcome?.eligible)nativeFallback.push(n);else textPages.push({page:n,tests:outcome?.testsFound??null});
+   }
   }
   const attempts=[...scanned,...nativeFallback].sort((a,b)=>a-b);
   if(!attempts.length)return parseReport(pages);
-  coverage={...coverageFor(attempts.length),pdfTotal:pdf.numPages};
+  coverage={...coverageFor(attempts.length),pdfTotal:pdf.numPages,textPages};
   const {makeOcrReader}=await import('./ocr-reader.js');
   reader=await makeOcrReader(status=>onProgress(attempts[0],pdf.numPages,status));
   for(const n of attempts){
@@ -113,4 +117,21 @@ export async function readLabPdf(blob,onProgress=()=>{},options={}){
   if(error.name==='InvalidPDFException')throw Error('This PDF cannot be read. Upload another copy of the original.');
   throw error;
  }finally{await reader?.close();await task.destroy?.();}
+}
+
+// Older successful/error records have scan counts but no text-page notes.
+// Inspect only the cached PDF's existing text layer for this explanation.
+// This never calls OCR/vision, changes results, or updates the reading cache.
+export async function explainPdfTextPages(blob){
+ const task=getDocument({data:new Uint8Array(await blob.arrayBuffer()),isEvalSupported:false,useSystemFonts:true,disableFontFace:true});
+ try{
+  const pdf=await task.promise,textPages=[];
+  for(let n=1;n<=pdf.numPages;n++){
+   const page=await pdf.getPage(n),items=(await page.getTextContent()).items;
+   if(items.map(item=>item.str).join('').trim().length<30)continue;
+   const outcome=textPageNeedsVision({page:n,items});
+   if(!outcome.eligible)textPages.push({page:n,tests:outcome.testsFound});
+  }
+  return textPages;
+ }finally{await task.destroy?.();}
 }

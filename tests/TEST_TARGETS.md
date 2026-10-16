@@ -69,3 +69,5 @@ written and ranged results, specimen separation, Other tests placement and sourc
 links. It never uploads real reports or prints their values.
 
 `vision-limits-browser.html` is development-only. It reads fictional PDFs on dev, then simulates a daily-cap transport response without changing the shared quota counter.
+
+`page-coverage-browser.html` is development-only and uses fictional mixed PDFs. Its second preparation omits text-page display notes from the returned cache clone to check older-reading compatibility; it never changes cached results.

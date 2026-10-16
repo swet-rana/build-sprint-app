@@ -1,3 +1,4 @@
+import {pdfPageTotal,pageExplanations} from './page-coverage.js';
 import {dailyVisionMessage,isDailyVisionLimit,nextVisionReset} from './vision-limits.js';
 import {CATEGORY_ART,categoryIllustration} from './category-art.js';
 import {reportCache} from './report-cache.js';
@@ -75,7 +76,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
  }
  function showCoverage(){
   const box=root.querySelector('#scan-page-coverage');box.hidden=!scanCoverage.size;
-  box.innerHTML=[...scanCoverage].map(([id,coverage])=>`<div><h3>${escape(reports.find(r=>r.id===id)?.name??'Scanned report')}</h3><p>${coverage.read} scanned ${coverage.read===1?'page':'pages'} read · ${coverage.skipped.length} skipped · ${coverage.checked} of ${coverage.total} scan/fallback pages checked${coverage.pdfTotal?` · PDF total: ${coverage.pdfTotal} pages`:""}. ${coverage.vision} included from AI vision; ${coverage.ocr} from local OCR.</p>${scanFailureReasons.has(id)?`<p class="reading-stopped" role="alert">Reading stopped on page ${scanFailureReasons.get(id).page}: ${escape(scanFailureReasons.get(id).reason)}</p>`:''}${coverage.skipped.length?`<details><summary>Why pages were skipped</summary><ul>${coverage.skipped.map(p=>`<li>Page ${p.page}: ${escape(p.reason==='AI vision found no supported blood or semen result table.'?'AI vision found no supported test result table.':p.reason)}</li>`).join('')}</ul></details>`:''}</div>`).join('');
+  box.innerHTML=[...scanCoverage].map(([id,coverage])=>`<div><h3>${escape(reports.find(r=>r.id===id)?.name??'Scanned report')}</h3><p>${coverage.read} scanned ${coverage.read===1?'page':'pages'} read · ${coverage.skipped.length} skipped · ${coverage.checked} of ${coverage.total} scan/fallback pages checked${coverage.pdfTotal?` · PDF total: ${coverage.pdfTotal} pages`:""}. ${coverage.vision} included from AI vision; ${coverage.ocr} from local OCR.</p>${coverage.pdfTotal?`<p class="pdf-page-total">${escape(pdfPageTotal(coverage))}</p>`:''}${scanFailureReasons.has(id)?`<p class="reading-stopped" role="alert">Reading stopped on page ${scanFailureReasons.get(id).page}: ${escape(scanFailureReasons.get(id).reason)}</p>`:''}${pageExplanations(coverage).length?`<details><summary>Why pages were skipped</summary><ul>${pageExplanations(coverage).map(p=>`<li>Page ${p.page}: ${escape(p.reason==='AI vision found no supported blood or semen result table.'?'AI vision found no supported test result table.':p.reason)}</li>`).join('')}</ul></details>`:''}</div>`).join('');
  }
  function showPaths(){
   for(const item of selectionList.querySelectorAll('li')){
@@ -167,7 +168,13 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   const logger=evaluationLogger();
   const summaryRun=await logger.begin('summary',ids,'HealthStats comparison and summary renderer v1');
   try{
-   const {readLabReport}=await import('./report-reader.js');
+   const {readLabReport,explainPdfTextPages}=await import('./report-reader.js');
+   async function includeTextPages(file,coverage){
+    if(coverage.pdfTotal&&!Array.isArray(coverage.textPages)){
+     if(coverage.pdfTotal===coverage.total)coverage.textPages=[];
+     else if(explainPdfTextPages)try{coverage.textPages=await explainPdfTextPages(await fetchReport(file));}catch{ /* Explanation failure must not fail a saved reading. */ }
+    }
+   }
    let parsed=[];const vision=visionReading(ids,{resume,retryFailed,onStatus:job=>{if(job.retryAt>Date.now())blockDailyUntil(job.retryAt);if(job.status==='failed'&&job.failureReason)scanFailureReasons.set(job.reportId,{page:job.page,reason:job.failureReason});readingPaths.set(job.reportId,`scan (AI vision) · page ${job.page}: ${job.status}`);showPaths();message(job.status==='failed'?VISION_FAILURE:`Scan page ${job.page}: ${job.status==='succeeded'?'finished':'reading on the server'}…`,job.status==='failed');}});
    for(let i=0;i<choices.length;i++){
     message(`Opening report ${i+1} of ${choices.length}…`);
@@ -180,11 +187,11 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
       return readLabReport(blob,(page,total,step)=>{message(`Reading report ${i+1} of ${choices.length}: page ${page} of ${total}${step?` · ${step}`:''}…`);if(step?.includes('path'))showPath(step);},file.contentType,{vision:vision?(canvas,page,diagnostics)=>vision(canvas,page,file,diagnostics):null});
      });
      showPath((report.readingPaths??['text']).join(' + '));
-     if(report.scanCoverage){scanCoverage.set(file.id,report.scanCoverage);showCoverage();}
+     if(report.scanCoverage){await includeTextPages(file,report.scanCoverage);scanCoverage.set(file.id,report.scanCoverage);showCoverage();}
      await logger.finish(readingRun,report);parsed.push({...report,id:file.id,fileName:file.name});
     }catch(error){
      if(error.message.includes(VISION_FAILURE)){error.message=VISION_FAILURE;error.code='VISION_STOP';}
-     if(error.pageCoverage){scanCoverage.set(file.id,error.pageCoverage);showCoverage();}
+     if(error.pageCoverage){await includeTextPages(file,error.pageCoverage);scanCoverage.set(file.id,error.pageCoverage);showCoverage();}
      await logger.finish(readingRun,null,error);
      const reason=dailyRetryAt>Date.now()?dailyVisionMessage(dailyRetryAt):error.name==='TimeoutError'?'The file took too long to download. Try again.':error.message==='Failed to fetch'?'Could not download the file. Check your connection and try again.':error.message.includes('confidently')?'The scan is too unclear to read safely. Upload a clearer copy.':error.message.includes('No supported dated')?'Could not find a readable, dated test results table.':error.message;
      failures.push({reportId:file.id,fileName:file.name,error:error.message,message:`Report #${file.serial} (${file.name}) could not be read: ${reason}`});showFailures();

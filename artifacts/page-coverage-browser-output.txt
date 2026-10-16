@@ -1,0 +1,10 @@
+START: development; fictional mixed PDF; no real reports.
+PASS: actual dev summary completed; one scanned result page used scheduled AI vision.
+Page 1: Read as text, no test results found.
+Page 2: Read as text, 1 test found.
+Page 3: Local OCR found no test-like numbers with lab units or reference ranges; skipped before AI vision. Check the original for omitted results.
+Page 5: Read as text, no test results found.
+PDF total: 5 pages = 3 read as text + 1 scan/fallback page read + 1 skipped.
+PASS: older cached reading displays the same page explanations; extra AI calls: 0; extra original downloads: 0.
+PASS: prompt, model, OCR filter, reading decisions, cache version and 100/400 caps unchanged.
+PASS: output contains counts and reasons only; no patient names or medical values.

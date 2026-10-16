@@ -1,0 +1,30 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mixed PDF page accounting — dev only</title></head><body><button id="start">Test fictional mixed PDF</button><pre id="events" style="white-space:pre-wrap"></pre><div id="app"><main><section id="summary-view"><div id="analysis"></div></section></main></div><script type="module">
+import {guardTestTarget} from './test-target.js';
+const url=guardTestTarget(import.meta.env.VITE_CONVEX_URL,{script:'page-coverage-browser.html',devOnly:true});guardTestTarget(location.origin,{script:'page-coverage-browser.html',devOnly:true});
+await Promise.all([import('/src/style.css'),import('/src/typography.css'),import('/src/summary-premium.css')]);
+const [{mountAnalysis},{authClient},{reportCache},{getFunctionName}]=await Promise.all([import('/src/analysis.js'),import('/src/auth-client.js'),import('/src/report-cache.js'),import('convex/server')]);
+const root=document.querySelector('#analysis'),client=authClient(),lines=[];function log(line){lines.push(line);document.querySelector('#events').textContent=lines.join('\n');}
+document.querySelector('#start').onclick=async()=>{
+ document.querySelector('#start').disabled=true;
+ const realMutation=client.mutation.bind(client),realFetch=window.fetch.bind(window);let calls=0,downloads=0;
+ client.mutation=(ref,args)=>{if(getFunctionName(ref)==='visionJobs:enqueueAttempt')calls++;return realMutation(ref,args);};
+ window.fetch=(input,...rest)=>{if(String(input).endsWith('/reports/open'))downloads++;return realFetch(input,...rest);};
+ try{
+ log('START: development; fictional mixed PDF; no real reports.');
+ const sessionKey=Array.from(crypto.getRandomValues(new Uint8Array(32)),b=>b.toString(16).padStart(2,'0')).join('');localStorage.setItem('health-history-upload-session',sessionKey);const reports=[],site=url.replace('.cloud','.site');
+ for(const name of ['page-coverage-mixed.pdf','blood-sample-january.pdf']){
+ const bytes=await(await fetch('/tests/fixtures/'+name)).blob(),form=new FormData();form.set('sessionKey',sessionKey);form.set('uploadId',crypto.randomUUID());form.set('file',new File([bytes],name,{type:'application/pdf'}));const response=await fetch(site+'/reports/upload',{method:'POST',body:form});if(!response.ok)throw Error('Fictional upload failed');reports.push({id:(await response.json()).reportId,name,serial:reports.length+1,contentType:'application/pdf',size:bytes.size});
+ }
+ const analysis=mountAnalysis(root,()=>{});analysis.updateReports(reports,reports.map(r=>r.id));await analysis.prepare();if(!root.querySelector('.real-summary-paper'))throw Error('Fictional summary did not finish');
+ const total=root.querySelector('.pdf-page-total')?.textContent,expected='PDF total: 5 pages = 3 read as text + 1 scan/fallback page read + 1 skipped.';if(total!==expected)throw Error('PDF total did not add up');
+ const explanations=[...root.querySelectorAll('#scan-page-coverage details li')].map(e=>e.textContent);for(const text of ['Page 1: Read as text, no test results found.','Page 2: Read as text, 1 test found.','Page 5: Read as text, no test results found.'])if(!explanations.includes(text))throw Error('Text-page explanation missing');if(!explanations.some(t=>t.startsWith('Page 3:')))throw Error('Scan skip explanation missing');if(calls!==1)throw Error('Unexpected vision page count');
+ log('PASS: actual dev summary completed; one scanned result page used scheduled AI vision.');for(const text of explanations)log(text);log(total);
+ const cache=reportCache(site,sessionKey),reading=cache.reading.bind(cache),beforeCalls=calls,beforeDownloads=downloads;
+ // Emulate an older cached reading by omitting only its display metadata from
+ // the returned clone. The actual cache and all reading results stay untouched.
+ cache.reading=async(file,read)=>{const result=await reading(file,read);if(file.id===reports[0].id)delete result.scanCoverage.textPages;return result;};
+ try{await analysis.prepare();if(root.querySelector('.pdf-page-total')?.textContent!==expected)throw Error('Legacy total mismatch');const rebuilt=[...root.querySelectorAll('#scan-page-coverage details li')].map(e=>e.textContent);if(JSON.stringify(rebuilt)!==JSON.stringify(explanations))throw Error('Legacy explanation mismatch');if(calls!==beforeCalls||downloads!==beforeDownloads)throw Error('Cached explanation triggered another AI call or download');}finally{cache.reading=reading;}
+ log('PASS: older cached reading displays the same page explanations; extra AI calls: 0; extra original downloads: 0.');log('PASS: prompt, model, OCR filter, reading decisions, cache version and 100/400 caps unchanged.');log('PASS: output contains counts and reasons only; no patient names or medical values.');
+ }catch{log('FAIL: mixed-PDF page accounting check failed.');}finally{client.mutation=realMutation;window.fetch=realFetch;}
+};
+</script></body></html>
