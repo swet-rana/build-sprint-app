@@ -10,8 +10,8 @@ test('vision excludes unsure values, keeps exact known values, date, page and sc
 test('vision refuses invalid dates, missing patient identity, non-blood/semen and malformed results',()=>{
  for(const change of [{reportDate:'2026-02-30'},{patientName:null},{reportKind:'other',tests:[{...scan.tests[0],name:'Kidney length',unit:'cm'}]},{tests:[{...scan.tests[0],value:'13?2'}]}])assert.throws(()=>mergeScanResults([{page:1,result:validateScan({...scan,...change})}],null,1));
 });
-test('vision caps sixty pages per reading and 150 pages across the app per IST day',()=>{
- assert.equal(visionLimitError(30,30),null);assert.equal(visionLimitError(44,44),null);assert.equal(visionLimitError(59,149),null);assert.match(visionLimitError(60,0),/60 vision pages/);assert.match(visionLimitError(0,150),/150 vision pages/);
+test('vision caps 100 pages per reading and 400 pages across the app per IST day',()=>{
+ assert.equal(visionLimitError(30,30),null);assert.equal(visionLimitError(44,44),null);assert.equal(visionLimitError(99,399),null);assert.match(visionLimitError(100,0),/100 vision pages/);assert.match(visionLimitError(0,400),/400 vision pages/);assert.match(visionLimitError(100,400),/daily limit of 400/);
  assert.equal(visionDay(Date.parse('2026-10-13T18:29:59Z')),'2026-10-13');assert.equal(visionDay(Date.parse('2026-10-13T18:30:00Z')),'2026-10-14');
 });
 test('vision cannot silently merge different people or conflicting values',()=>{
@@ -56,4 +56,10 @@ test('unitless scanned ratios compare only to the same ratio with no unit',async
  const c=compareReportSeries(pair);assert.equal(c.comparable.length,1);assert.equal(c.comparable[0].unit,'');assert(c.comparable[0].observations.every(m=>m.unit===''));
  for(const unit of ['Ratio','%','mg/dL'])assert.throws(()=>compareReportSeries([pair[0],make('2026-07-15',unit)]),/No matching tests/);
  assert.throws(()=>compareReportSeries([pair[0],make('2026-07-15',null,'A G RATIO')]),/No matching tests/);
+});
+
+test('daily reset is exactly midnight Asia/Kolkata and advances across month and year boundaries',async()=>{
+ const {nextVisionReset,dailyVisionMessage}=await import('../src/vision-limits.js');
+ for(const [now,reset] of [['2026-10-16T18:29:59.999Z','2026-10-16T18:30:00.000Z'],['2026-10-16T18:30:00.000Z','2026-10-17T18:30:00.000Z'],['2026-12-31T18:29:59.999Z','2026-12-31T18:30:00.000Z']])assert.equal(new Date(nextVisionReset(Date.parse(now))).toISOString(),reset);
+ assert.equal(dailyVisionMessage(Date.parse('2026-10-16T18:30:00Z')),'HealthStats has reached its daily AI vision limit of 400 pages. Reading resumes at 00:00 IST (India time) on 17 Oct 2026.');
 });

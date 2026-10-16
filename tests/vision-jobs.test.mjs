@@ -72,3 +72,16 @@ test('retry receipt identifies the new attempt while successful pages keep their
  await jobs.finish._handler(h.ctx,{jobId:next.jobId,attempt:2,result:scan});assert.equal(h.rows.get(first.jobId).attempt,1);assert.equal(h.rows.get(next.jobId).status,'succeeded');
  console.log('RETRY RECEIPT: succeeded page attempt=1 reused; failed page attempt=1 -> attempt=2 -> succeeded.');
 });
+
+test('daily cap exposes midnight IST retry time only while the current app counter is exhausted',async()=>{
+ const h=harness(),id=await jobs.enqueue._handler(h.ctx,h.args);
+ const {visionDay,nextVisionReset,dailyVisionMessage}=await import('../src/vision-limits.js');
+ const now=Date.now();h.rows.set('today',{table:'visionAppDaily',day:visionDay(now),pages:400});
+ await jobs.finish._handler(h.ctx,{jobId:id,attempt:1,error:'Uncaught ConvexError: Scan reading stopped: HealthStats has reached its app-wide daily limit of 400 vision pages. Try again tomorrow.'});
+ let result=await jobs.get._handler(h.ctx,{sessionKey:h.args.sessionKey,jobId:id});
+ assert.equal(result.retryAt,nextVisionReset(now));assert.equal(result.error,dailyVisionMessage(result.retryAt));assert(!result.error.includes('Tap Try again'));
+ h.rows.get('today').pages=150;
+ result=await jobs.get._handler(h.ctx,{sessionKey:h.args.sessionKey,jobId:id});assert.equal(result.retryAt,undefined);assert.equal(result.error,jobs.READING_FAILURE,'Raising the limit must unlock an old daily failure');
+ h.rows.get('today').day='2000-01-01';
+ result=await jobs.get._handler(h.ctx,{sessionKey:h.args.sessionKey,jobId:id});assert.equal(result.retryAt,undefined,'Yesterday’s failure must allow retry after reset');
+});

@@ -5,6 +5,7 @@ import {internal,api} from './_generated/api';
 import type {Id} from './_generated/dataModel';
 import type {ActionCtx} from './_generated/server';
 import {isSessionKey,matchesFileType} from './fileRules.js';
+import {DAILY_VISION_PAGES} from '../src/vision-limits.js';
 import {VISION_MODEL,VISION_PROMPT,VISION_SCHEMA,validateScan,visionDay,visionLimitError} from './visionRules.js';
 export const scanValidator=v.object({reportKind:v.union(v.literal('blood'),v.literal('semen'),v.literal('urine'),v.literal('stool'),v.literal('other')),specimen:v.optional(v.union(v.literal('blood'),v.literal('semen'),v.literal('urine'),v.literal('stool'),v.literal('other'),v.literal('unknown'))),originalReportKind:v.optional(v.literal('other')),patientName:v.union(v.string(),v.null()),reportDate:v.union(v.string(),v.null()),tests:v.array(v.object({name:v.string(),value:v.union(v.string(),v.null()),unit:v.union(v.string(),v.null()),referenceRange:v.union(v.string(),v.null()),readable:v.boolean(),sourceTop:v.union(v.number(),v.null())}))});
 export const begin=mutation({args:{sessionKey:v.string(),reportIds:v.array(v.id('reports')),requestKey:v.optional(v.string()),retry:v.optional(v.boolean())},returns:v.id('visionReadings'),handler:async(ctx,{sessionKey,reportIds,requestKey,retry})=>{
@@ -27,8 +28,8 @@ export const reserve=internalMutation({args:{sessionKey:v.string(),readingId:v.i
  if(!isSessionKey(sessionKey)||!reading||reading.sessionKey!==sessionKey||reading.owner!==owner||!reading.reportIds.includes(reportId)||!report||report.sessionKey!==sessionKey||report.deleted||!Number.isInteger(page)||page<1||page>100||Date.now()-reading.createdAt>3600000)throw new ConvexError('This scan reading expired or the report is unavailable. Prepare the summary again.');
  const day=visionDay(Date.now()),daily=await ctx.db.query('visionAppDaily').withIndex('by_day',q=>q.eq('day',day)).first();
  // Include reservations made under the old per-user limit earlier today. This
- // migration is bounded and conservative: 151 nonzero legacy owners already exceed the cap.
- const used=daily?.pages??(await ctx.db.query('visionDaily').withIndex('by_day',q=>q.eq('day',day)).take(151)).reduce((sum,row)=>sum+row.calls,0);
+ // migration is bounded and conservative: 401 nonzero legacy owners already exceed the cap.
+ const used=daily?.pages??(await ctx.db.query('visionDaily').withIndex('by_day',q=>q.eq('day',day)).take(DAILY_VISION_PAGES+1)).reduce((sum,row)=>sum+row.calls,0);
  const limit=visionLimitError(reading.pages,used);if(limit)throw new ConvexError(limit);
  // Both counters are reserved in the same Convex transaction, before any provider IO.
  await ctx.db.patch('visionReadings',readingId,{pages:reading.pages+1});

@@ -1,0 +1,93 @@
+✔ Summary preserves selected originals, waits for a click and offers retry after a download error (187.323333ms)
+✔ Per-summary and AI service failures offer retry; daily exhaustion waits for reset (119.93875ms)
+UI PROOF: friendly error retained; stored cap reason visible outside collapsed details; PDF total shown; no stack trace.
+✔ saved scan failure shows its real cap reason under Why pages were skipped and keeps the friendly error (100.430083ms)
+DAILY LIMIT UI: 400-page banner; resumes 17 Oct 2026 at 00:00 IST; Try again hidden before reset and available after reset; no automatic read.
+✔ daily-limit banner hides retry until midnight IST, then restores retry without an automatic read (355.069875ms)
+Scan image check {
+  page: 1,
+  width: null,
+  height: null,
+  fileType: 'image/jpeg',
+  byteSize: 4,
+  dataUrlCharacters: 31,
+  rejected: false,
+  rule: 'image.length>750000 || !/^data:image\\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(image)'
+}
+Scan image check {
+  page: 1,
+  width: null,
+  height: null,
+  fileType: 'image/jpeg',
+  byteSize: 562500,
+  dataUrlCharacters: 750023,
+  rejected: true,
+  rule: 'image.length>750000 || !/^data:image\\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(image)'
+}
+Scan image check {
+  page: 1,
+  width: null,
+  height: null,
+  fileType: 'image/jpeg',
+  byteSize: 4,
+  dataUrlCharacters: 31,
+  rejected: false,
+  rule: 'image.length>750000 || !/^data:image\\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(image)'
+}
+Scan image check {
+  page: 2,
+  width: 1600,
+  height: 1200,
+  fileType: 'image/jpeg',
+  byteSize: 562500,
+  dataUrlCharacters: 750023,
+  rejected: true,
+  rule: 'image.length>750000 || !/^data:image\\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(image)'
+}
+✔ The server action stops on provider failure and saves its raw request, response and OCR rejection (35.46125ms)
+✔ Actual server reservation permits page 100, blocks page 101 and shares the hard 400-page cap across users (2.331875ms)
+✔ The new global counter includes earlier daily reservations once and does not retain a ten-call user limit (0.633625ms)
+✔ The app-wide server cap prevents storage and provider calls before the action sends a page (0.433292ms)
+✔ Rejected image size saves page dimensions, format, byte count and exact rule without calling AI or reserving a vision page (0.502833ms)
+✔ scheduled quota reservation keeps the verified signed-in owner without browser auth (0.269458ms)
+✔ Apollo-sized preparation can continue beyond 30 vision pages without raising the daily limit (0.459709ms)
+✔ explicit retry renews an expired preparation without resetting its spent page count (0.92675ms)
+STATUS reading -> succeeded; reconnect reused the same job and result; new AI calls: 0.
+STATUS reading -> failed -> reading -> succeeded; Try again is explicit; raw Convex error hidden.
+Scan image check {
+  page: 3,
+  width: null,
+  height: null,
+  fileType: 'image/jpeg',
+  byteSize: 4,
+  dataUrlCharacters: 31,
+  rejected: false,
+  rule: 'image.length>750000 || !/^data:image\\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(image)'
+}
+RETRY RECEIPT: succeeded page attempt=1 reused; failed page attempt=1 -> attempt=2 -> succeeded.
+✔ enqueue atomically saves reading and schedules once; completed page is reused after reconnect (3.457833ms)
+✔ failed jobs show plain error, retry explicitly and ignore stale completion (0.568083ms)
+✔ job access is private and an interrupted scheduler cannot leave reading forever (0.50375ms)
+✔ scheduled action writes the real reader result and cannot call the provider twice (21.77275ms)
+✔ failed job keeps friendly message and exposes the saved cap reason without a stack trace (0.214875ms)
+✔ retry receipt identifies the new attempt while successful pages keep their original attempt (0.801333ms)
+✔ daily cap exposes midnight IST retry time only while the current app counter is exhausted (18.437458ms)
+✔ vision excludes unsure values, keeps exact known values, date, page and scan provenance (4.192ms)
+✔ vision refuses invalid dates, missing patient identity, non-blood/semen and malformed results (3.06375ms)
+✔ vision caps 100 pages per reading and 400 pages across the app per IST day (0.212042ms)
+✔ vision cannot silently merge different people or conflicting values (1.175291ms)
+✔ report identity from the first page applies to later scan results with missing identity (0.241ms)
+✔ a cover-page identity can supply missing details without being a result page (1.161125ms)
+✔ missing whole-file identity and conflicting names on a non-result page are rejected (0.270417ms)
+✔ different printed dates for the same patient use the first report date with a source-check warning (0.581166ms)
+✔ scanned ratios accept blank or dash units but never an unreadable value (0.728083ms)
+✔ unitless scanned ratios compare only to the same ratio with no unit (18.711209ms)
+✔ daily reset is exactly midnight Asia/Kolkata and advances across month and year boundaries (21.029875ms)
+ℹ tests 30
+ℹ suites 0
+ℹ pass 30
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1363.508083

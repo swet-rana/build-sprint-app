@@ -1,0 +1,259 @@
+
+> build-sprint-app@1.0.0 test
+> node --test tests/*.test.mjs
+
+✔ analysis accepts two through ten reports and rejects fewer or more (1.64425ms)
+CATEGORY ART: 18 illustrations; 92846 bytes including mobile variants; each at most twice its displayed size.
+✔ all category illustrations retain their originals at small WebP sizes under 100 KB combined (85.2145ms)
+✔ logger saves original inputs and full output, then clears the retry queue (1.761542ms)
+✔ offline begin and finish survive logger recreation and save once after reconnection (0.41775ms)
+✔ failed finish retries its original server run and preserves errors (1.28625ms)
+✔ retry delay increases to one minute and another session’s jobs stay untouched (1.678708ms)
+✔ failed OCR reading preserves rejected words and scores through offline retry (0.911458ms)
+✔ failed scan reading preserves checked pages and exact skip reasons through offline retry (0.72025ms)
+✔ reads both fictional fertility PDFs with inline identity, spaced dates and four printed columns (372.992208ms)
+✔ only supported nonempty files within the size limit are accepted (2.463792ms)
+✔ renaming a text file does not make it a PDF or photo (0.206208ms)
+✔ browser access keys must contain 32 random bytes in hexadecimal (0.138833ms)
+CACHE PROOF: two fictional originals downloaded twice total; real PDF reader ran twice total; two source opens and a second summary made zero extra downloads or readings.
+✔ finished summary matches the original PDFs: fertility, selected backwards (3046.112708ms)
+✔ finished summary matches the original PDFs: blood, selected backwards (311.592459ms)
+✔ finished summary matches the original PDFs: semen, selected backwards (164.284166ms)
+✔ finished summary matches the original PDFs: crosslab, selected backwards (107.965042ms)
+✔ finished summary matches the original PDFs: scanned, selected backwards (2807.863541ms)
+✔ finished summary matches the original PDFs: mixed, selected backwards (1385.761875ms)
+✔ finished summary matches the original PDFs: blurred, selected backwards (3129.245083ms)
+✔ finished summary matches the original PDFs: tilted, selected backwards (2017.208ms)
+✔ failed reports are excluded while readable reports still produce a summary: blur-rejected, selected backwards (1912.711917ms)
+✔ failed reports are excluded while readable reports still produce a summary: rotation-rejected, selected backwards (2382.416083ms)
+✔ finished summary matches the original PDFs: layout, selected backwards (89.802292ms)
+✔ finished summary matches the original PDFs: multipage, selected backwards (84.976625ms)
+✔ finished summary matches the original PDFs: footer, selected backwards (92.308791ms)
+✔ finished summary matches the original PDFs: panels, selected backwards (116.814667ms)
+✔ finished summary matches the original PDFs: confidence-partial, selected backwards (1015.563667ms)
+RESUME PROOF: the saved reading automatically restored a finished summary without pressing Prepare summary.
+✔ finished summary matches the original PDFs: vision, selected backwards (1483.249792ms)
+✔ finished summary matches the original PDFs: scan-filter, selected backwards (18605.732458ms)
+✔ footer layout keeps collection date, patient, split result name, range categories and physical source row (8.897667ms)
+✔ missing separate reference remains missing and method numbers cannot become results (32.836917ms)
+✔ release date cannot replace missing or invalid sample collection date (2.537792ms)
+✔ footer layout still rejects different patients or collection dates in one file (6.947625ms)
+✔ inline reference block stays with its result and does not consume the next split-name result (3.11875ms)
+✔ gender-specific blocks stay descriptive rather than picking a range (1.835083ms)
+✔ negative bounds in an inline range keep their minus sign (0.9735ms)
+✔ maps common Indian panel names and aliases to the right categories (4.14975ms)
+✔ allows shared tests and separates inflammation from heart and iron tests (2.448167ms)
+✔ fertility groups recorded blood hormones but not pregnancy tests or unrelated vitamins (0.483041ms)
+✔ longevity groups established long-term health markers without treating all inflammation as cardiac risk (0.477458ms)
+✔ Home automatically progresses through five demo stages then stays on Home after seven seconds (0.591333ms)
+✔ reads dated result columns, commas and source pages without extracting notes (6.500541ms)
+✔ lab names require printed branding rather than generic patient and date labels (6.616625ms)
+✔ different titles for the same patient compare in date order without inventing missing tests (1.375625ms)
+✔ different patients, same dates and incompatible units are not merged (2.6255ms)
+✔ range boundaries respect printed less-than and less-than-or-equal symbols (1.337042ms)
+✔ undated attachments stay excluded and urine tests keep a separate specimen identity (3.0425ms)
+✔ reads Tata collection labels and compares names across lab-specific patient IDs (1.450792ms)
+✔ keeps wrapped reference categories without borrowing the next test or notes (0.305084ms)
+✔ three reports are ordered by date and missing results remain empty (19.163084ms)
+✔ page-number footers cannot become a wrapped reference range (0.905167ms)
+✔ alternate cholesterol names compare with their own source pages and reject conflicting aliases (2.533834ms)
+✔ compares four, ten and twenty reports chronologically without a three-report limit (3.4875ms)
+✔ a failed dynamic import reloads once, including after the page restarts (1.307333ms)
+✔ unrelated loading errors do not reload or prevent normal error handling (0.113916ms)
+✔ unavailable session storage does not risk a reload loop (0.108708ms)
+✔ explicit later panel resumes after comments and preserves its numeric source row (7.18025ms)
+✔ a repeated full header resumes with its own reordered columns (2.325541ms)
+✔ notes never resume extraction without an explicit result-panel or table header (1.54225ms)
+✔ Real native PDF falls back through local OCR screening to vision; readable text PDF never calls vision (3837.042875ms)
+✔ OCR coordinates preserve patient, collection date, test, decimal value and reference (8.314584ms)
+✔ unreadable and uncertain OCR output fails rather than inventing results (1.694375ms)
+✔ recognized information pages are excluded without a reading error (8.147541ms)
+✔ OCR rejects below 80 and retains exact low words, scores, page and boxes (2.129167ms)
+✔ result confidence rejection saves only the low-confidence result words (0.34275ms)
+✔ uploads and originals permit both local preview ports and configured hosted app (1.237292ms)
+✔ Safari stream iteration preserves chunks and releases its reader on completion (17.560625ms)
+✔ Safari stream iteration cancels on early exit and releases locks on reading errors (3.09525ms)
+✔ PDF compatibility leaves native stream iteration unchanged (0.387541ms)
+PHONE IMAGE: width=1600, height=1200, file type=image/jpeg, byte size=504214, data URL characters=672311
+HEIC upload converted locally {
+  width: 2000,
+  height: 1500,
+  fileType: 'image/jpeg',
+  byteSize: 18383,
+  dataUrlCharacters: 24535,
+  sourceWidth: 4032,
+  sourceHeight: 3024
+}
+✔ A noisy 4032 × 3024 phone page becomes an actual JPEG under the unchanged server limit (578.521375ms)
+✔ Quality ignored by a phone encoder still fits by reducing dimensions; blank and wrong-format encoders fail locally (38.390459ms)
+✔ Existing desktop encoding keeps the same dimensions and JPEG bytes when already within the limit (11.556209ms)
+✔ HEIC is decoded locally and converted to a JPEG File before upload; other originals stay untouched (119.286625ms)
+Report cache could not be saved; this tab will still reuse its files.
+✔ originals and successful readings are reused concurrently, across viewers and after a reload (0.989958ms)
+✔ failed downloads and failed readings remain retryable (5.016541ms)
+✔ partial scan failures retry reading while reusing the downloaded original (0.761334ms)
+✔ changed files, deleted files and other browser access keys cannot reuse stale readings (1.211542ms)
+✔ uploaded originals are reused and unavailable browser storage does not block reading (2.23125ms)
+✔ deleting a report during a pending download does not save its original again (3.74025ms)
+✔ report details use the collection date and patient, with unknown labs left blank (1.836959ms)
+✔ existing category lists become short descriptions while custom wording is preserved (0.118916ms)
+✔ a temporary reading failure does not save blank details and can be retried after reload (0.597084ms)
+✔ reports uploaded during a details read are included in the same pass (0.492334ms)
+✔ missing details are allowed but impossible dates and oversized values are rejected (4.0705ms)
+✔ printed identity can be assembled from separate pages, and conflicting names are rejected (3.255917ms)
+✔ OCR identity from a cover respects the unchanged 80-percent confidence rule (1.512917ms)
+✔ OCR table rows without identity use the printed whole-report identity and retain their source page (119.250792ms)
+✔ scan identity ignores titles, case, punctuation, spacing, middle initials and age/sex suffixes (0.832167ms)
+✔ doctor and referrer labels are not patient identity, even if vision chooses that name (0.512625ms)
+✔ clearly different patients remain rejected, including ambiguous initials between full names (0.365042ms)
+✔ duplicates use file contents and reference the original stable report number (4.158791ms)
+✔ identical bytes match even with different names; different bytes do not match (30.248417ms)
+✔ report sorting supports both dates and directions without changing numbering or input (1.792875ms)
+✔ missing or invalid report dates stay last in either direction and ties are stable (0.211625ms)
+✔ report search combines report type, lab and document type in any order (0.99925ms)
+✔ report search recognizes photo and image words and JPG/JPEG (1.317625ms)
+✔ report search preserves filename, patient, date, serial and empty searches (0.475834ms)
+PROOF: PDF cards remain unopened; central summary preserves selected IDs; visible image thumbnails load privately once.
+✔ PDF cards stay unopened; central selection and private image previews work (2584.720959ms)
+✔ scan row comes from OCR boxes beneath the heading, never the model estimate (2.075208ms)
+✔ uncertain, missing, different or repeated names produce no box (1.968458ms)
+✔ position matching relies on the confident name, without accepting the OCR numeric result (0.595792ms)
+✔ scan label matches separately from a specimen and method description (1.711458ms)
+✔ OCR screening skips blank pages, covers, dates, addresses and image captions without test-like results (16.644625ms)
+✔ OCR screening accepts numbers with lab units or printed ranges without relaxing result confidence (2.425625ms)
+✔ semen tables preserve printed values, units, references and source pages (5.666583ms)
+✔ semen concentration, total count and motility conditions remain separate (68.552375ms)
+✔ semen units and preparation must be explicit and DFI assays cannot merge (0.80875ms)
+✔ qualitative and bounded semen results stay out of numeric trends with an omission notice (0.26125ms)
+✔ semen and blood rows with the same printed name cannot merge (0.963334ms)
+✔ each result preserves its own physical source page and row through date sorting (16.109667ms)
+✔ missing source coordinates remain missing rather than guessing a row (0.32475ms)
+✔ source links open the physical PDF page, highlight its row, and clear the highlight on other pages (1338.458709ms)
+VIEWER PROOF: scan uses OCR bounds; uncertain scan opens with no box; text PDF keeps its original 70.8% position and performs no OCR.
+✔ vision highlights use OCR row boxes and never fall back to the model estimate (203.130542ms)
+✔ urine and stool retain numeric, ranged and written results without mixing specimens (18.981458ms)
+✔ old urine page results remain urine; blood and semen stay numeric only (0.176875ms)
+✔ OCR screening allows labelled urine/stool qualitative tables, not educational prose (3.35875ms)
+✔ native urine/stool tables use the same specimen-safe result identity (2.36475ms)
+✔ panel headings are not results and ambiguous mixed tables are skipped, not mixed into urine (0.303542ms)
+HASHED IMAGES: 57 files; every filename verified against its SHA-256 content digest.
+✔ every public image has a real content hash and the original image bytes are retained (81.640167ms)
+✔ ordinary hyphenated names are revalidated and generated content names receive long caching (0.436166ms)
+✔ installed hosting source and built client both use the strict cache rule (22.470291ms)
+✔ Summary preserves selected originals, waits for a click and offers retry after a download error (968.517083ms)
+✔ Per-summary and AI service failures offer retry; daily exhaustion waits for reset (112.896833ms)
+UI PROOF: friendly error retained; stored cap reason visible outside collapsed details; PDF total shown; no stack trace.
+✔ saved scan failure shows its real cap reason under Why pages were skipped and keeps the friendly error (96.690958ms)
+DAILY LIMIT UI: 400-page banner; resumes 17 Oct 2026 at 00:00 IST; Try again hidden before reset and available after reset; no automatic read.
+✔ daily-limit banner hides retry until midnight IST, then restores retry without an automatic read (119.01325ms)
+✔ single-report tests are selectable with dates and source pages but no change (1.242ms)
+✔ two labs combine an unfamiliar haemoglobin name and different units while preserving originals (15.949125ms)
+✔ known aliases need no AI; repeated unfamiliar names are sent once within a batch (0.631583ms)
+✔ conversion rules preserve inequalities, do not guess descriptive ranges, and refuse unsupported units (0.39675ms)
+✔ uncertain AI matches and different conditions, specimens or assays cannot be combined (0.228542ms)
+✔ Server cache claims once across units, caches uncertain and failed names, and rejects another browser (51.13525ms)
+✔ equivalent lab names get the same identity while retaining printed names (6.082625ms)
+✔ different analytes, conditions, ratios and units are never merged (0.359917ms)
+✔ explicit full names match their abbreviations with compatible units (0.940459ms)
+✔ test targets default to dev and production needs the explicit allow flag (0.845459ms)
+✔ viewer remains dev-only; unknown hosts and misleading URLs are refused (0.155167ms)
+✔ viewer refuses a production page before browser access or any file download (70.21ms)
+✔ A failed native text page with lab evidence requires vision; covers and dates do not (3.596917ms)
+✔ Standard blood rows classified other are corrected on the server and accepted without inventing values (16.509375ms)
+✔ Urine, imaging and semen retain their classification; an unreadable blood row remains unreadable (2.081ms)
+✔ Vision uses the text reader’s printed day/month/year convention and collection-date priority (0.1165ms)
+✔ normal-only trends retain purple, including reference boundaries (7.052375ms)
+✔ transitions in either direction show red outside and green within range (0.428958ms)
+✔ missing values and unknown ranges never become green; source ranges are respected (2.572416ms)
+Scan image check {
+  page: 1,
+  width: null,
+  height: null,
+  fileType: 'image/jpeg',
+  byteSize: 4,
+  dataUrlCharacters: 31,
+  rejected: false,
+  rule: 'image.length>750000 || !/^data:image\\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(image)'
+}
+Scan image check {
+  page: 1,
+  width: null,
+  height: null,
+  fileType: 'image/jpeg',
+  byteSize: 562500,
+  dataUrlCharacters: 750023,
+  rejected: true,
+  rule: 'image.length>750000 || !/^data:image\\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(image)'
+}
+Scan image check {
+  page: 1,
+  width: null,
+  height: null,
+  fileType: 'image/jpeg',
+  byteSize: 4,
+  dataUrlCharacters: 31,
+  rejected: false,
+  rule: 'image.length>750000 || !/^data:image\\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(image)'
+}
+Scan image check {
+  page: 2,
+  width: 1600,
+  height: 1200,
+  fileType: 'image/jpeg',
+  byteSize: 562500,
+  dataUrlCharacters: 750023,
+  rejected: true,
+  rule: 'image.length>750000 || !/^data:image\\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(image)'
+}
+✔ The server action stops on provider failure and saves its raw request, response and OCR rejection (58.449625ms)
+✔ Actual server reservation permits page 100, blocks page 101 and shares the hard 400-page cap across users (9.306167ms)
+✔ The new global counter includes earlier daily reservations once and does not retain a ten-call user limit (1.070042ms)
+✔ The app-wide server cap prevents storage and provider calls before the action sends a page (0.5215ms)
+✔ Rejected image size saves page dimensions, format, byte count and exact rule without calling AI or reserving a vision page (0.725833ms)
+✔ scheduled quota reservation keeps the verified signed-in owner without browser auth (0.20875ms)
+✔ Apollo-sized preparation can continue beyond 30 vision pages without raising the daily limit (1.245917ms)
+✔ explicit retry renews an expired preparation without resetting its spent page count (17.075916ms)
+✔ the screen waits through disconnect and gets the saved result from the query (4.148625ms)
+✔ failed jobs and query errors never expose raw Convex errors (3.477917ms)
+✔ retry ignores the cached old failed attempt until the newly scheduled attempt finishes (0.50125ms)
+Scan page image { page: 4 }
+✔ explicit retry preserves an older preparation and requests the new attempt, rather than forgetting successful jobs (152.498458ms)
+STATUS reading -> succeeded; reconnect reused the same job and result; new AI calls: 0.
+STATUS reading -> failed -> reading -> succeeded; Try again is explicit; raw Convex error hidden.
+Scan image check {
+  page: 3,
+  width: null,
+  height: null,
+  fileType: 'image/jpeg',
+  byteSize: 4,
+  dataUrlCharacters: 31,
+  rejected: false,
+  rule: 'image.length>750000 || !/^data:image\\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(image)'
+}
+RETRY RECEIPT: succeeded page attempt=1 reused; failed page attempt=1 -> attempt=2 -> succeeded.
+✔ enqueue atomically saves reading and schedules once; completed page is reused after reconnect (21.819292ms)
+✔ failed jobs show plain error, retry explicitly and ignore stale completion (24.965125ms)
+✔ job access is private and an interrupted scheduler cannot leave reading forever (13.300042ms)
+✔ scheduled action writes the real reader result and cannot call the provider twice (61.49075ms)
+✔ failed job keeps friendly message and exposes the saved cap reason without a stack trace (0.929458ms)
+✔ retry receipt identifies the new attempt while successful pages keep their original attempt (0.633917ms)
+✔ daily cap exposes midnight IST retry time only while the current app counter is exhausted (190.862625ms)
+✔ vision excludes unsure values, keeps exact known values, date, page and scan provenance (16.111834ms)
+✔ vision refuses invalid dates, missing patient identity, non-blood/semen and malformed results (4.677875ms)
+✔ vision caps 100 pages per reading and 400 pages across the app per IST day (0.18775ms)
+✔ vision cannot silently merge different people or conflicting values (1.113ms)
+✔ report identity from the first page applies to later scan results with missing identity (0.1935ms)
+✔ a cover-page identity can supply missing details without being a result page (1.111417ms)
+✔ missing whole-file identity and conflicting names on a non-result page are rejected (0.32875ms)
+✔ different printed dates for the same patient use the first report date with a source-check warning (0.625292ms)
+✔ scanned ratios accept blank or dash units but never an unreadable value (1.091292ms)
+✔ unitless scanned ratios compare only to the same ratio with no unit (25.188375ms)
+✔ daily reset is exactly midnight Asia/Kolkata and advances across month and year boundaries (113.258042ms)
+ℹ tests 174
+ℹ suites 0
+ℹ pass 174
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 40100.432208

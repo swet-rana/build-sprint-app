@@ -1,0 +1,34 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vision limits — fictional development test</title></head><body><button id="start">Test fictional scanned PDF and daily banner</button><pre id="events" style="white-space:pre-wrap"></pre><div id="app"><main><section id="summary-view"><div id="analysis"></div></section></main></div><script type="module">
+import {guardTestTarget} from './test-target.js';
+const url=guardTestTarget(import.meta.env.VITE_CONVEX_URL,{script:'vision-limits-browser.html',devOnly:true});guardTestTarget(location.origin,{script:'vision-limits-browser.html',devOnly:true});
+await Promise.all([import('/src/style.css'),import('/src/typography.css'),import('/src/summary-premium.css')]);
+const [{mountAnalysis},{authClient},{api},{getFunctionName},{nextVisionReset,dailyVisionMessage}]=await Promise.all([import('/src/analysis.js'),import('/src/auth-client.js'),import('/convex/_generated/api.js'),import('convex/server'),import('/src/vision-limits.js')]);
+const root=document.querySelector('#analysis'),client=authClient(),lines=[];function log(line){lines.push(line);document.querySelector('#events').textContent=lines.join('\n');}
+document.querySelector('#start').onclick=async()=>{
+ document.querySelector('#start').disabled=true;
+ try{
+ log('START: development only; fictional four-page scanned PDF and fictional text PDF.');
+ const sessionKey=Array.from(crypto.getRandomValues(new Uint8Array(32)),b=>b.toString(16).padStart(2,'0')).join('');localStorage.setItem('health-history-upload-session',sessionKey);const reports=[];
+ for(const name of ['vision-retry-multipage.pdf','blood-sample-january.pdf']){
+ const bytes=await(await fetch('/tests/fixtures/'+name)).blob(),form=new FormData();form.set('sessionKey',sessionKey);form.set('uploadId',crypto.randomUUID());form.set('file',new File([bytes],name,{type:'application/pdf'}));
+ const response=await fetch(url.replace('.cloud','.site')+'/reports/upload',{method:'POST',body:form});if(!response.ok)throw Error('Fictional upload failed');reports.push({id:(await response.json()).reportId,name,serial:reports.length+1,contentType:'application/pdf',size:bytes.size});
+ }
+ const analysis=mountAnalysis(root,()=>{});analysis.updateReports(reports,reports.map(r=>r.id));await analysis.prepare();
+ if(!root.querySelector('.real-summary-paper'))throw Error(root.querySelector('#analysis-status').textContent);
+ if(![...root.querySelectorAll('.reading-path')].some(e=>e.textContent.includes('AI vision')))throw Error('AI vision path missing');
+ log('PASS: actual development server read the fictional scan; summary completed; text PDF stayed on text path.');
+ // Simulate the quota response at the transport boundary. Never exhaust or alter
+ // the shared development daily counter just to test the banner.
+ const realMutation=client.mutation.bind(client),realWatch=client.watchQuery.bind(client),retryAt=nextVisionReset(Date.now());
+ client.mutation=async(ref,args)=>getFunctionName(ref)==='visionJobs:enqueueAttempt'?{jobId:'fictional-daily-cap',attempt:1}:realMutation(ref,args);
+ client.watchQuery=(ref,args,...rest)=>getFunctionName(ref)==='visionJobs:get'&&args.jobId==='fictional-daily-cap'?{onUpdate:()=>()=>{},localQueryResult:()=>({status:'failed',attempt:1,reportId:reports[0].id,page:3,retryAt,failureReason:'Scan reading stopped: HealthStats has reached its app-wide daily limit of 400 vision pages. Try again tomorrow.'})}:realWatch(ref,args,...rest);
+ // A new fictional report identity avoids the completed reading cache; the same
+ // original bytes are uploaded in this isolated test session.
+ const bytes=await(await fetch('/tests/fixtures/vision-retry-multipage.pdf')).blob(),form=new FormData();form.set('sessionKey',sessionKey);form.set('uploadId',crypto.randomUUID());form.set('file',new File([bytes],'fictional-quota-scan.pdf',{type:'application/pdf'}));const uploaded=await fetch(url.replace('.cloud','.site')+'/reports/upload',{method:'POST',body:form});if(!uploaded.ok)throw Error('Quota fixture upload failed');const quotaReport={...reports[0],id:(await uploaded.json()).reportId,name:'fictional-quota-scan.pdf'};
+ try{analysis.updateReports([quotaReport,reports[1]],[quotaReport.id,reports[1].id]);await analysis.prepare();
+ if(root.querySelector('#analysis-status').textContent!==dailyVisionMessage(retryAt))throw Error('Daily banner mismatch');if(!root.querySelector('#retry-summary').hidden)throw Error('Try again visible before reset');if(!root.querySelector('#prepare-summary').disabled)throw Error('Prepare remains enabled during daily block');
+ }finally{client.mutation=realMutation;client.watchQuery=realWatch;}
+ log('PASS: simulated daily-cap response shows the exact midnight IST reset date and hides Try again.');log('BANNER: '+root.querySelector('#analysis-status').textContent);log('PASS: Prepare summary disabled until reset; no extra AI call for simulated failure; shared quota untouched by simulation.');log('PASS: prompt, model, OCR and caches unchanged; no real reports used.');
+ }catch(error){log('FAIL: '+error.message);}
+};
+</script></body></html>

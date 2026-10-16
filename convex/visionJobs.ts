@@ -6,6 +6,7 @@ import type {Id} from './_generated/dataModel';
 import {internal} from './_generated/api';
 import {isSessionKey} from './fileRules.js';
 import {readArgs,readPage,scanValidator} from './vision';
+import {visionDay,nextVisionReset,isDailyVisionLimit,dailyVisionMessage,DAILY_VISION_PAGES} from '../src/vision-limits.js';
 export const READING_FAILURE="We couldn't finish reading this report. Tap Try again.";
 // Expose the saved operational reason, never a Convex stack trace or arbitrary error payload.
 export function failureReason(error=''){
@@ -40,11 +41,19 @@ async function enqueuePage(ctx:MutationCtx,args:any){
 // Keep the existing ID-only endpoint for older clients and diagnostics.
 export const enqueue=mutation({args:{...readArgs,retry:v.optional(v.boolean())},returns:v.id('visionJobs'),handler:async(ctx,args)=>(await enqueuePage(ctx,args)).jobId});
 export const enqueueAttempt=mutation({args:{...readArgs,retry:v.optional(v.boolean())},returns:v.object({jobId:v.id('visionJobs'),attempt:v.number()}),handler:enqueuePage});
-export const get=query({args:{sessionKey:v.string(),jobId:v.id('visionJobs')},returns:v.union(v.null(),v.object({status,attempt:v.number(),reportId:v.id('reports'),page:v.number(),result:v.optional(scanValidator),error:v.optional(v.string()),failureReason:v.optional(v.string())})),handler:async(ctx,{sessionKey,jobId})=>{
+export const get=query({args:{sessionKey:v.string(),jobId:v.id('visionJobs')},returns:v.union(v.null(),v.object({status,attempt:v.number(),reportId:v.id('reports'),page:v.number(),result:v.optional(scanValidator),error:v.optional(v.string()),failureReason:v.optional(v.string()),retryAt:v.optional(v.number())})),handler:async(ctx,{sessionKey,jobId})=>{
  const job=await ctx.db.get('visionJobs',jobId);if(!job||job.sessionKey!==sessionKey)return null;
  await owned(ctx,sessionKey,job.readingId);
  const report=await ctx.db.get('reports',job.reportId);if(!report||report.deleted||report.sessionKey!==sessionKey)return null;
- return {status:job.status,attempt:job.attempt,reportId:job.reportId,page:job.page,...(job.status==='succeeded'?{result:job.result}:{}),...(job.status==='failed'?{error:READING_FAILURE,failureReason:failureReason(job.error)}:{})};
+ // Only a currently exhausted day blocks retry; older failures can resume after reset
+ // or after a limit increase. Read the same bounded counters as reservation.
+ let retryAt:number|undefined;
+ if(job.status==='failed'&&isDailyVisionLimit(job.error)){
+  const now=Date.now(),day=visionDay(now),daily=await ctx.db.query('visionAppDaily').withIndex('by_day',q=>q.eq('day',day)).first();
+  const used=daily?.pages??(await ctx.db.query('visionDaily').withIndex('by_day',q=>q.eq('day',day)).take(DAILY_VISION_PAGES+1)).reduce((sum,row)=>sum+row.calls,0);
+  if(used>=DAILY_VISION_PAGES)retryAt=nextVisionReset(now);
+ }
+ return {status:job.status,attempt:job.attempt,reportId:job.reportId,page:job.page,...(retryAt?{retryAt}:{}),...(job.status==='succeeded'?{result:job.result}:{}),...(job.status==='failed'?{error:retryAt?dailyVisionMessage(retryAt):READING_FAILURE,failureReason:failureReason(job.error)}:{})};
 }});
 export const statuses=query({args:{sessionKey:v.string(),readingId:v.id('visionReadings')},returns:v.array(v.object({jobId:v.id('visionJobs'),reportId:v.id('reports'),page:v.number(),status})),handler:async(ctx,{sessionKey,readingId})=>{
  await owned(ctx,sessionKey,readingId);

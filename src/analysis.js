@@ -1,3 +1,4 @@
+import {dailyVisionMessage,isDailyVisionLimit,nextVisionReset} from './vision-limits.js';
 import {CATEGORY_ART,categoryIllustration} from './category-art.js';
 import {reportCache} from './report-cache.js';
 import {normalizeReportTests,originalResultTitle} from './test-matching.js';
@@ -56,14 +57,22 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
  });
  root.innerHTML=`<form id="analysis-form" class="summary-workspace"><section class="analysis-controls" aria-labelledby="selected-analysis-title"><div class="analysis-selection-heading"><h2 id="selected-analysis-title">Reports selected for analysis</h2><div class="analysis-selection-actions"><span id="analysis-selection-count">0 of 10 reports selected</span><button class="secondary" id="add-analysis-reports" type="button">${summaryIcon('<path d="M12 5v14M5 12h14"/>')}Add more reports</button></div></div><div id="selected-analysis-reports"></div></section><aside class="summary-preparation" aria-labelledby="preparation-title">${summaryIcon('<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z"/>')}<h2 id="preparation-title">Turn your reports into<br>a clear summary</h2><ul class="analysis-guide">${['Compare key markers across reports.','Highlight changes and trends.','Prepare a clear, doctor-friendly summary.','Keep findings connected to their original reports.'].map(text=>`<li>${summaryIcon('<path d="m6 12 4 4 8-8"/>')}<span>${text}</span></li>`).join('')}</ul><button class="primary" id="prepare-summary" type="submit" disabled>Prepare summary <span aria-hidden="true">→</span></button><p class="preparation-help">Select 2–10 reports from different dates.</p></aside></form><section class="analysis-notice" aria-label="Report information">${summaryIcon('<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/>')}<div><p id="analysis-status" role="status" aria-live="polite" hidden></p><p>Check this draft against the originals. Access stays tied to this browser until sign-in is available.</p></div><button type="button" class="secondary" id="retry-summary" hidden>Try again</button></section><div id="reading-failures" role="status" hidden></div><section id="scan-page-coverage" class="reading-coverage" aria-label="Scanned page reading" hidden></section><div id="real-summary"></div>`;
  const button=root.querySelector('#prepare-summary'),status=root.querySelector('#analysis-status'),output=root.querySelector('#real-summary'),selectionList=root.querySelector('#selected-analysis-reports');
- let failures=[],reports=[],reportIds=[],comparison=null,selected=new Set(),busy=false,activeCategory='all',selectionVersion=0;
+ let failures=[],reports=[],reportIds=[],comparison=null,selected=new Set(),busy=false,activeCategory='all',selectionVersion=0,dailyRetryAt=0,resetTimer;
  const retry=root.querySelector('#retry-summary'),addReports=root.querySelector('#add-analysis-reports'),preparationHelp=root.querySelector('.preparation-help');
  const thumbnails=new Map(),readingPaths=new Map(),scanCoverage=new Map(),scanFailureReasons=new Map();
  addReports.addEventListener('click',onAddReports);
  selectionList.addEventListener('click',event=>{const remove=event.target.closest('[data-summary-remove]');if(remove&&!busy)onRemoveReport(remove.dataset.summaryRemove);});
  function canPrepare(){return reportIds.length>=2&&reportIds.length<=MAX_ANALYSIS_REPORTS&&reportIds.every(id=>reports.some(r=>r.id===id));}
  const site=import.meta.env.VITE_CONVEX_URL?.replace(/\.convex\.cloud\/?$/,'.convex.site');
- function message(text,error=false){status.textContent=text;status.hidden=!text;status.classList.toggle('is-error',error);retry.hidden=!error;}
+ function blockDailyUntil(until){
+  dailyRetryAt=until;window.clearTimeout(resetTimer);
+  if(until>Date.now())resetTimer=window.setTimeout(()=>{dailyRetryAt=0;message('The daily AI vision limit has reset. Tap Try again to resume reading.',true);setBusyControls();},until-Date.now());
+ }
+ function message(text,error=false){
+  if(error&&isDailyVisionLimit(text)&&dailyRetryAt<=Date.now())blockDailyUntil(nextVisionReset(Date.now()));
+  const blocked=dailyRetryAt>Date.now();
+  status.textContent=blocked?dailyVisionMessage(dailyRetryAt):text;status.hidden=!status.textContent;status.classList.toggle('is-error',error||blocked);retry.hidden=!error||blocked;
+ }
  function showCoverage(){
   const box=root.querySelector('#scan-page-coverage');box.hidden=!scanCoverage.size;
   box.innerHTML=[...scanCoverage].map(([id,coverage])=>`<div><h3>${escape(reports.find(r=>r.id===id)?.name??'Scanned report')}</h3><p>${coverage.read} scanned ${coverage.read===1?'page':'pages'} read · ${coverage.skipped.length} skipped · ${coverage.checked} of ${coverage.total} scan/fallback pages checked${coverage.pdfTotal?` · PDF total: ${coverage.pdfTotal} pages`:""}. ${coverage.vision} included from AI vision; ${coverage.ocr} from local OCR.</p>${scanFailureReasons.has(id)?`<p class="reading-stopped" role="alert">Reading stopped on page ${scanFailureReasons.get(id).page}: ${escape(scanFailureReasons.get(id).reason)}</p>`:''}${coverage.skipped.length?`<details><summary>Why pages were skipped</summary><ul>${coverage.skipped.map(p=>`<li>Page ${p.page}: ${escape(p.reason==='AI vision found no supported blood or semen result table.'?'AI vision found no supported test result table.':p.reason)}</li>`).join('')}</ul></details>`:''}</div>`).join('');
@@ -88,7 +97,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   }
  }
  function setBusyControls(){
-  button.disabled=busy||!canPrepare();retry.disabled=busy||!canPrepare();addReports.disabled=busy;
+  button.disabled=busy||dailyRetryAt>Date.now()||!canPrepare();retry.disabled=busy||dailyRetryAt>Date.now()||!canPrepare();addReports.disabled=busy;
   selectionList.querySelectorAll('[data-summary-remove]').forEach(b=>b.disabled=busy);
   root.querySelector('#analysis-form').setAttribute('aria-busy',String(busy));
  }
@@ -148,7 +157,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   });
  }
  async function prepare({resume=false,retryFailed=false}={}){
-  if(busy)return;
+  if(busy||dailyRetryAt>Date.now())return;
   const ids=[...reportIds],version=selectionVersion;
   const choices=ids.map(id=>reports.find(r=>r.id===id));
   const countError=analysisCountError(ids.length);if(countError){message(countError,true);return;}
@@ -159,7 +168,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   const summaryRun=await logger.begin('summary',ids,'HealthStats comparison and summary renderer v1');
   try{
    const {readLabReport}=await import('./report-reader.js');
-   let parsed=[];const vision=visionReading(ids,{resume,retryFailed,onStatus:job=>{if(job.status==='failed'&&job.failureReason)scanFailureReasons.set(job.reportId,{page:job.page,reason:job.failureReason});readingPaths.set(job.reportId,`scan (AI vision) · page ${job.page}: ${job.status}`);showPaths();message(job.status==='failed'?VISION_FAILURE:`Scan page ${job.page}: ${job.status==='succeeded'?'finished':'reading on the server'}…`,job.status==='failed');}});
+   let parsed=[];const vision=visionReading(ids,{resume,retryFailed,onStatus:job=>{if(job.retryAt>Date.now())blockDailyUntil(job.retryAt);if(job.status==='failed'&&job.failureReason)scanFailureReasons.set(job.reportId,{page:job.page,reason:job.failureReason});readingPaths.set(job.reportId,`scan (AI vision) · page ${job.page}: ${job.status}`);showPaths();message(job.status==='failed'?VISION_FAILURE:`Scan page ${job.page}: ${job.status==='succeeded'?'finished':'reading on the server'}…`,job.status==='failed');}});
    for(let i=0;i<choices.length;i++){
     message(`Opening report ${i+1} of ${choices.length}…`);
     const file=choices[i];
@@ -177,7 +186,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
      if(error.message.includes(VISION_FAILURE)){error.message=VISION_FAILURE;error.code='VISION_STOP';}
      if(error.pageCoverage){scanCoverage.set(file.id,error.pageCoverage);showCoverage();}
      await logger.finish(readingRun,null,error);
-     const reason=error.name==='TimeoutError'?'The file took too long to download. Try again.':error.message==='Failed to fetch'?'Could not download the file. Check your connection and try again.':error.message.includes('confidently')?'The scan is too unclear to read safely. Upload a clearer copy.':error.message.includes('No supported dated')?'Could not find a readable, dated test results table.':error.message;
+     const reason=dailyRetryAt>Date.now()?dailyVisionMessage(dailyRetryAt):error.name==='TimeoutError'?'The file took too long to download. Try again.':error.message==='Failed to fetch'?'Could not download the file. Check your connection and try again.':error.message.includes('confidently')?'The scan is too unclear to read safely. Upload a clearer copy.':error.message.includes('No supported dated')?'Could not find a readable, dated test results table.':error.message;
      failures.push({reportId:file.id,fileName:file.name,error:error.message,message:`Report #${file.serial} (${file.name}) could not be read: ${reason}`});showFailures();
      if(error.code==='VISION_STOP')throw error;
     }
@@ -215,7 +224,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   reports=saved;
   const next=ids.filter(id=>reports.some(r=>r.id===id));
   if(JSON.stringify(next)!==JSON.stringify(reportIds)){
-   reportIds=next;selectionVersion++;failures=[];readingPaths.clear();scanCoverage.clear();scanFailureReasons.clear();showCoverage();showFailures();comparison=null;output.innerHTML='';onReady(false);
+   blockDailyUntil(0);reportIds=next;selectionVersion++;failures=[];readingPaths.clear();scanCoverage.clear();scanFailureReasons.clear();showCoverage();showFailures();comparison=null;output.innerHTML='';onReady(false);
    message('Report selection changed. Prepare the summary when ready.');
   }
   const choices=reportIds.map(id=>reports.find(r=>r.id===id));

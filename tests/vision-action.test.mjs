@@ -29,31 +29,32 @@ function quotaContext({globalPages,legacy=[]}={}){
   query:table=>({withIndex(name,configure){
    assert.equal(name,'by_day');const fields=[];const q={eq(field,value){fields.push([field,value]);return q;}};
    configure(q);assert.equal(fields[0][0],'day');
-   return {first:async()=>globalPages===undefined?null:{_id:'app-day',pages:globalPages},take:async count=>{assert.equal(table,'visionDaily');assert.equal(count,151);return legacy.map(calls=>({calls}));}};
+   return {first:async()=>globalPages===undefined?null:{_id:'app-day',pages:globalPages},take:async count=>{assert.equal(table,'visionDaily');assert.equal(count,401);return legacy.map(calls=>({calls}));}};
   }}),
   patch:async(table,id,change)=>{writes.push({table,id,change});if(table==='visionAppDaily')globalPages=change.pages;else Object.assign(rows.get(id),change);},
   insert:async(table,value)=>{writes.push({table,value});if(table==='visionAppDaily'){globalPages=value.pages;return 'app-day';}return `evaluation-${writes.length}`;},
  }};
  return {ctx,rows,writes,sessions,usage:()=>globalPages,args:i=>({sessionKey:sessions[i],readingId:`reading-${i}`,reportId:`report-${i}`,page:1})};
 }
-test('Actual server reservation permits page 60, blocks page 61 and shares the hard 150-page cap across users',async()=>{
- const q=quotaContext({globalPages:149});q.rows.get('reading-0').pages=59;
- await reserve._handler(q.ctx,q.args(0));assert.equal(q.usage(),150);assert.equal(q.rows.get('reading-0').pages,60);
+test('Actual server reservation permits page 100, blocks page 101 and shares the hard 400-page cap across users',async()=>{
+ const q=quotaContext({globalPages:399});q.rows.get('reading-0').pages=99;
+ await reserve._handler(q.ctx,q.args(0));assert.equal(q.usage(),400);assert.equal(q.rows.get('reading-0').pages,100);
  const writes=q.writes.length;
- await assert.rejects(reserve._handler(q.ctx,q.args(0)),/60 vision pages/);
- await assert.rejects(reserve._handler(q.ctx,q.args(1)),/150 vision pages/);
+ const perSummary=quotaContext({globalPages:0});perSummary.rows.get('reading-0').pages=100;await assert.rejects(reserve._handler(perSummary.ctx,perSummary.args(0)),/100 vision pages/);assert.equal(perSummary.writes.length,0);
+ await assert.rejects(reserve._handler(q.ctx,q.args(0)),/400 vision pages/);
+ await assert.rejects(reserve._handler(q.ctx,q.args(1)),/400 vision pages/);
  assert.equal(q.writes.length,writes,'Blocked requests must not reserve or log another provider attempt');assert.equal(q.rows.get('reading-1').pages,0);
 });
 test('The new global counter includes earlier daily reservations once and does not retain a ten-call user limit',async()=>{
  const q=quotaContext({legacy:[40,50]});q.rows.get('reading-0').pages=10;
  await reserve._handler(q.ctx,q.args(0));assert.equal(q.usage(),91);
  await reserve._handler(q.ctx,q.args(1));assert.equal(q.usage(),92);assert.equal(q.rows.get('reading-0').pages,11);
- const capped=quotaContext({legacy:[100,50]});await assert.rejects(reserve._handler(capped.ctx,capped.args(0)),/150 vision pages/);assert.equal(capped.writes.length,0);
+ const capped=quotaContext({legacy:[200,200]});await assert.rejects(reserve._handler(capped.ctx,capped.args(0)),/400 vision pages/);assert.equal(capped.writes.length,0);
 });
 test('The app-wide server cap prevents storage and provider calls before the action sends a page',async()=>{
- const q=quotaContext({globalPages:150}),previousKey=process.env.OPENAI_API_KEY;process.env.OPENAI_API_KEY='fictional-test-key';
+ const q=quotaContext({globalPages:400}),previousKey=process.env.OPENAI_API_KEY;process.env.OPENAI_API_KEY='fictional-test-key';
  const ctx={runMutation:async(ref,args)=>reserve._handler(q.ctx,args),storage:{store:async()=>{assert.fail('A capped request must not upload or call the provider');}}};
- try{await assert.rejects(read._handler(ctx,{...q.args(1),image:'data:image/jpeg;base64,/9j/AA=='}),/150 vision pages/);}finally{if(previousKey===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=previousKey;}
+ try{await assert.rejects(read._handler(ctx,{...q.args(1),image:'data:image/jpeg;base64,/9j/AA=='}),/400 vision pages/);}finally{if(previousKey===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=previousKey;}
 });
 
 test('Rejected image size saves page dimensions, format, byte count and exact rule without calling AI or reserving a vision page',async()=>{
@@ -75,8 +76,8 @@ test('Apollo-sized preparation can continue beyond 30 vision pages without raisi
  const q=quotaContext({globalPages:30});q.rows.get('reading-0').pages=30;
  for(let page=31;page<=44;page++)await reserve._handler(q.ctx,{...q.args(0),page});
  assert.equal(q.rows.get('reading-0').pages,44);assert.equal(q.usage(),44);
- const daily=quotaContext({globalPages:150});daily.rows.get('reading-0').pages=30;
- await assert.rejects(reserve._handler(daily.ctx,daily.args(0)),/150 vision pages/);assert.equal(daily.writes.length,0);
+ const daily=quotaContext({globalPages:400});daily.rows.get('reading-0').pages=30;
+ await assert.rejects(reserve._handler(daily.ctx,daily.args(0)),/400 vision pages/);assert.equal(daily.writes.length,0);
 });
 
 test('explicit retry renews an expired preparation without resetting its spent page count',async()=>{

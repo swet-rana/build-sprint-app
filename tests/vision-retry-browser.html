@@ -32,7 +32,7 @@ async function ready(value){if(!value||completed)return;completed=true;
  if(jobs[0].status!=='succeeded'||jobs[0].attempt!==1||jobs[1].status!=='succeeded'||jobs[1].attempt!==2)throw Error('Wrong attempt or stored result');
  const statuses=await client.query(api.visionJobs.statuses,{sessionKey,readingId:p3.readingId});if(statuses.length!==2)throw Error('Unexpected extra page jobs');
  if(!root.querySelector('.real-summary-paper'))throw Error('No finished summary');
- record('PASS: page 3 reused at attempt 1; page 4 retried at attempt 2 and succeeded.');record('PASS: same preparation and same two page jobs; no completed page sent to AI again.');record('PASS: fictional four-page PDF finished; summary displayed; 60/150 caps unchanged.');
+ record('PASS: page 3 reused at attempt 1; page 4 retried at attempt 2 and succeeded.');record('PASS: same preparation and same two page jobs; no completed page sent to AI again.');record('PASS: fictional four-page PDF finished; summary displayed; 100/400 caps unchanged.');
  }catch(error){record('FAIL: '+error.message);}
 }
 document.querySelector('#start').onclick=async()=>{

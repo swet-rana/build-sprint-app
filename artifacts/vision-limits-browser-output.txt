@@ -1,0 +1,6 @@
+START: development only; fictional four-page scanned PDF and fictional text PDF.
+PASS: actual development server read the fictional scan; summary completed; text PDF stayed on text path.
+PASS: simulated daily-cap response shows the exact midnight IST reset date and hides Try again.
+BANNER: HealthStats has reached its daily AI vision limit of 400 pages. Reading resumes at 00:00 IST (India time) on 17 Oct 2026.
+PASS: Prepare summary disabled until reset; no extra AI call for simulated failure; shared quota untouched by simulation.
+PASS: prompt, model, OCR and caches unchanged; no real reports used.

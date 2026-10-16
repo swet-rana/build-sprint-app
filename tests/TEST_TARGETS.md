@@ -67,3 +67,5 @@ with separate urine and stool pages on two dates, reads them through the actual
 Summary workflow and scheduled vision jobs, and checks all printed numeric,
 written and ranged results, specimen separation, Other tests placement and source
 links. It never uploads real reports or prints their values.
+
+`vision-limits-browser.html` is development-only. It reads fictional PDFs on dev, then simulates a daily-cap transport response without changing the shared quota counter.
