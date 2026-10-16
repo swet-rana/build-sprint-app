@@ -38,3 +38,10 @@
 /* Report-management actions use the real Lato Medium face. */
 #app #uploads-view :is(#show-upload,#move-to-summary,[data-show-upload]){font-family:'Lato Medium',Lato,Arial,sans-serif!important;font-weight:500!important;font-size:20px!important}
 @media(max-width:760px){#app #uploads-view :is(#show-upload,#move-to-summary,[data-show-upload]){font-size:18px!important}}
+/* On phones, keep both Reports text lines beside the left illustration. */
+@media(max-width:760px){
+ #app #uploads-view .reports-title-with-art.health-page-heading{display:flex!important;align-items:center!important}
+ #app #uploads-view .reports-title-with-art.health-page-heading>div{display:flex;flex:1;min-width:0;flex-direction:column;align-items:center;text-align:center}
+ #app #uploads-view .reports-title-with-art.health-page-heading #saved-title{width:100%}
+ #app #uploads-view .reports-title-with-art.health-page-heading #saved-title+p{width:100%;margin-top:3px!important}
+}
