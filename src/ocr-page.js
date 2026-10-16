@@ -1,3 +1,4 @@
+import {pageSpecimen} from './specimen-results.js';
 const clean=s=>String(s||'').replace(/\s+/g,' ').trim();
 const norm=s=>clean(s).toLowerCase().replace(/[^a-z0-9]/g,'');
 const labels=[['Patient Name',['patient','name']],['Collection Date',['collection','date']],['Collected',['collected']],['Patient ID',['patient','id']],['UHID/MR No',['uhidmr','no']],['Name',['name']]];
@@ -35,6 +36,7 @@ export function ocrPage(data,width,height,page=1){
  const pageText=clean(data.text||words.map(w=>w.text).join(' '));
  if(/\bSEMEN (?:ANALYSIS|EXAMINATION)|\bSPERM DNA FRAGMENTATION\b/i.test(pageText))items.push(item('SEMEN ANALYSIS',20,895));
  if(/post[ -]?wash|pre[ -]?wash|washed sample|sperm preparation/i.test(pageText))items.push(item('Washed sample',20,885));
+ const specimen=pageSpecimen(pageText);if(specimen==='mixed'){const error=Error('Different specimen tables on this page could not be separated reliably.');error.code='NO_TABLE';throw error;}if(specimen)items.push(item(specimen==='urine'?'URINE ANALYSIS':'STOOL ANALYSIS',20,875));
  const informationPage=/\blet[’']?s? understand the critical markers in detail that require your focus\b/i.test(pageText)&&!/(patient name|collection date|collected|test name|reference interval|\bresult\b)/i.test(pageText);
  if(!headerRow&&informationPage)return {page,items:[],exclusionReason:'information page'};
  if(!headerRow){const error=Error('Could not read the test, result, unit and reference columns. Upload a clearer full-page photo or scan.');error.code='NO_TABLE';throw error;}
@@ -47,7 +49,7 @@ export function ocrPage(data,width,height,page=1){
   const cells=Array.from({length:5},()=>[]);
   for(const word of row.words){const x=(word.bbox.x0+word.bbox.x1)/2/width*600;const col=boundaries.findIndex(b=>x<b);cells[col<0?4:col].push(word);}
   const result=clean(cells[1].map(w=>w.text).join(' '));
-  if(/^[+-]?[\d,]+(?:\.\d+)?$/.test(result)&&cells.slice(0,4).flat().some(w=>w.confidence<80))throw confidenceError('A test result could not be read confidently. Upload a sharper photo or scan; no uncertain values were included.',cells.slice(0,4).flat(),page,'test result');
+  if((/^[+-]?[\d,]+(?:\.\d+)?$/.test(result)||(specimen&&result))&&cells.slice(0,4).flat().some(w=>w.confidence<80))throw confidenceError('A test result could not be read confidently. Upload a sharper photo or scan; no uncertain values were included.',cells.slice(0,4).flat(),page,'test result');
   const y=900-row.y/height*800;
   cells.forEach((words,i)=>{if(words.length)items.push(item(words.map(w=>w.text).join(' '),centres[i]-5,y));});
  }

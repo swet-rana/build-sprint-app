@@ -15,7 +15,7 @@ test('Standard blood rows classified other are corrected on the server and accep
  const result=mergeScanResults([{page:18,result:scan}],null,27);assert.equal(result.markers.length,1);assert.equal(result.markers[0].page,18);assert.equal(result.markers[0].readPath,'vision');
 });
 test('Urine, imaging and semen retain their classification; an unreadable blood row remains unreadable',()=>{
- assert.equal(classifyScanPage({...scan,specimen:'urine'}).reportKind,'other');assert.equal(classifyScanPage({...scan,tests:[{...row,name:'Kidney length',unit:'cm'}]}).reportKind,'other');assert.equal(classifyScanPage({...scan,reportKind:'semen'}).reportKind,'semen');
+ assert.equal(classifyScanPage({...scan,specimen:'urine'}).reportKind,'urine');assert.equal(classifyScanPage({...scan,tests:[{...row,name:'Kidney length',unit:'cm'}]}).reportKind,'other');assert.equal(classifyScanPage({...scan,reportKind:'semen'}).reportKind,'semen');
  const unclear=validateScan({...scan,tests:[{...row,readable:false}]});assert.equal(unclear.tests[0].value,null);assert.throws(()=>mergeScanResults([{page:1,result:unclear}],null,1),/No readable/);
 });
 

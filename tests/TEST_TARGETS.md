@@ -61,3 +61,9 @@ without `--allow-prod`. It reads a fictional three-page image-only PDF through
 local OCR screening and real scheduled vision jobs. It checks name variants,
 labelled referrer exclusion, unchanged known results and page-specific rejection
 of a clearly different person. Output contains counts and reasons only.
+
+`specimen-browser.html` is dev-only. It uploads two fictional image-only PDFs
+with separate urine and stool pages on two dates, reads them through the actual
+Summary workflow and scheduled vision jobs, and checks all printed numeric,
+written and ranged results, specimen separation, Other tests placement and source
+links. It never uploads real reports or prints their values.

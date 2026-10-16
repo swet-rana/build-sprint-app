@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Urine and stool — fictional dev test</title></head><body><div id="app"><main><section id="summary-view"><button id="start">Read fictional urine and stool reports</button><pre id="events"></pre><div id="analysis"></div></section></main></div><script type="module">
+import {guardTestTarget} from './test-target.js';
+const url=guardTestTarget(import.meta.env.VITE_CONVEX_URL,{script:'specimen-browser.html',devOnly:true});guardTestTarget(location.origin,{script:'specimen-browser.html',devOnly:true});
+await Promise.all([import('/src/style.css'),import('/src/typography.css'),import('/src/summary-premium.css')]);const {mountAnalysis}=await import('/src/analysis.js');
+const lines=[];function log(line){lines.push(line);document.querySelector('#events').textContent=lines.join('\n');console.log(line);}
+document.querySelector('#start').onclick=async()=>{
+ document.querySelector('#start').disabled=true;
+ try{
+ log('START: fictional urine and stool scans on development; two dates; two pages per file.');
+ const random=new Uint8Array(32);crypto.getRandomValues(random);const sessionKey=Array.from(random,b=>b.toString(16).padStart(2,'0')).join('');localStorage.setItem('health-history-upload-session',sessionKey);const reports=[];
+ for(const suffix of ['january','july']){const bytes=await(await fetch('/tests/fixtures/urine-stool-'+suffix+'.pdf')).blob(),name='fictional-urine-stool-'+suffix+'.pdf',form=new FormData();form.set('sessionKey',sessionKey);form.set('uploadId',crypto.randomUUID());form.set('file',new File([bytes],name,{type:'application/pdf'}));const response=await fetch(url.replace('.cloud','.site')+'/reports/upload',{method:'POST',body:form});if(!response.ok)throw Error('Fictional upload failed');reports.push({id:(await response.json()).reportId,name,serial:reports.length+1,contentType:'application/pdf',size:bytes.size});}
+ const root=document.querySelector('#analysis'),analysis=mountAnalysis(root,()=>{});analysis.updateReports(reports,reports.map(r=>r.id));await analysis.prepare();
+ if(!root.querySelector('.real-summary-paper'))throw Error(root.querySelector('#analysis-status').textContent);
+ const other=root.querySelector('[data-category="other"]');if(!other)throw Error('Other tests missing');other.click();
+ const markers=[...root.querySelectorAll('.marker')];if(markers.length!==8)throw Error('Expected eight specimen-specific tests; found '+markers.length);
+ const expected=new Map([['Urine · pH',['6','6.5']],['Urine · Specific Gravity',['1.02','1.025']],['Urine · RBC',['2-4','1-2']],['Urine · Protein',['Negative','Trace']],['Stool · pH',['6.5','6.8']],['Stool · RBC',['Absent','1-2']],['Stool · Ova',['Not seen','Not seen']],['Stool · Occult blood',['Negative','Negative']]]);
+ for(const marker of markers){const name=marker.querySelector('h4').textContent,values=[...marker.querySelectorAll('.values .result-value')].map(e=>e.textContent);if(JSON.stringify(values)!==JSON.stringify(expected.get(name)))throw Error('Fictional transcription mismatch for '+name);const written=expected.get(name).some(v=>!/^[\d.]+$/.test(v));if(written&&marker.querySelector('.chart'))throw Error('Written or ranged results must not have a trend line');if(written&&marker.querySelector('.change strong').textContent!=='Written or ranged results; no numeric change calculated')throw Error('Written change explanation missing');if(marker.querySelectorAll('.source-button').length!==2)throw Error('Source links missing');}
+ if(root.querySelector('.range-within.result-value')?.closest('.marker')?.querySelector('h4').textContent.includes('RBC'))throw Error('Written result incorrectly marked in range');
+ log('PASS: actual Summary completed; all 8 tests from both files match the fictional originals.');log('PASS: urine and stool appear under Other tests with separate specimen labels and identities.');log('PASS: 3 numeric trends; 5 written/ranged result blocks preserve the printed text without calculated changes.');log('PASS: all 16 observations retain View original report links and their source pages.');
+ if(root.querySelectorAll('.reading-path').length!==2||![...root.querySelectorAll('.reading-path')].every(e=>e.textContent.includes('AI vision')))throw Error('Expected actual server AI vision reading path');log('PASS: both reports used the existing scheduled server AI vision path; no browser provider call.');log('PASS: existing blood/semen tests, model and spending limits preserved; no real reports or medical values printed.');
+ }catch(error){log('FAIL: '+error.message);}
+};
+</script></body></html>

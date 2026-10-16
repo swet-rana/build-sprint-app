@@ -1,3 +1,4 @@
+import {pageSpecimen,specimenMarker} from './specimen-results.js';
 import { footerResults } from './footer-report-rows.js';
 import { semenIdentity } from './semen-markers.js';
 import { testIdentity, unitIdentity } from './test-names.js';
@@ -16,6 +17,7 @@ export function parseRange(text) {
   return null;
 }
 export function rangeStatus(value,text) {
+  if(typeof value!=='number'||!Number.isFinite(value))return 'unknown';
   const range=parseRange(text);if(!range)return 'unknown';
   if(range.low!==null&&(value<range.low||(!range.lowInclusive&&value===range.low)))return 'below';
   if(range.high!==null&&(value>range.high||(!range.highInclusive&&value===range.high)))return 'above';
@@ -61,7 +63,8 @@ export function parseReport(pages,{identityForPages}={}){
   const inheritedIdentity=identityForPages?.get(page.page);
   const rows=rowsFromItems(page.items),footerCollection=rows.find(r=>/^Sample Collected on \(SCT\)\s*:/i.test(r.text))?.text.replace(/^Sample Collected on \(SCT\)\s*:\s*/i,''),rawPatientName=field(rows,'Patient Name')??field(rows,'Name')??field(rows,'Patient'),patientId=field(rows,'UHID/MR No')??field(rows,'Patient ID'),patientIdIssuer=field(rows,'UHID/MR No')?'apollo':field(rows,'Collection Date')?'tata-1mg':null,date=inheritedIdentity?.reportDate??parseDate(field(rows,'Collected')??field(rows,'Collection Date')??field(rows,'Test date')??footerCollection??''),patientName=inheritedIdentity?.patientName??(footerCollection?rawPatientName?.replace(/\s*\(\d+Y\/[MF]\)\s*$/i,''):rawPatientName);
   if(!date||!patientName)continue;
-  if(rows.some(r=>/COMPLETE URINE EXAMINATION|URINE ANALYSIS|URINALYSIS/i.test(r.text)))continue;
+  const specimen=pageSpecimen(rows.map(r=>r.text).join(' '));
+  if(specimen==='mixed'){warnings.push(`Page ${page.page}: different specimen tables appear together and could not be separated reliably; excluded. Check the original.`);continue;}
   const semen=rows.some(r=>/\bSEMEN (?:ANALYSIS|EXAMINATION)|\bSPERM DNA FRAGMENTATION\b/i.test(r.text));
   if(semen&&rows.some(r=>/post[ -]?wash|pre[ -]?wash|washed sample|sperm preparation/i.test(r.text)))throw Error('Prepared or washed semen reports are not supported. Use an unprocessed semen analysis report.');
   const headerAliases={'parameter':'Test Name','test':'Test Name','investigation':'Test Name','value':'Result','units':'Unit','reference range':'Bio. Ref. Interval','reference interval':'Bio. Ref. Interval','illustrative reference':'Bio. Ref. Interval','normal range':'Bio. Ref. Interval','technology':'Method'};
@@ -70,7 +73,7 @@ export function parseReport(pages,{identityForPages}={}){
   if(headerIndex<0)continue;
   let cells=resultCells(rows[headerIndex],!!footerCollection);if(!cells)continue;
   let pageUsed=false;
-  if(footerCollection&&!semen){
+  if(footerCollection&&!semen&&!specimen){
    for(const result of footerResults(rows,headerIndex,cells,numeric,clean)){
     const {name,unit,referenceText,row}=result,value=Number(result.result.replaceAll(',',''));
     if(!Number.isFinite(value))continue;
@@ -78,7 +81,7 @@ export function parseReport(pages,{identityForPages}={}){
    }
   }
   let inNotes=false;
-  for(let n=headerIndex+1;(!footerCollection||semen)&&n<rows.length;n++){
+  for(let n=headerIndex+1;(!footerCollection||semen||specimen)&&n<rows.length;n++){
    const row=rows[n];if(row.y<100)break;
    const repeated=resultCells(row);
    if(repeated){cells=repeated;inNotes=false;continue;}
@@ -93,7 +96,7 @@ export function parseReport(pages,{identityForPages}={}){
    }
    let [name,result,unit,referenceText,method]=cells(row);
    if(!name)continue;
-   if(!numeric.test(result)){if(semen&&result)warnings.push(`Page ${page.page}: ${name} was not included because its result is not a single numeric value. Check the original.`);continue;}
+   if(!numeric.test(result)&&!specimen){if(semen&&result)warnings.push(`Page ${page.page}: ${name} was not included because its result is not a single numeric value. Check the original.`);continue;}
    for(let k=n+1;k<rows.length;k++){
     if(/^(Comment|Comments|Interpretation|Note)\s*:/i.test(rows[k].text))break;
     const [continuation,number,unitContinuation,referenceContinuation]=cells(rows[k]);
@@ -103,6 +106,10 @@ export function parseReport(pages,{identityForPages}={}){
      if(unitContinuation)unit=clean(unit+' '+unitContinuation);
     }else if(continuation||unitContinuation)break;
     if(referenceContinuation)referenceText=clean(referenceText+' '+referenceContinuation);
+   }
+   if(specimen){
+    const marker=specimenMarker(specimen,name,result,unit,referenceText,{page:page.page,sourceTop:row.items.find(item=>Number.isFinite(item.sourceTop))?.sourceTop,sourceText:row.text,date});
+    if(marker){candidates.push(marker);pageUsed=true;}continue;
    }
    if(!unit&&!referenceText)continue;
    const value=Number(result.replaceAll(',',''));if(!Number.isFinite(value))continue;
@@ -120,21 +127,22 @@ export function parseReport(pages,{identityForPages}={}){
    usedPages.add(page.page);identities.push({patientName,patientId,patientIdIssuer});dates.push(date);
   }
  }
- if(!candidates.length)throw Error('No supported dated blood or semen result tables could be read. Use a clear full-page report showing the patient, collection date, test names, results, units and reference columns.');
+ if(!candidates.length)throw Error('No supported dated test result tables could be read. Use a clear full-page report showing the patient, collection date, test names, results, units and reference columns.');
  if(new Set(identities.map(p=>p.patientId||normalizePatient(p.patientName))).size>1)throw Error('This file contains records for different people. Upload a separate file for each person.');
  if(new Set(dates).size>1)throw Error('This file contains results from different dates. Upload each dated lab report separately.');
  const markers=new Map();
  for(const marker of candidates){const prior=markers.get(marker.key);if(prior&&prior.value!==marker.value)throw Error(`Conflicting values for ${marker.name} were found on different pages. Check the original before comparing.`);if(!prior)markers.set(marker.key,marker);}
  const excludedPages=pages.length-usedPages.size;
  if(excludedPages)warnings.push(`${excludedPages} of ${pages.length} pages were not used: attachments, unsupported results, notes, or pages without readable dated result tables.`);
- return {reportKind:[...markers.values()].every(m=>m.specimen==='semen')?'semen':[...markers.values()].some(m=>m.specimen==='semen')?'mixed':'blood',date:dates[0],patientName:identities[0].patientName,patientId:identities[0].patientId,patientIdIssuer:identities[0].patientIdIssuer,labName:labNames.size===1?[...labNames][0]:'',markers:[...markers.values()],usedPages:[...usedPages],excludedPages,pageCount:pages.length,warnings};
+ const kinds=new Set([...markers.values()].map(m=>m.specimen??'blood'));
+ return {reportKind:kinds.size===1?[...kinds][0]:'mixed',date:dates[0],patientName:identities[0].patientName,patientId:identities[0].patientId,patientIdIssuer:identities[0].patientIdIssuer,labName:labNames.size===1?[...labNames][0]:'',markers:[...markers.values()],usedPages:[...usedPages],excludedPages,pageCount:pages.length,warnings};
 }
 export function compareReports(a,b){
  if(a.patientId&&b.patientId&&a.patientIdIssuer===b.patientIdIssuer?a.patientId!==b.patientId:normalizePatient(a.patientName)!==normalizePatient(b.patientName))throw Error('These reports appear to belong to different people. Check the patient names before comparing.');
  if(a.date===b.date)throw Error('Choose reports from two different dates.');
  const [earlier,later]=a.date<b.date?[a,b]:[b,a];
  const old=new Map(earlier.markers.map(m=>[m.key,m]));
- const comparable=later.markers.filter(m=>old.has(m.key)).map(latest=>({key:latest.key,name:latest.name,unit:latest.unit,earlier:old.get(latest.key),later:latest,change:Number((latest.value-old.get(latest.key).value).toPrecision(10))}));
+ const comparable=later.markers.filter(m=>old.has(m.key)).map(latest=>({key:latest.key,name:latest.name,unit:latest.unit,earlier:old.get(latest.key),later:latest,qualitative:typeof latest.value!=='number'||typeof old.get(latest.key).value!=='number',change:typeof latest.value==='number'&&typeof old.get(latest.key).value==='number'?Number((latest.value-old.get(latest.key).value).toPrecision(10)):null}));
  if(!comparable.length)throw Error('No matching tests with the same units were found. Choose reports with matching tests and units.');
  const keys=new Set(comparable.map(m=>m.key));
  const unpaired=[...earlier.markers.filter(m=>!keys.has(m.key)).map(m=>({...m,date:earlier.date})),...later.markers.filter(m=>!keys.has(m.key)).map(m=>({...m,date:later.date}))];
@@ -160,7 +168,8 @@ export function compareReportSeries(input){
   if(found.length<2){unpaired.push(found[0]);continue;}
   const earlier=found[0],later=found.at(-1);
   const missingLabels=group.observations.map((m,i)=>m?null:reports[i].markers.some(other=>other.key.split('|')[0]===group.key.split('|')[0])?'Different unit':'Not reported');
-  comparable.push({...group,missingLabels,earlier,later,change:Number((later.value-earlier.value).toPrecision(10))});
+  const qualitative=found.some(m=>typeof m.value!=='number');
+  comparable.push({...group,missingLabels,earlier,later,qualitative,change:qualitative?null:Number((later.value-earlier.value).toPrecision(10))});
  }
  if(!comparable.length)throw Error('No matching tests with the same units were found. Choose reports with matching tests and units.');
  return {reports,earlier:reports[0],later:reports.at(-1),comparable,unpaired};

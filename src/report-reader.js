@@ -13,7 +13,7 @@ function finishCoverage(coverage,result,scanned,visionPages){
  const used=new Set(result.usedPages),vision=new Set(visionPages.map(p=>p.page));
  coverage.read=scanned.filter(n=>used.has(n)).length;
  coverage.vision=scanned.filter(n=>used.has(n)&&vision.has(n)).length;coverage.ocr=coverage.read-coverage.vision;
- for(const n of scanned)if(!used.has(n))skipPage(coverage,n,'No supported, dated blood or semen result table was included from this scanned page.');
+ for(const n of scanned)if(!used.has(n))skipPage(coverage,n,'No supported, dated test result table was included from this scanned page.');
  result.scanCoverage=coverage;
 }
 

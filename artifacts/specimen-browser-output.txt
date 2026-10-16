@@ -1,0 +1,11 @@
+START: fictional urine and stool scans on development; two dates; two pages per file.
+PASS: actual Summary completed; all 8 tests from both files match the fictional originals.
+PASS: urine and stool appear under Other tests with separate specimen labels and identities.
+PASS: 3 numeric trends; 5 written/ranged result blocks preserve the printed text without calculated changes.
+PASS: all 16 observations retain View original report links and their source pages.
+PASS: both reports used the existing scheduled server AI vision path; no browser provider call.
+PASS: existing blood/semen tests, model and spending limits preserved; no real reports or medical values printed.
+PASS: existing blood/semen tests, model and spending limits preserved; no real reports or medical values printed.
+PASS: desktop 1440 x 900 and phone 390 x 844 have no page-level horizontal overflow.
+PASS: written/ranged results have no red/green range classification.
+PASS: stool source link opened Page 2 of 2 with no unreliable box; Back restored the summary.

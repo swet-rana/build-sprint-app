@@ -31,10 +31,10 @@ test('different patients, same dates and incompatible units are not merged',()=>
 test('range boundaries respect printed less-than and less-than-or-equal symbols',()=>{
  assert.equal(rangeStatus(5,'0-5'),'within');assert.equal(rangeStatus(5,'<5'),'above');assert.equal(rangeStatus(5,'<=5'),'within');assert.equal(rangeStatus(40,'>=40 Desirable'),'within');assert.equal(rangeStatus(39,'>=40 Desirable'),'below');assert.equal(rangeStatus(5,''),'unknown');
 });
-test('undated attachments and urine tests cannot enter blood-test comparisons',()=>{
+test('undated attachments stay excluded and urine tests keep a separate specimen identity',()=>{
  const lab=page('27/May/2026');const attachment={page:2,items:lab.items.filter(i=>!i.str.includes('Collected')&&!i.str.includes('27/May'))};
  const urine={...lab,page:3,items:[...lab.items,item('COMPLETE URINE EXAMINATION (CUE)',26,590,200)]};
- const report=parseReport([lab,attachment,urine]);assert.equal(report.markers.length,1);assert.deepEqual(report.usedPages,[1]);assert.equal(report.excludedPages,2);
+ const report=parseReport([lab,attachment,urine]);assert.equal(report.markers.length,2);assert.deepEqual(report.usedPages,[1,3]);assert.equal(report.excludedPages,1);assert(report.markers.some(m=>m.key.startsWith('urine-')));assert.equal(report.markers.filter(m=>!m.key.startsWith('urine-')).length,1);
 });
 test('reads Tata collection labels and compares names across lab-specific patient IDs',()=>{
  const tata=page('19/Aug/2024','Ms.Sample Patient','TATA-9','11.7','g/dL');

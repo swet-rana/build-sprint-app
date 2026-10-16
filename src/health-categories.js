@@ -23,6 +23,7 @@ export const HEALTH_CATEGORIES = [
 export function categoriesForTest(marker){
  const id=String(marker.key??'').split('|')[0].toLowerCase();
  const name=[marker.name,marker.rawName,...(marker.observations??[]).filter(Boolean).map(m=>m.rawName)].filter(Boolean).join(' ').toUpperCase().replace(/[^A-Z0-9]/g,'');
+ if(/^(?:urine|stool)-/.test(id))return ['other'];
  if(id.startsWith('semen-'))return ['fertility'];
  const categories=new Set();
  const add=(category,match)=>{if(match)categories.add(category);};

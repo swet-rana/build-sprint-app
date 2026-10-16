@@ -14,7 +14,7 @@ export async function normalizeReportTests(reports,resolve){
  if(!resolve)return reports;
  const unknown=new Map();
  for(const report of reports)for(const marker of report.markers){
-  if(marker.specimen==='semen'||marker.key.startsWith('semen-'))continue;
+  if(['semen','urine','stool'].includes(marker.specimen)||/^(?:semen|urine|stool)-/.test(marker.key))continue;
   const entry={name:marker.rawName??marker.name,unit:marker.unit,specimen:'blood',method:marker.method??''};
   if(!localStandard(entry.name,entry.unit))unknown.set(mappingKey(entry),entry);
  }
@@ -23,7 +23,7 @@ export async function normalizeReportTests(reports,resolve){
  return reports.map(report=>{
   const warnings=[...report.warnings],markers=[];
   for(const marker of report.markers){
-   if(marker.specimen==='semen'||marker.key.startsWith('semen-')){markers.push(marker);continue;}
+   if(['semen','urine','stool'].includes(marker.specimen)||/^(?:semen|urine|stool)-/.test(marker.key)){markers.push(marker);continue;}
    const entry={name:marker.rawName??marker.name,unit:marker.unit,specimen:'blood',method:marker.method??''},cached=mappings.get(mappingKey(entry));
    const standard=localStandard(entry.name,entry.unit)??(cached?.status==='mapped'&&validStandardMatch(entry.name,cached.standardId)?standardTest(cached.standardId):null);
    if(!standard){markers.push(marker);if(cached&&cached.status!=='mapped')warnings.push(`${entry.name}: name matching ${cached.status}; original name and units retained.`);continue;}

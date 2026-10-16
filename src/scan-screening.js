@@ -1,3 +1,4 @@
+import {pageSpecimen} from './specimen-results.js';
 // Screening only decides whether a page is worth attempting. It never supplies values
 // or relaxes the unchanged 80% OCR acceptance rule.
 const number='[+-]?\\d+(?:[.,]\\d+)?';
@@ -8,6 +9,10 @@ const looseUnit=new RegExp(`(?:^|[\\s\\d])${unit}(?=$|[\\s.,;:)])`,'i');
 export function scanPageCheck(data){
  const lines=(data.blocks??[]).flatMap(b=>(b.paragraphs??[]).flatMap(p=>(p.lines??[]).map(l=>(l.words??[]).map(w=>w.text??'').join(' '))));
  const text=lines.length?lines.join('\n'):String(data.text??'');
+ if(pageSpecimen(text)==='mixed')return {hasTestContent:false,evidence:[],reason:'Different specimen tables appear together on this page and could not be separated reliably; skipped rather than mixed together. Check the original.'};
+ // New specimen tables can contain only written findings. Require an explicit specimen
+ // heading plus column labels and a row with a result word; educational prose stays excluded.
+ if(pageSpecimen(text)&&/\b(?:result|value|finding)s?\b/i.test(text)&&/\b(?:test|parameter|investigation|reference)\b/i.test(text)&&/\b(?:negative|positive|absent|present|nil|normal|trace|yellow|brown|formed|clear)\b/i.test(text))return {hasTestContent:true,evidence:[],reason:'OCR found a labelled urine or stool result table.'};
  const evidence=text.split(/[\r\n]+/).map(s=>s.trim()).filter(line=>{
   if(/^(?:pages?\b|phone\b|mobile\b|age\b|collected\b|collection date\b|test date\b|report(?:\s+(?:no|number))?\s*[:#])/i.test(line))return false;
   // A printed date is not a reference interval.

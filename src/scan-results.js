@@ -1,3 +1,4 @@
+import {isAdditionalSpecimen,specimenMarker} from './specimen-results.js';
 import {classifyScanPage,isStandardBloodTest} from './blood-page-classification.js';
 import {resolveReportIdentity} from './report-identity.js';
 import {testIdentity} from './test-names.js';
@@ -10,8 +11,12 @@ export function mergeScanResults(scans,native,pageCount,identityPages=[]){
   if(scan.reportKind==='other')continue;
   result??={reportKind:scan.reportKind,date:identity.reportDate,patientName:identity.patientName,patientId:null,patientIdIssuer:null,labName:'',markers:[],usedPages:[],excludedPages:[],pageCount,warnings:[],unreadable:[]};
   for(const row of scan.tests){
-   if(scan.originalReportKind==='other'&&!isStandardBloodTest(row.name,row.unit)){result.warnings.push(`Page ${page}: ${row.name} is not a recognized blood test on this page; excluded.`);continue;}
-   if(!row.readable||row.value===null){result.unreadable.push({name:row.name,value:null,page,reason:'Unreadable in scan'});continue;}
+   if(!isAdditionalSpecimen(scan.reportKind)&&scan.originalReportKind==='other'&&!isStandardBloodTest(row.name,row.unit)){result.warnings.push(`Page ${page}: ${row.name} is not a recognized blood test on this page; excluded.`);continue;}
+   if(!row.readable||row.value===null){result.unreadable.push({name:isAdditionalSpecimen(scan.reportKind)?`${scan.reportKind==='urine'?'Urine':'Stool'} · ${row.name}`:row.name,...(isAdditionalSpecimen(scan.reportKind)?{rawName:row.name,specimen:scan.reportKind}:{}),value:null,page,reason:'Unreadable in scan'});continue;}
+   if(isAdditionalSpecimen(scan.reportKind)){
+    const marker=specimenMarker(scan.reportKind,row.name,row.value,row.unit,row.referenceRange,{page,sourceTop:row.sourceTop??undefined,readPath:'vision'});
+    if(marker){const prior=result.markers.find(m=>m.key===marker.key);if(prior&&prior.value!==marker.value)throw Error(`Conflicting ${marker.name} values were read in this file. Check the original.`);if(!prior)result.markers.push(marker);}continue;
+   }
    if(!/^[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?$/.test(row.value))throw Error(`Page ${page}: ${row.name} has an unclear numeric value. Check the original scan.`);
    const value=Number(row.value.replaceAll(',',''));if(!Number.isFinite(value))throw Error('The scan reader returned an invalid numeric value.');
    const unitlessRatio=scan.reportKind==='blood'&&/\bratio\b/i.test(row.name)&&/^(?:[-–—])?$/.test((row.unit??'').trim());
@@ -27,10 +32,11 @@ export function mergeScanResults(scans,native,pageCount,identityPages=[]){
   }
   if(scan.tests.some(row=>row.readable&&row.value!==null)&&!result.usedPages.includes(page))result.usedPages.push(page);
  }
- if(!result?.markers.length)throw Error('No readable, dated blood or semen values were found in the scan. Upload a clearer result page.');
+ if(!result?.markers.length)throw Error('No readable, dated test results were found in the scan. Upload a clearer result page.');
  result.date=identity.reportDate;result.patientName=identity.patientName;result.identitySources=identity.identitySources;result.warnings.push(...identity.warnings);
  result.excludedPages=Array.from({length:pageCount},(_,i)=>i+1).filter(n=>!result.usedPages.includes(n));
- result.reportKind=result.markers.every(m=>m.specimen==='semen')?'semen':result.markers.some(m=>m.specimen==='semen')?'mixed':'blood';
+ const kinds=new Set(result.markers.map(m=>m.specimen??'blood'));
+ result.reportKind=kinds.size===1?[...kinds][0]:'mixed';
  result.readingPaths=[...(native?.readingPaths??[]),...(scans.length?['scan (AI vision)']:[])];
  if(scans.length)result.warnings.push('Values read from scan, please check against the original.');
  return result;
