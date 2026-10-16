@@ -34,3 +34,7 @@
  #app #uploads-view #saved-title{font-size:26px!important}
  #app #uploads-view .health-page-heading #saved-title + p{font-size:14px!important}
 }
+
+/* Report-management actions use the real Lato Medium face. */
+#app #uploads-view :is(#show-upload,#move-to-summary,[data-show-upload]){font-family:'Lato Medium',Lato,Arial,sans-serif!important;font-weight:500!important;font-size:20px!important}
+@media(max-width:760px){#app #uploads-view :is(#show-upload,#move-to-summary,[data-show-upload]){font-size:18px!important}}
