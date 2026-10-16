@@ -45,3 +45,24 @@
  #app #uploads-view .reports-title-with-art.health-page-heading #saved-title{width:100%}
  #app #uploads-view .reports-title-with-art.health-page-heading #saved-title+p{width:100%;margin-top:3px!important}
 }
+
+/* Summary and Profile match the approved Reports heading treatment. */
+#app:has(#summary-view:not([hidden])) .summary-title-with-art #page-title,
+#app #profile-view #profile-title{font-family:Lato,Arial,sans-serif!important;font-size:30px!important;font-weight:900!important}
+#app:has(#summary-view:not([hidden])) .summary-title-with-art #page-description,
+#app #profile-view .profile-title-with-art #profile-title+p{font-family:Lato,Arial,sans-serif!important;font-weight:400!important;font-size:16px!important;line-height:1.5!important;margin:3px 0 0!important}
+@media(max-width:760px){
+ #app:has(#summary-view:not([hidden])) .summary-title-with-art #page-title,
+ #app #profile-view #profile-title{font-size:26px!important}
+ #app:has(#summary-view:not([hidden])) .summary-title-with-art #page-description,
+ #app #profile-view .profile-title-with-art #profile-title+p{font-size:14px!important}
+ #app:has(#summary-view:not([hidden])) .summary-title-with-art.health-page-heading,
+ #app #profile-view .profile-title-with-art.health-page-heading{display:flex!important;align-items:center!important;gap:6px!important}
+ #app:has(#summary-view:not([hidden])) .summary-title-with-art.health-page-heading>div,
+ #app #profile-view .profile-title-with-art.health-page-heading>div{display:flex;flex:1;min-width:0;flex-direction:column;align-items:flex-start;text-align:left}
+ #app:has(#summary-view:not([hidden])) .summary-title-with-art :is(#page-title,#page-description),
+ #app #profile-view .profile-title-with-art :is(#profile-title,#profile-title+p){width:100%}
+}
+@media(max-width:360px){
+ #app:has(#summary-view:not([hidden])) .summary-title-with-art .health-page-heading-art{height:112px!important}
+}

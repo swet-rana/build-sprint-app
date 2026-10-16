@@ -34,14 +34,13 @@ function Profile({continueWithoutAccount}) {
   }
   async function logOut(){setBusy(true);setNotice('');try{await signOut();}catch{setNotice('Could not sign out. Please try again.');}finally{setBusy(false);}}
   return <section className="profile-card" aria-labelledby="profile-title">
-    <div className="profile-title-with-art"><img className="profile-heading-art" src={imageUrl('/images/profile-card.png')} alt="" width="88" height="88" loading="lazy" decoding="async" /><h1 id="profile-title">My profile</h1></div>
-    {isLoading?<p role="status">Loading your profile…</p>:isAuthenticated?<>
-      <p>You’re signed in{user?.name?` as ${user.name}`:''}.</p>
+    <div className="profile-title-with-art health-page-heading"><img className="profile-heading-art health-page-heading-art" src={imageUrl('/images/profile-card.png')} alt="" width="88" height="88" loading="lazy" decoding="async" /><div><h1 id="profile-title">My profile</h1><p role={isLoading?'status':undefined}>{isLoading?'Loading your profile…':isAuthenticated?`You’re signed in${user?.name?` as ${user.name}`:''}.`:'Create an account or sign in when you choose.'}</p></div></div>
+    {isLoading?null:isAuthenticated?<>
       {user?<dl className="profile-details"><dt>Name</dt><dd>{user.name||'Not added'}</dd><dt>Email</dt><dd>{user.email}</dd></dl>:<p role="status">Loading account details…</p>}
       <p>Your uploaded reports currently stay tied to this browser.</p>
       <button type="button" className="primary profile-submit" disabled={busy} onClick={logOut}>{busy?'Signing out…':'Sign out'}</button>
     </>:<>
-      <p>Create an account or sign in when you choose. You can keep using HealthStats without one.</p>
+      <p>You can keep using HealthStats without one.</p>
       <div className="profile-actions" aria-label="Account options">
         <button type="button" aria-pressed={flow==='signUp'} disabled={busy} onClick={()=>{setFlow('signUp');setNotice('');}}>Sign up</button>
         <button type="button" aria-pressed={flow==='signIn'} disabled={busy} onClick={()=>{setFlow('signIn');setNotice('');}}>Sign in</button>
