@@ -48,7 +48,7 @@ test('PDF cards stay unopened; central selection and private image previews work
     assert(selections.at(-1)[1].length===1,'For summary still publishes the chosen report');
     assert.equal(root.querySelectorAll('#move-to-summary').length,1,'There is just one summary action');
     assert.equal(root.querySelector('.reports-selection-bar').hidden,false);
-    assert.equal(root.querySelector('#move-to-summary').disabled,true,'One report cannot be compared');
+    assert.equal(root.querySelector('#move-to-summary').disabled,false,'One report can prepare a range-based summary');
     const second=root.querySelector('[data-analysis-id="photo-2"]');second.checked=true;second.dispatchEvent(new window.Event('change',{bubbles:true}));
     assert.equal(root.querySelector('#selected-report-count').textContent,'2 of 10 reports selected');
     root.querySelector('#move-to-summary').click();assert.equal(summaries,1);
@@ -57,7 +57,7 @@ test('PDF cards stay unopened; central selection and private image previews work
     assert.deepEqual(selections.at(-1)[1],['pdf-1'],'Removing from Summary publishes through the existing selection');
     assert.deepEqual(JSON.parse(localStorage.getItem('health-history-analysis-reports')),['pdf-1']);
     assert.equal(root.querySelector('[data-analysis-id="photo-2"]').checked,false);
-    assert.equal(root.querySelector('#move-to-summary').disabled,true);
+    assert.equal(root.querySelector('#move-to-summary').disabled,false);
     root.querySelector('#unselect-all-reports').click();assert.equal(selections.at(-1)[1].length,0);
     assert.equal(root.querySelector('.reports-selection-bar').hidden,true);
     assert.equal(root.querySelectorAll('[data-analysis-id]:checked').length,0);

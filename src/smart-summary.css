@@ -1,0 +1,18 @@
+#summary-view .smart-summary{margin:0 0 24px;padding:24px 28px;background:#fff;border:1px solid #e7e3fa;border-radius:22px;box-shadow:0 8px 24px rgb(23 20 92 / 5%);color:#17145c;overflow-wrap:anywhere}
+#summary-view .smart-summary h2{margin:0 0 18px;font-size:var(--type-h2,30px)}
+#summary-view .smart-summary-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:32px}
+#summary-view .smart-summary h3{margin:0 0 12px;font-size:20px}
+#summary-view .smart-summary ul{margin:0;padding-left:20px}
+#summary-view .smart-summary li{margin:0 0 16px;break-inside:avoid}
+#summary-view .smart-summary li p{margin:0 0 6px;line-height:1.6}
+#summary-view .smart-summary-sources{display:flex;flex-wrap:wrap;gap:6px 16px;color:#62658c;font-size:13px}
+#summary-view .smart-summary .source-button{display:inline;min-height:32px;padding:4px 0;background:none;border:0;color:#493dbb;text-decoration:underline;text-underline-offset:3px;font:inherit;cursor:pointer}
+#summary-view .smart-summary .source-button:hover{color:#100078}
+#summary-view .smart-summary .source-button:focus-visible{outline:2px solid #493dbb;outline-offset:3px;border-radius:3px}
+#summary-view .smart-summary-questions{padding-top:20px;margin-top:8px;border-top:1px solid #e7e3fa}
+#summary-view .smart-summary-questions li{margin-bottom:8px}
+#summary-view .smart-summary-note,#summary-view .smart-summary-disclaimer{font-size:14px;line-height:1.6;color:#62658c;margin:14px 0}
+#summary-view .smart-summary-disclaimer{margin-bottom:0}
+#summary-view .smart-summary-unavailable{color:#62658c}
+@media(max-width:600px){#summary-view .smart-summary{padding:20px 18px;border-radius:18px}#summary-view .smart-summary-columns{grid-template-columns:1fr;gap:20px}#summary-view .smart-summary h2{font-size:24px}#summary-view .smart-summary .source-button{min-height:44px}}
+@media print{#summary-view .smart-summary{box-shadow:none;border-color:#ddd;padding:16px;margin:0 0 16px}#summary-view .smart-summary h2{font-size:20px}#summary-view .smart-summary h3{font-size:16px}#summary-view .smart-summary-columns{gap:20px}}

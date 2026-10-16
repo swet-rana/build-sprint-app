@@ -1,0 +1,23 @@
+START: development only; two fictional text PDFs; existing report reader and saved summary logs.
+PASS: two-report summary; 2 Hits, 1 Miss; every item links to extracted source report/page.
+PASS: clinician questions capped at 3; exact medical-advice notice visible; no patient identity sent to the writing model.
+SAMPLE BEGIN
+Hits
+Haemoglobin is within the printed reference range.
+2026-07-15 · Page 2 View original report  for Haemoglobin, 15 Jul 2026
+C-reactive protein moved into the printed reference range since the previous report.
+2026-01-15 · Page 2 View original report  for C-reactive protein, 15 Jan 2026
+2026-07-15 · Page 2 View original report  for C-reactive protein, 15 Jul 2026
+Misses
+Vitamin D moved closer to the printed reference range but remains outside it.
+2026-01-15 · Page 2 View original report  for Vitamin D, 15 Jan 2026
+2026-07-15 · Page 2 View original report  for Vitamin D, 15 Jul 2026
+Questions for your doctor
+How do these results fit with my health history?
+Which results should we discuss first?
+Are any results worth checking again?
+This is not medical advice; discuss with your doctor.
+SAMPLE END
+PASS: one-report summary; 2 Hits, 1 Miss against printed ranges; no trend invented; second-report note visible.
+PASS: simulated writing-call failure preserves the plain summary and visibly says Smart summary unavailable right now.
+PASS: report reading, OCR filter, vision limits/model and reading cache unchanged.

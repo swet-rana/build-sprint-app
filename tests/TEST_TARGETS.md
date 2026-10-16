@@ -73,3 +73,5 @@ links. It never uploads real reports or prints their values.
 `page-coverage-browser.html` is development-only and uses fictional mixed PDFs. Its second preparation omits text-page display notes from the returned cache clone to check older-reading compatibility; it never changes cached results.
 
 `vision-throughput.mjs` is dev-only and builds a fictional 27-page PDF in memory. It checks the unchanged 18 skipped pages and six vision pages, single-worker OCR, OCR/vision overlap and the three-page vision concurrency bound.
+
+`hits-misses-browser.html` is dev-only: fictional one/two-report summaries and a simulated smart-writing failure. It never uses real reports.

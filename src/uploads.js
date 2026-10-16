@@ -67,7 +67,7 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
   });
   let analysisIds=new Set();
   try{const stored=JSON.parse(localStorage.getItem('health-history-analysis-reports')||'[]');if(Array.isArray(stored))analysisIds=new Set(stored.filter(id=>typeof id==='string'));}catch{}
-  root.querySelector('#move-to-summary').addEventListener('click',()=>{if(analysisIds.size>=2)onSummary();});
+  root.querySelector('#move-to-summary').addEventListener('click',()=>{if(analysisIds.size>=1)onSummary();});
   root.querySelector('#unselect-all-reports').addEventListener('click',()=>{
     analysisIds.clear();
     list.querySelectorAll('[data-analysis-id]').forEach(input=>input.checked=false);
@@ -77,8 +77,8 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
     root.querySelector('#unselect-all-reports').disabled=analysisIds.size===0;
     selectionBar.hidden=analysisIds.size===0;
     root.querySelector('#selected-report-count').textContent=`${analysisIds.size} of ${MAX_ANALYSIS_REPORTS} reports selected`;
-    const proceed=root.querySelector('#move-to-summary');proceed.disabled=analysisIds.size<2;
-    proceed.title=analysisIds.size<2?'Select at least two reports to compare':'';
+    const proceed=root.querySelector('#move-to-summary');proceed.disabled=analysisIds.size<1;
+    proceed.title=analysisIds.size<1?'Select a report to prepare a summary':'';
   }
   function publishSelection(){updateSummaryActions();localStorage.setItem('health-history-analysis-reports',JSON.stringify([...analysisIds]));onReports(numberReports(saved),[...analysisIds]);}
   const readingErrors=new Map();

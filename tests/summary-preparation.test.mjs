@@ -36,7 +36,7 @@ test('Summary preserves selected originals, waits for a click and offers retry a
   assert.equal(root.querySelector('#prepare-summary').disabled,false);
   assert.equal(root.querySelector('#real-summary').textContent,'','Failed analysis cannot show fabricated results');
   analysis.updateReports(saved,['january']);
-  assert.equal(root.querySelector('#prepare-summary').disabled,true);
+  assert.equal(root.querySelector('#prepare-summary').disabled,false);
   assert.equal(root.querySelector('#analysis-selection-count').textContent,'1 of 10 reports selected');
  }finally{dom.window.close();for(const key of globals){if(previous[key]===undefined)delete globalThis[key];else globalThis[key]=previous[key];}}
 });

@@ -1,0 +1,50 @@
+$ node tests/upload-integration.mjs --convex-url https://zealous-kiwi-423.convex.cloud
+REFUSED upload-integration.mjs: https://zealous-kiwi-423.convex.cloud is production. Pass --allow-prod explicitly to run against production.
+$ node tests/evaluation-integration.mjs --convex-url https://zealous-kiwi-423.convex.cloud
+REFUSED evaluation-integration.mjs: https://zealous-kiwi-423.convex.cloud is production. Pass --allow-prod explicitly to run against production.
+$ node tests/vision-integration.mjs --convex-url https://zealous-kiwi-423.convex.cloud
+REFUSED vision-integration.mjs: https://zealous-kiwi-423.convex.cloud is production. Pass --allow-prod explicitly to run against production.
+$ node tests/vision-throughput.mjs --convex-url https://zealous-kiwi-423.convex.cloud
+REFUSED vision-throughput.mjs: https://zealous-kiwi-423.convex.cloud; this viewer check uses fictional development reports only.
+$ node tests/unitless-ratio-integration.mjs --convex-url https://zealous-kiwi-423.convex.cloud
+REFUSED unitless-ratio-integration.mjs: https://zealous-kiwi-423.convex.cloud is production. Pass --allow-prod explicitly to run against production.
+$ node tests/name-variants-integration.mjs --convex-url https://zealous-kiwi-423.convex.cloud
+REFUSED name-variants-integration.mjs: https://zealous-kiwi-423.convex.cloud is production. Pass --allow-prod explicitly to run against production.
+$ node tests/test-matching-integration.mjs --convex-url https://zealous-kiwi-423.convex.cloud
+REFUSED test-matching-integration.mjs: https://zealous-kiwi-423.convex.cloud is production. Pass --allow-prod explicitly to run against production.
+$ node tests/report-reading-diagnosis.mjs --convex-url https://zealous-kiwi-423.convex.cloud
+REFUSED report-reading-diagnosis.mjs: https://zealous-kiwi-423.convex.cloud is production. Pass --allow-prod explicitly to run against production.
+$ node tests/scan-image-diagnosis.mjs --convex-url https://zealous-kiwi-423.convex.cloud
+REFUSED scan-image-diagnosis.mjs: https://zealous-kiwi-423.convex.cloud is production. Pass --allow-prod explicitly to run against production.
+$ node tests/reference-layout-audit.mjs --convex-url https://zealous-kiwi-423.convex.cloud
+REFUSED reference-layout-audit.mjs: https://zealous-kiwi-423.convex.cloud is production. Pass --allow-prod explicitly to run against production.
+$ node tests/ocr-integration.mjs --convex-url https://zealous-kiwi-423.convex.cloud
+REFUSED ocr-integration.mjs: https://zealous-kiwi-423.convex.cloud is production. Pass --allow-prod explicitly to run against production.
+$ node tests/semen-ocr-integration.mjs --convex-url https://zealous-kiwi-423.convex.cloud
+REFUSED semen-ocr-integration.mjs: https://zealous-kiwi-423.convex.cloud is production. Pass --allow-prod explicitly to run against production.
+$ node tests/report-viewer.browser.mjs --convex-url https://zealous-kiwi-423.convex.cloud
+REFUSED report-viewer.browser.mjs: https://zealous-kiwi-423.convex.cloud; this viewer check uses fictional development reports only.
+$ node tests/vision-reconnect-observe.mjs --convex-url https://zealous-kiwi-423.convex.cloud
+REFUSED vision-reconnect-observe.mjs: https://zealous-kiwi-423.convex.cloud; this viewer check uses fictional development reports only.
+$ phone-browser-check.html with VITE_CONVEX_URL=https://zealous-kiwi-423.convex.cloud
+REFUSED phone-browser-check.html: https://zealous-kiwi-423.convex.cloud is production. Pass --allow-prod explicitly to run against production.
+$ phone-error-frame.html with VITE_CONVEX_URL=https://zealous-kiwi-423.convex.cloud
+REFUSED phone-error-frame.html: https://zealous-kiwi-423.convex.cloud is production. Pass --allow-prod explicitly to run against production.
+$ ocr-cdn-browser.html with VITE_CONVEX_URL=https://zealous-kiwi-423.convex.cloud
+REFUSED ocr-cdn-browser.html: https://zealous-kiwi-423.convex.cloud; this viewer check uses fictional development reports only.
+$ vision-reconnect-browser.html with VITE_CONVEX_URL=https://zealous-kiwi-423.convex.cloud
+REFUSED vision-reconnect-browser.html: https://zealous-kiwi-423.convex.cloud; this viewer check uses fictional development reports only.
+$ vision-retry-browser.html with VITE_CONVEX_URL=https://zealous-kiwi-423.convex.cloud
+REFUSED vision-retry-browser.html: https://zealous-kiwi-423.convex.cloud; this viewer check uses fictional development reports only.
+$ vision-report-identity-browser.html with VITE_CONVEX_URL=https://zealous-kiwi-423.convex.cloud
+REFUSED vision-report-identity-browser.html: https://zealous-kiwi-423.convex.cloud; this viewer check uses fictional development reports only.
+$ scan-highlight-browser.html with VITE_CONVEX_URL=https://zealous-kiwi-423.convex.cloud
+REFUSED scan-highlight-browser.html: https://zealous-kiwi-423.convex.cloud; this viewer check uses fictional development reports only.
+$ specimen-browser.html with VITE_CONVEX_URL=https://zealous-kiwi-423.convex.cloud
+REFUSED specimen-browser.html: https://zealous-kiwi-423.convex.cloud; this viewer check uses fictional development reports only.
+$ vision-limits-browser.html with VITE_CONVEX_URL=https://zealous-kiwi-423.convex.cloud
+REFUSED vision-limits-browser.html: https://zealous-kiwi-423.convex.cloud; this viewer check uses fictional development reports only.
+$ page-coverage-browser.html with VITE_CONVEX_URL=https://zealous-kiwi-423.convex.cloud
+REFUSED page-coverage-browser.html: https://zealous-kiwi-423.convex.cloud; this viewer check uses fictional development reports only.
+$ hits-misses-browser.html with VITE_CONVEX_URL=https://zealous-kiwi-423.convex.cloud
+REFUSED hits-misses-browser.html: https://zealous-kiwi-423.convex.cloud; this viewer check uses fictional development reports only.
