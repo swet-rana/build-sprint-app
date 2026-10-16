@@ -26,3 +26,6 @@
 }
 .original-viewer{--font-primary:Inter,Arial,sans-serif;--type-h1:40px;--type-button:22px;--type-secondary:14px}
 @media(max-width:760px){.original-viewer{--type-h1:30px;--type-button:20px;--type-secondary:13px}}
+@media screen{
+ #app:has(#home-tab[aria-pressed="false"]) button:not(.health-category) span:not(.sr-only){font-size:inherit!important;line-height:inherit!important}
+}
