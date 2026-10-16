@@ -1,0 +1,13 @@
+START: dev; fictional 4-page PDF plus fictional January text PDF.
+FORCED FAILURE: fictional page 4 sends invalid OCR diagnostics; no provider call for this attempt.
+STORED JOB page 3: reading; attempt 1
+STORED JOB page 4: failed; attempt 1
+STORED JOB page 3: succeeded; attempt 1
+VISIBLE REASON: Reading stopped on page 4: Invalid OCR details.
+PAGE COUNTS: 0 scanned pages read · 2 skipped · 4 of 4 scan/fallback pages checked · PDF total: 4 pages. 0 included from AI vision; 0 from local OCR.
+READY: tap Try again.
+STORED JOB page 4: reading; attempt 2
+STORED JOB page 4: succeeded; attempt 2
+PASS: page 3 reused at attempt 1; page 4 retried at attempt 2 and succeeded.
+PASS: same preparation and same two page jobs; no completed page sent to AI again.
+PASS: fictional four-page PDF finished; summary displayed; 100/400 caps unchanged.

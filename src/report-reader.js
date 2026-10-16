@@ -1,3 +1,4 @@
+import {visionPageQueue} from './vision-page-queue.js';
 import {identityFromItems,resolveReportIdentity} from './report-identity.js';
 import {textPageNeedsVision} from './text-page-fallback.js';
 import {classifyScanPage} from './blood-page-classification.js';
@@ -51,7 +52,7 @@ export async function readLabReport(blob,onProgress=()=>{},contentType=blob.type
 }
 export async function readLabPdf(blob,onProgress=()=>{},options={}){
  const task=getDocument({data:new Uint8Array(await blob.arrayBuffer()),isEvalSupported:false,useSystemFonts:true,disableFontFace:true});
- let reader,coverage;
+ let reader,coverage;const visionQueue=visionPageQueue();
  try{
   const pdf=await task.promise;
   if(pdf.numPages>100)throw Error('This preview reads up to 100 pages per file. Split the PDF into smaller dated lab reports.');
@@ -72,32 +73,43 @@ export async function readLabPdf(blob,onProgress=()=>{},options={}){
   coverage={...coverageFor(attempts.length),pdfTotal:pdf.numPages,textPages};
   const {makeOcrReader}=await import('./ocr-reader.js');
   reader=await makeOcrReader(status=>onProgress(attempts[0],pdf.numPages,status));
+  async function queueVision(canvas,n,diagnostics){
+   await visionQueue.add(async()=>{
+    try{
+     const result=classifyScanPage(await options.vision(canvas,n,diagnostics));visionPages.push({page:n,result});pages[n-1]={page:n,items:[]};
+     if(result.reportKind==='other')skipPage(coverage,n,'AI vision found no supported blood or semen result table.');
+    }finally{canvas.width=canvas.height=0;}
+   });
+  }
   for(const n of attempts){
+   visionQueue.check();
    onProgress(n,pdf.numPages,nativeFallback.includes(n)?'Text fallback · local OCR screening':'Scan path · OCR');
    const page=await pdf.getPage(n),natural=page.getViewport({scale:1}),viewport=page.getViewport({scale:Math.min(3,2400/Math.max(natural.width,natural.height))});
    const canvas=document.createElement('canvas');canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);
    await page.render({canvas,canvasContext:canvas.getContext('2d'),viewport}).promise;
+   let queued=false;
    try{
     const ocr=await reader.read(canvas,n,{screen:!!options.vision});coverage.checked++;if(ocr.reportIdentity)reportIdentities.push(ocr.reportIdentity);
     if(ocr.exclusionReason){pages[n-1]=ocr;skipPage(coverage,n,ocr.exclusionReason);}
     else if(nativeFallback.includes(n)){
      onProgress(n,pdf.numPages,'Text fallback · AI vision');
-     const result=classifyScanPage(await options.vision(canvas,n));visionPages.push({page:n,result});pages[n-1]={page:n,items:[]};
-     if(result.reportKind==='other')skipPage(coverage,n,'AI vision found no supported blood or semen result table.');
+     await queueVision(canvas,n);queued=true;
     }else pages[n-1]=ocr;
    }catch(error){
+    if(error===visionQueue.error)throw error;
     if(error.reportIdentity)reportIdentities.push(error.reportIdentity);
     if(error.screening)coverage.checked++;
     if(options.vision&&error.screening?.hasTestContent){
      if(error.diagnostics)ocrDiagnostics.push(error.diagnostics);
      onProgress(n,pdf.numPages,nativeFallback.includes(n)?'Text fallback · AI vision':'Scan path · AI vision');
-     const result=classifyScanPage(await options.vision(canvas,n,error.diagnostics));visionPages.push({page:n,result});pages[n-1]={page:n,items:[]};
-     if(result.reportKind==='other'){skipPage(coverage,n,'AI vision found no supported blood or semen result table.');}
+     await queueVision(canvas,n,error.diagnostics);queued=true;
     }else if(['NO_TEXT','NO_TABLE'].includes(error.code)){pages[n-1]={page:n,items:[]};unreadablePages.push(n);skipPage(coverage,n,error.message);}
     else{const failure=Error(`Page ${n}: ${error.message}`);if(error.diagnostics)failure.diagnostics=error.diagnostics;throw failure;}
-   }finally{canvas.width=canvas.height=0;}
+   }finally{if(!queued)canvas.width=canvas.height=0;}
 
   }
+  await visionQueue.finish();
+  visionPages.sort((a,b)=>a.page-b.page);coverage.skipped.sort((a,b)=>a.page-b.page);
   let native,identityForPages,reportIdentity;
   if(scanned.length){reportIdentity=resolveReportIdentity([...reportIdentities,...visionPages.map(({page,result})=>({page,patientName:result.patientName,reportDate:result.reportDate}))]);identityForPages=new Map(scanned.map(n=>[n,reportIdentity]));}
   try{native=parseReport(pages,{identityForPages});}catch(error){if(!visionPages.length||!error.message.startsWith('No supported dated'))throw error;}
@@ -116,7 +128,7 @@ export async function readLabPdf(blob,onProgress=()=>{},options={}){
   if(error.name==='PasswordException')throw Error('This PDF is password-protected. Upload an unlocked copy.');
   if(error.name==='InvalidPDFException')throw Error('This PDF cannot be read. Upload another copy of the original.');
   throw error;
- }finally{await reader?.close();await task.destroy?.();}
+ }finally{await visionQueue.settle();await reader?.close();await task.destroy?.();}
 }
 
 // Older successful/error records have scan counts but no text-page notes.

@@ -1,0 +1,4 @@
+BEFORE total_seconds=39.470
+PASS same_six_AI_pages=20,21,22,23,24,25 same_18_skipped_pages=2..19 max_AI_in_flight=3 OCR_continued_during_AI=true
+AFTER total_seconds=25.639
+VISION mean_s=3.553 calls=6 max_active_ocr=1 max_active_vision=3

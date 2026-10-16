@@ -71,3 +71,5 @@ links. It never uploads real reports or prints their values.
 `vision-limits-browser.html` is development-only. It reads fictional PDFs on dev, then simulates a daily-cap transport response without changing the shared quota counter.
 
 `page-coverage-browser.html` is development-only and uses fictional mixed PDFs. Its second preparation omits text-page display notes from the returned cache clone to check older-reading compatibility; it never changes cached results.
+
+`vision-throughput.mjs` is dev-only and builds a fictional 27-page PDF in memory. It checks the unchanged 18 skipped pages and six vision pages, single-worker OCR, OCR/vision overlap and the three-page vision concurrency bound.
