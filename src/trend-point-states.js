@@ -1,4 +1,4 @@
-import { rangeStatus } from './lab-parser.js';
+import { summaryRangeStatus as rangeStatus } from './summary-range.js';
 
 // Compare each result with the range printed in its own source report.
 export function trendPointStates(observations) {

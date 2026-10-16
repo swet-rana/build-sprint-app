@@ -1,0 +1,28 @@
+START: development only; two fictional text PDFs; existing report reader and saved summary logs.
+PASS: two-report summary; 2 Hits, 1 Miss; 1 Stayed in range test collapsed; every item links to extracted source report/page.
+PASS: Triglycerides labelled Normal band selected; earlier dot red, latest dot green; printed multi-band reference retained.
+PASS: unidentified reference bands stay neutral and show range unclear, check original.
+PASS: clinician questions capped at 3; exact medical-advice notice visible; no patient identity sent to the writing model.
+SAMPLE BEGIN
+Hits
+C-reactive protein was outside its printed range in an earlier report and is in range in the latest report.
+2026-01-15 · Page 2 View original report  for C-reactive protein, 15 Jan 2026
+2026-07-15 · Page 2 View original report  for C-reactive protein, 15 Jul 2026
+Triglycerides was outside its printed range in an earlier report and is in range in the latest report.
+2026-01-15 · Page 2 View original report  for Triglycerides, 15 Jan 2026
+2026-07-15 · Page 2 View original report  for Triglycerides, 15 Jul 2026
+Misses
+Vitamin D remains outside its printed range, improved since last report.
+2026-01-15 · Page 2 View original report  for Vitamin D, 15 Jan 2026
+2026-07-15 · Page 2 View original report  for Vitamin D, 15 Jul 2026
+Stayed in range (collapsed)
+Haemoglobin stayed within its printed range in every report.
+Questions for your doctor
+How do these results fit with my health history?
+Which results should we discuss first?
+Are any results worth checking again?
+This is not medical advice; discuss with your doctor.
+SAMPLE END
+PASS: one-report summary; 3 In range, 1 Out of range; no Hit or Miss wording; no trend invented; second-report note visible.
+PASS: simulated writing-call failure preserves the plain summary and visibly says Smart summary unavailable right now.
+PASS: report reading, OCR filter, vision limits/model and reading cache unchanged.

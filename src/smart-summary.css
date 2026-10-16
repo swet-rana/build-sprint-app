@@ -16,3 +16,5 @@
 #summary-view .smart-summary-unavailable{color:#62658c}
 @media(max-width:600px){#summary-view .smart-summary{padding:20px 18px;border-radius:18px}#summary-view .smart-summary-columns{grid-template-columns:1fr;gap:20px}#summary-view .smart-summary h2{font-size:24px}#summary-view .smart-summary .source-button{min-height:44px}}
 @media print{#summary-view .smart-summary{box-shadow:none;border-color:#ddd;padding:16px;margin:0 0 16px}#summary-view .smart-summary h2{font-size:20px}#summary-view .smart-summary h3{font-size:16px}#summary-view .smart-summary-columns{gap:20px}}
+#summary-view .smart-summary-stayed{margin:8px 0 12px;border-top:1px solid #e7e3fa}
+#summary-view .smart-summary-stayed summary{font-size:14px;color:#62658c;padding:12px 0}

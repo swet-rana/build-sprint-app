@@ -1,4 +1,4 @@
-import {parseRange,rangeStatus} from './lab-parser.js';
+import {parseSummaryRange as parseRange,summaryRangeStatus as rangeStatus} from './summary-range.js';
 export const SMART_REPLY_TOKENS=1600;
 export const SMART_DISCLAIMER='This is not medical advice; discuss with your doctor.';
 export const SINGLE_REPORT_NOTE='A trend appears once a second report is added.';
@@ -12,10 +12,12 @@ export function smartFacts(comparison){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(report.date)||!Array.isArray(report.markers)||report.markers.length>1000)throw Error('Invalid saved results.');
   report.markers.forEach((marker,markerIndex)=>{if(typeof marker.key!=='string')throw Error('Invalid saved result identity.');const group=groups.get(marker.key)??[];group.push({marker,report,reportIndex,markerIndex});groups.set(marker.key,group);});
  });
- const hits=[],misses=[];
+ const hits=[],misses=[],stayed=[];
+ const latestDate=reports.map(r=>r.date).sort().at(-1);
  for(const observations of groups.values()){
   observations.sort((a,b)=>a.report.date.localeCompare(b.report.date));const latest=observations.at(-1),previous=observations.at(-2),m=latest.marker,name=String(m.name??'').trim();
   const range=parseRange(m.referenceText),status=rangeStatus(m.value,m.referenceText);
+  if(latest.report.date!==latestDate){unclassified++;continue;}
   // Written results, ambiguous ranges and unknown source pages stay in the plain summary.
   if(typeof m.value!=='number'||!Number.isFinite(m.value)||status==='unknown'||!validRange(range)||!name||name.length>120||/[\r\n<>]/.test(name)||/\b(?:diagnos\w*|prescrib\w*|medicine|treatment|ignore|instructions)\b/i.test(name)||!Number.isInteger(m.page)||m.page<1||m.page>(latest.report.pageCount??100)){unclassified++;continue;}
   let trend=null;
@@ -25,20 +27,25 @@ export function smartFacts(comparison){
     const delta=distance(m.value,range)-distance(previous.marker.value,range);trend=delta<0?'closer':delta>0?'farther':null;
    }
   }
-  const category=status==='within'?'hits':'misses';
+  const outside=observations.slice(0,-1).find(entry=>['above','below'].includes(rangeStatus(entry.marker.value,entry.marker.referenceText)));
+  const stayedInRange=observations.length===reports.length&&observations.every(entry=>rangeStatus(entry.marker.value,entry.marker.referenceText)==='within');
+  const category=status!=='within'?'misses':reports.length===1||outside?'hits':stayedInRange?'stayed':null;
+  if(!category){unclassified++;continue;}
   // An improving result that remains outside its range stays visible in Misses.
   let lines;
-  if(status==='within'&&trend==='closer')lines=[`${name} moved into the printed reference range since the previous report.`,`${name} is now within the printed reference range after moving closer to it.`];
+  if(category==='stayed')lines=[`${name} stayed within its printed range in every report.`];
+  else if(category==='hits'&&outside)lines=[`${name} was outside its printed range in an earlier report and is in range in the latest report.`,`${name} is now in its printed range after an earlier out-of-range result.`];
   else if(status==='within')lines=[`${name} is within the printed reference range.`,`${name} falls within the range printed in its report.`];
-  else if(trend==='closer')lines=[`${name} moved closer to the printed reference range but remains outside it.`,`${name} is closer to the printed range than before, but is still outside it.`];
+  else if(trend==='closer')lines=[`${name} improved since last report but remains outside its printed range.`,`${name} remains outside its printed range, improved since last report.`];
   else if(trend==='farther')lines=[`${name} moved farther from the printed reference range since the previous report.`,`${name} is farther outside the printed range than in the previous report.`];
   else lines=[`${name} is ${status} the printed reference range.`,`${name} falls ${status} the range printed in its report.`];
   const source=entry=>({reportIndex:entry.reportIndex,markerIndex:entry.markerIndex});
-  const sources=trend&&previous&&Number.isInteger(previous.marker.page)&&previous.marker.page>0?[source(previous),source(latest)]:[source(latest)];
+  const validSource=entry=>Number.isInteger(entry.marker.page)&&entry.marker.page>0&&entry.marker.page<=(entry.report.pageCount??100);
+  const sources=(category==='hits'&&outside?[outside,latest]:category==='stayed'?observations:trend&&previous?[previous,latest]:[latest]).filter(validSource).map(source);
   const fact={id:`r${latest.reportIndex}m${latest.markerIndex}`,name,category,lines,sources,evidence:{value:m.value,unit:m.unit,reference:m.referenceText,date:latest.report.date,...(trend?{trend}:{} )}};
-  (category==='hits'?hits:misses).push(fact);
+  ({hits,misses,stayed})[category].push(fact);
  }
- return {single:reports.length===1,hits:hits.slice(0,6),misses:misses.slice(0,6),totalHits:hits.length,totalMisses:misses.length,unclassified,questions:[...questionChoices,...(reports.length>1?['What might explain the changes between my reports?']:[])]};
+ return {single:reports.length===1,hits:hits.slice(0,6),misses:misses.slice(0,6),stayed:stayed.map(({id,name,lines,sources})=>({id,name,line:lines[0],sources})),totalHits:hits.length,totalMisses:misses.length,unclassified,questions:[...questionChoices,...(reports.length>1?['What might explain the changes between my reports?']:[])]};
 }
 export function smartReplySchema(facts){
  const items=rows=>({anyOf:(rows.length?rows:[{id:'none',lines:['none']}]).map(row=>({type:'object',additionalProperties:false,properties:{id:{type:'string',enum:[row.id]},line:{type:'string',enum:row.lines}},required:['id','line']}))});
