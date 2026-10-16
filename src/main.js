@@ -14,7 +14,7 @@ import './glass.css';
 import './typography.css';
 import './summary-premium.css';
 import './page-heading.css';
-import './inter-application.css';
+import './lato-application.css';
 installModuleReload();
 evaluationLogger();
 const markers=[

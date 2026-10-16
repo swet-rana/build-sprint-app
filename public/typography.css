@@ -1,3 +1,5 @@
+@font-face{font-family:Lato;font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/lato-latin-400-normal.woff2') format('woff2')}
+@font-face{font-family:Lato;font-style:normal;font-weight:700;font-display:swap;src:url('/fonts/lato-latin-700-normal.woff2') format('woff2')}
 /* Shared type system; both fonts are served locally by HealthStats. */
 @font-face{font-family:'Plus Jakarta Sans';font-style:normal;font-weight:200 800;font-display:optional;src:url('/fonts/plus-jakarta-sans-latin-variable.woff2') format('woff2')}
 @font-face{font-family:Inter;font-style:normal;font-weight:100 900;font-display:optional;src:url('/fonts/inter-latin-variable.woff2') format('woff2')}
@@ -20,5 +22,5 @@ input,select,textarea{font-family:var(--font-body);font-size:var(--type-body);li
 strong,b{font-weight:var(--weight-card)}
 small{font-size:var(--type-secondary);line-height:1.5}
 /* Standalone policy and sample-report pages use the application scale too. */
-@media screen{body:not(:has(#app)){--font-primary:Inter,Arial,sans-serif;--type-h1:40px;--type-h2:30px;--type-h3:22px;--type-body:22px;--type-button:22px;--type-secondary:14px}}
+@media screen{body:not(:has(#app)){--font-primary:Lato,Arial,sans-serif;--font-body:Lato,Arial,sans-serif;--type-h1:40px;--type-h2:30px;--type-h3:22px;--type-body:22px;--type-button:22px;--type-secondary:14px}}
 @media screen and (max-width:760px){body:not(:has(#app)){--type-h1:30px;--type-h2:24px;--type-h3:20px;--type-body:20px;--type-button:20px;--type-secondary:13px}}
