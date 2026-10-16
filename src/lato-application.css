@@ -26,3 +26,6 @@
 @media screen{
  #app:has(#home-tab[aria-pressed="false"]) button:not(.health-category) span:not(.sr-only){font-size:inherit!important;line-height:inherit!important}
 }
+
+/* Reports page title: requested size and actual Lato 900 font. */
+#app #uploads-view #saved-title{font-family:Lato,Arial,sans-serif!important;font-size:28px!important;font-weight:900!important}
