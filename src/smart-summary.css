@@ -26,10 +26,6 @@
 #summary-view .smart-summary-sources>div{display:flex;flex-direction:column;gap:3px}
 #summary-view .smart-summary .source-button{display:inline-flex;min-height:32px;padding:4px 0;margin:0;background:none;border:0;color:#493dbb;text-decoration:underline;text-underline-offset:3px;font:inherit;font-size:14px!important;cursor:pointer;box-shadow:none;transform:none}
 #summary-view .smart-summary .source-button:hover{color:#100078}
-#summary-view .smart-summary-questions{padding-top:20px;margin-top:8px;border-top:1px solid #e7e3fa}
-#summary-view .smart-summary-questions h3{margin-bottom:12px}
-#summary-view .smart-summary-questions ul{margin:0;padding-left:20px}
-#summary-view .smart-summary-questions li{margin-bottom:8px;line-height:1.6}
 #summary-view .smart-summary-note,#summary-view .smart-summary-disclaimer,#summary-view .smart-summary .smart-summary-scan-note{font-size:14px!important;line-height:1.6!important;color:#66668a;margin:14px 0}
 #summary-view .smart-summary .smart-summary-scan-note{margin:-4px 0 24px;max-width:65ch}
 #summary-view .smart-summary-disclaimer{margin-bottom:0}
