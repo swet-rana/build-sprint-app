@@ -1,0 +1,9 @@
+START: development; fictional three-page scanned PDF with name variants and a labelled referrer.
+STORED JOB: page 1; succeeded; attempt 1.
+STORED JOB: page 2; succeeded; attempt 1.
+STORED JOB: page 3; succeeded; attempt 1.
+PASS: distinct printed name variants accepted as one patient; 3 expected results retained on their original pages.
+PASS: labelled referrer names ignored; a patient title alone is not treated as a doctor label.
+PASS: clearly different patient rejected with pages 1 and 4 in the error; names not exposed in the app error.
+PASS: prompt, model, caching, readable results and spend caps unchanged; no medical values printed.
+CLEANUP: fictional dev upload moved to its isolated session trash.

@@ -24,3 +24,24 @@ test('OCR table rows without identity use the printed whole-report identity and 
  const kept=parseReport([without],{identityForPages:new Map([[without.page,identity]])});assert.deepEqual(kept.markers,original.markers);assert.equal(kept.patientName,original.patientName);assert.equal(kept.date,original.date);
  }finally{await task.destroy();}
 });
+
+test('scan identity ignores titles, case, punctuation, spacing, middle initials and age/sex suffixes',()=>{
+ const variants=['Mr. Alex Sample (45 M)','ALEX SAMPLE','Dr Alex J. Sample','A. Sample','AlexSample','Mrs. Alex Sample (45Y/F)'];
+ const result=resolveReportIdentity(variants.map((patientName,i)=>({page:i+1,patientName,reportDate:'2026-07-15'})));
+ assert.equal(result.patientName,variants[0]);assert.equal(result.identitySources.patientPage,1);
+ assert.doesNotThrow(()=>resolveReportIdentity([{page:1,patientName:"Alex O'Connor",reportDate:'2026-07-15'},{page:2,patientName:'Alex OConnor',reportDate:null}]));
+});
+test('doctor and referrer labels are not patient identity, even if vision chooses that name',()=>{
+ const items=[{str:'Patient Name: Alex Sample',width:500,transform:[1,0,0,1,0,900]},{str:'Ref. By: Dr Robin Example',width:500,transform:[1,0,0,1,0,850]},{str:'Collection Date: 15/Jul/2026',width:500,transform:[1,0,0,1,0,800]}];
+ const evidence=identityFromItems({page:2,items});assert.deepEqual(evidence.nonPatientNames,['Dr Robin Example']);
+ assert.doesNotThrow(()=>resolveReportIdentity([{page:1,patientName:'Alex Sample',reportDate:'2026-07-15'},evidence,{page:2,patientName:'Dr Robin Example',reportDate:null},{page:3,patientName:'Referring doctor: Dr Other Example',reportDate:null}]));
+ const onlyDoctor=identityFromItems({page:4,items:items.slice(1)});assert.equal(onlyDoctor.patientName,null);
+ assert.throws(()=>resolveReportIdentity([{...onlyDoctor,patientName:'Dr Robin Example'}]),/patient name and report date/);
+ // A real patient with a Dr title is still a patient, not a doctor field.
+ assert.doesNotThrow(()=>resolveReportIdentity([{page:1,patientName:'Dr Alex Sample',reportDate:'2026-07-15'},{page:2,patientName:'Alex Sample',reportDate:null}]));
+});
+test('clearly different patients remain rejected, including ambiguous initials between full names',()=>{
+ for(const names of [['Alex Sample','Jamie Sample'],['Alex Sample','Alex Other'],['Alex Sample','A. Sample','Andrew Sample']]){
+  assert.throws(()=>resolveReportIdentity(names.map((patientName,i)=>({page:i+1,patientName,reportDate:'2026-07-15'}))),error=>/different patient names/.test(error.message)&&error.message.includes('pages 1 and '+names.length)&&!names.some(name=>error.message.includes(name)));
+ }
+});

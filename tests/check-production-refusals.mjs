@@ -7,7 +7,7 @@ import {nodeTestTarget} from './test-target-node.mjs';
 nodeTestTarget('check-production-refusals.mjs','REFUSAL_AUDIT_CONVEX_URL');
 // This audit targets no cloud deployment. Child scripts receive production
 // deliberately, with all network access blocked, to verify their refusal.
-const scripts=['upload-integration.mjs','evaluation-integration.mjs','vision-integration.mjs','unitless-ratio-integration.mjs','test-matching-integration.mjs','report-reading-diagnosis.mjs','scan-image-diagnosis.mjs','reference-layout-audit.mjs','ocr-integration.mjs','semen-ocr-integration.mjs','report-viewer.browser.mjs','vision-reconnect-observe.mjs'];
+const scripts=['upload-integration.mjs','evaluation-integration.mjs','vision-integration.mjs','unitless-ratio-integration.mjs','name-variants-integration.mjs','test-matching-integration.mjs','report-reading-diagnosis.mjs','scan-image-diagnosis.mjs','reference-layout-audit.mjs','ocr-integration.mjs','semen-ocr-integration.mjs','report-viewer.browser.mjs','vision-reconnect-observe.mjs'];
 for(const script of scripts){
  const args=['--import','./tests/refusal-network-blocker.mjs',`tests/${script}`,'--convex-url',PROD_CONVEX_URL];
  const result=spawnSync(process.execPath,args,{encoding:'utf8'}),raw=result.stdout+result.stderr;

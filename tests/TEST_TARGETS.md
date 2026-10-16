@@ -55,3 +55,9 @@ that an unmatched name opens the page without a highlight. It makes no AI calls.
 without `--allow-prod`. It uploads one fictional image-only PDF, checks existing
 OCR screening, schedules an actual server vision job, and verifies unitless ratio
 acceptance and unit-sensitive comparison. Output contains counts and reasons only.
+
+`name-variants-integration.mjs` defaults to development and refuses production
+without `--allow-prod`. It reads a fictional three-page image-only PDF through
+local OCR screening and real scheduled vision jobs. It checks name variants,
+labelled referrer exclusion, unchanged known results and page-specific rejection
+of a clearly different person. Output contains counts and reasons only.
