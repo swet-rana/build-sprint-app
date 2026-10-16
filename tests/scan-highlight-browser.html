@@ -1,8 +1,8 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Scan highlight — dev only</title></head><body><main id="app"><section id="summary-view"><h1>Scanned row highlight — fictional dev test</h1><button id="matching">Open scan row below heading</button><button id="missing">Open scan with no reliable match</button><pre id="events"></pre></section></main><script type="module">
-import '/src/summary-premium.css';
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Scan highlight — dev only</title></head><body><main id="app"><section id="summary-view"><h1>Scanned row highlight — fictional dev test</h1><button id="matching">Open scan row below heading</button><button id="missing">Open scan with no reliable match</button><button id="unreadable">Prepare summary with an unreadable scan test</button><div id="unreadable-analysis"></div><pre id="events"></pre></section></main><script type="module">
 import {guardTestTarget} from './test-target.js';
 const url=guardTestTarget(import.meta.env.VITE_CONVEX_URL,{script:'scan-highlight-browser.html',devOnly:true});
 guardTestTarget(location.origin,{script:'scan-highlight-browser.html',devOnly:true});
+await import('/src/summary-premium.css');
 const [{openReportViewer},{reportCache}]=await Promise.all([import('/src/report-viewer.js'),import('/src/report-cache.js')]);
 const lines=[];let report,cache;function log(text){lines.push(text);document.querySelector('#events').textContent=lines.join('\n');console.log(text);}
 async function original(){
@@ -20,5 +20,28 @@ async function open(missing){
  else{if(!box)throw Error('No row box found');const top=parseFloat(box.style.top)/100,bottom=top+parseFloat(box.style.height)/100;if(!(top>.13&&bottom<.155))throw Error('Box did not enclose the printed result row');log('PASS: OCR box encloses the test row below the heading; the section heading is outside the box.');log('PASS: specimen/method suffix matched the short printed test name.');log('PASS: scanned highlight ignored the model position; no AI call, prompt, model, caching or cap change.');}
  }catch(error){log('FAIL: '+error.message);}
 }
+document.querySelector('#unreadable').onclick=async()=>{
+ try{
+  log('START: unreadable scan entry in the real summary renderer.');
+  const [{mountAnalysis},{mergeScanResults},{readLabReport}]=await Promise.all([import('/src/analysis.js'),import('/src/scan-results.js'),import('/src/report-reader.js')]);
+  const random=new Uint8Array(32);crypto.getRandomValues(random);const sessionKey=Array.from(random,b=>b.toString(16).padStart(2,'0')).join('');localStorage.setItem('health-history-upload-session',sessionKey);
+  const site=url.replace('.cloud','.site'),cache=reportCache(site,sessionKey),saved=[];
+  for(const [name,fixture,scan] of [['fictional-unreadable-scan.pdf','scan-unreadable-source.pdf',true],['fictional-text-report.pdf','blood-sample-january.pdf',false]]){
+   const bytes=await(await fetch('/tests/fixtures/'+fixture)).blob(),form=new FormData();form.set('sessionKey',sessionKey);form.set('uploadId',crypto.randomUUID());form.set('file',new File([bytes],name,{type:'application/pdf'}));
+   const response=await fetch(site+'/reports/upload',{method:'POST',body:form});if(!response.ok)throw Error('Fictional dev upload failed');
+   const report={id:(await response.json()).reportId,name,serial:saved.length+1,contentType:'application/pdf',size:bytes.size};await cache.remember(report,bytes);
+   const reading=scan?mergeScanResults([{page:1,result:{reportKind:'blood',patientName:'Sample Patient',reportDate:'2026-07-15',tests:[{name:'Calcium',value:null,unit:'mg/dL',referenceRange:null,readable:false},{name:'CRP',value:'4.0',unit:'mg/L',referenceRange:'1 - 6',readable:true}]}}],null,1):await readLabReport(bytes,()=>{},'application/pdf');
+   await cache.reading(report,async()=>reading);saved.push(report);
+  }
+  const root=document.querySelector('#unreadable-analysis'),analysis=mountAnalysis(root,()=>{});analysis.updateReports(saved,saved.map(r=>r.id));await analysis.prepare();
+  const notice=[...root.querySelectorAll('p.scan-value-notice')].find(e=>e.textContent.includes('unreadable in scan')),link=notice?.querySelector('.source-button');
+  if(!link||link.dataset.source!==saved[0].id||link.dataset.page!=='1'||link.dataset.sourcePath!=='vision')throw Error('Unreadable entry did not link to the saved scan and page');
+  if(!notice.textContent.includes('unreadable in scan (page 1)'))throw Error('Unreadable notice was lost');
+  log('DEV: fictional scanned PDF uploaded; saved fictional scan result contains one unreadable test.');
+  log('PASS: real summary rendered View original report for the unreadable test, pointing to its report and page 1.');
+  log('PASS: unreadable value remains missing; readable results retain their existing source links.');
+  link.scrollIntoView({block:'center'});
+ }catch(error){log('FAIL: '+error.message);}
+};
 document.querySelector('#matching').onclick=()=>open(false);document.querySelector('#missing').onclick=()=>open(true);
 </script></body></html>

@@ -10,3 +10,8 @@ text('Other fictional test',70,860);text('4.0',720,860);text('mg/L',1000,860);te
 text('END OF FICTIONAL REPORT',70,4700);
 await writeFile('tests/fixtures/scan-highlight-heading.pdf',imageOnlyPdf(c.toBuffer('image/jpeg'),1800,4800));
 console.log('Fictional highlight fixture created: result row below a same-name section heading.');
+// The label remains legible, but its result cannot be read.
+ctx.fillStyle='white';ctx.fillRect(690,645,250,75);ctx.fillRect(65,805,600,75);ctx.fillStyle='black';
+text('???',720,700);text('CRP',70,860);
+await writeFile('tests/fixtures/scan-unreadable-source.pdf',imageOnlyPdf(c.toBuffer('image/jpeg'),1800,4800));
+console.log('Fictional unreadable-source fixture created: one unreadable result, one readable result.');

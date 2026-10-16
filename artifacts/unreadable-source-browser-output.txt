@@ -1,0 +1,7 @@
+START: unreadable scan entry in the real summary renderer.
+DEV: fictional scanned PDF uploaded; saved fictional scan result contains one unreadable test.
+PASS: real summary rendered View original report for the unreadable test, pointing to its report and page 1.
+PASS: unreadable value remains missing; readable results retain their existing source links.
+PASS: clicking the unreadable entry opened its scanned PDF at Page 1 of 1.
+PASS: existing OCR row matching ran; no reliable match opened the page with no highlight.
+PASS: Back to HealthStats restored the summary and its unreadable entry.

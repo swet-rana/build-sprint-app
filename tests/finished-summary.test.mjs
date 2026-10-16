@@ -115,6 +115,13 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blu
   if(kind==='vision'||kind==='scan-filter'){
    assert.equal(paper.querySelectorAll('.scan-value-notice').length,4);
    assert(paper.textContent.includes('unreadable in scan'));
+   const unreadable=paper.querySelector('p.scan-value-notice .source-button');
+   assert(unreadable,'Unreadable scan entries must link to their original report');
+   assert.equal(unreadable.dataset.source,'july');
+   assert.equal(unreadable.dataset.page,kind==='scan-filter'?'27':'1');
+   assert.equal(unreadable.dataset.sourcePath,'vision');
+   assert.equal(unreadable.dataset.sourceOcrName,'Unreadable fictional marker');
+   assert.equal(unreadable.dataset.sourceTop,'');
    assert.equal(paper.textContent.includes('999'),false,'An unsure scan value must never be included');
    assert.equal(root.querySelectorAll('.reading-path').length,2);
    assert([...root.querySelectorAll('.reading-path')].some(p=>p.textContent.includes('AI vision')));
