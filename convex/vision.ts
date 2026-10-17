@@ -53,7 +53,7 @@ export async function readPage(ctx:ActionCtx,{sessionKey,readingId,reportId,page
  const bytes=Uint8Array.from(atob(image.split(',')[1]),c=>c.charCodeAt(0));if(!matchesFileType(bytes,'image/jpeg'))throw new ConvexError('Invalid scan image.');
  if(ocrDiagnostics&&(ocrDiagnostics.length>100000||!JSON.parse(ocrDiagnostics)))throw new ConvexError('Invalid OCR details.');
  const runId=await ctx.runMutation(internal.vision.reserve,{sessionKey,readingId,reportId,page,...(jobId?{jobId}:{})});
- let imageStorageId:Id<"_storage">|undefined,rawResponse:any,request:any;
+ let imageStorageId:Id<"_storage">|undefined,rawResponse:any,request:any,validationFailed=false;
  try{
   imageStorageId=await ctx.storage.store(new Blob([bytes],{type:'image/jpeg'}));
   request={model:VISION_MODEL,store:false,input:[{role:'user',content:[{type:'input_text',text:VISION_PROMPT},{type:'input_image',image_url:image,detail:'high'}]}],text:{format:{type:'json_schema',name:'medical_scan',strict:true,schema:VISION_SCHEMA}},max_output_tokens:10000};
@@ -63,9 +63,9 @@ export async function readPage(ctx:ActionCtx,{sessionKey,readingId,reportId,page
   if(rawResponse.status!=='completed')throw Error('Scan reading stopped: the AI service did not finish this page. Try again.');
   const text=rawResponse.output?.flatMap((item:any)=>item.content??[]).filter((part:any)=>part.type==='output_text').map((part:any)=>part.text).join('');
   if(!text)throw Error('Scan reading stopped: the AI service returned no readable results. Upload a clearer copy.');
-  const result=validateScan(JSON.parse(text));
+  let result;try{result=validateScan(JSON.parse(text));}catch(error){validationFailed=true;throw error;}
   await save({result});return result;
- }catch(error){const message=error instanceof Error?error.message:'Unknown scan reading error';await save({error:message});throw new ConvexError(message.startsWith('Scan reading stopped:')?message:'Scan reading stopped: the AI service failed. Try again later.');}
+ }catch(error){const message=error instanceof Error?error.message:'Unknown scan reading error';await save({error:message});throw new ConvexError(validationFailed?`We couldn't read some rows on page ${page}`:message.startsWith('Scan reading stopped:')?message:'Scan reading stopped: the AI service failed. Try again later.');}
  async function save(outcome:object){
   const loggedRequest=request?{...request,input:[{role:'user',content:[{type:'input_text',text:VISION_PROMPT},{type:'input_image',storageId:imageStorageId,detail:'high'}]}]}:null;
   const outputStorageId=await ctx.storage.store(new Blob([JSON.stringify(withoutPatientNames({imageCheck,page,imageStorageId: imageStorageId??null,ocrDiagnostics:ocrDiagnostics?JSON.parse(ocrDiagnostics):null,request:loggedRequest,rawResponse:rawResponse??null,...outcome}))],{type:'application/json'}));

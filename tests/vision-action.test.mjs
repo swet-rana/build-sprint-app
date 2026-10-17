@@ -87,3 +87,14 @@ test('explicit retry renews an expired preparation without resetting its spent p
  const id=await begin._handler(q.ctx,{sessionKey:q.sessions[0],reportIds:['report-0'],requestKey:'same-request',retry:true});
  assert.equal(id,'reading-0');assert.equal(reading.pages,30);assert(Date.now()-reading.createdAt<1000);assert.equal(q.usage(),40);
 });
+
+test('own validation failures name the page, preserve the raw error, and never blame OpenAI',async()=>{
+ const oldFetch=globalThis.fetch,oldKey=process.env.OPENAI_API_KEY;process.env.OPENAI_API_KEY='fictional-test-key';const blobs=[],records=[];
+ const ctx={runMutation:async(_ref,args)=>{records.push(args);return 'fictional-run';},storage:{store:async blob=>{blobs.push(blob);return 'fictional-storage';}}};
+ const reply={reportKind:'blood',specimen:'blood',patientName:'Fictional Patient',reportDate:'2026-07-15',tests:[{name:'',value:'13.2',unit:'g/dL',referenceRange:'12-16',readable:true,sourceTop:1.05}]};
+ globalThis.fetch=async()=>Response.json({status:'completed',error:null,output:[{content:[{type:'output_text',text:JSON.stringify(reply)}]}]});
+ try{
+  await assert.rejects(read._handler(ctx,{sessionKey:'a'.repeat(64),readingId:'fake',reportId:'fake',page:2,image:'data:image/jpeg;base64,/9j/AA=='}),/We couldn't read some rows on page 2/);
+  const saved=JSON.parse(await blobs.at(-1).text());assert.equal(saved.error,'The scan reader returned an invalid test row.');assert.equal(saved.rawResponse.status,'completed');assert.equal(records.at(-1).error,saved.error);
+ }finally{globalThis.fetch=oldFetch;if(oldKey===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=oldKey;}
+});

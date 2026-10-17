@@ -12,6 +12,7 @@ export const READING_FAILURE="We couldn't finish reading this report. Tap Try ag
 export function failureReason(error=''){
  const quota=error.match(/Scan reading stopped: (?:the limit is \d+ vision pages per summary preparation\. Choose a smaller set of result pages\.|HealthStats has reached its app-wide daily limit of \d+ vision pages\. Try again tomorrow\.)/);
  if(quota)return quota[0];
+ const validation=error.match(/We couldn't read some rows on page \d+/);if(validation)return validation[0];
  const known=['The scan image is too large or invalid. Upload a smaller clear copy.','Invalid scan image.','Invalid OCR details.','This scan reading expired or the report is unavailable. Prepare the summary again.','Scan reading is unavailable: the server API key is missing.','Scheduled scan did not finish within three minutes.','Scan reading stopped: the AI service did not finish this page. Try again.','Scan reading stopped: the AI service returned no readable results. Upload a clearer copy.','Scan reading stopped: the AI service failed. Try again later.'];
  const api=error.match(/Scan reading stopped: the AI service could not read this page \(API \d{3}\)\. Try again later\./);
  return api?.[0]??known.find(reason=>error.includes(reason))??'The server could not finish this page. Try again.';

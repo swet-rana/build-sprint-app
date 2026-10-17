@@ -10,8 +10,8 @@ export function validateScan(result){
  if(!result||!['blood','semen','urine','stool','other'].includes(result.reportKind)||!Array.isArray(result.tests)||result.tests.length>300)throw Error('The scan reader returned an invalid result. Try again.');
  for(const field of ['patientName','reportDate'])if(result[field]!==null&&typeof result[field]!=='string')throw Error('The scan reader returned invalid report details.');
  return classifyScanPage({...result,tests:result.tests.map(row=>{
-  if(!row||typeof row.name!=='string'||!row.name.trim()||typeof row.readable!=='boolean'||!['value','unit','referenceRange'].every(f=>row[f]===null||typeof row[f]==='string')||!(row.sourceTop===null||Number.isFinite(row.sourceTop)&&row.sourceTop>=0&&row.sourceTop<=1))throw Error('The scan reader returned an invalid test row.');
+  if(!row||typeof row.name!=='string'||!row.name.trim()||typeof row.readable!=='boolean'||!['value','unit','referenceRange'].every(f=>row[f]===null||typeof row[f]==='string'))throw Error('The scan reader returned an invalid test row.');
   // An unsure value is never carried into comparison, even if a model filled it in.
-  return {...row,value:row.readable?row.value:null};
+  return {...row,value:row.readable?row.value:null,sourceTop:Number.isFinite(row.sourceTop)?Math.max(0,Math.min(1,row.sourceTop)):null};
  })});
 }

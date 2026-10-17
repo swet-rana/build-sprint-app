@@ -64,3 +64,13 @@ test('daily reset is exactly midnight Asia/Kolkata and advances across month and
  for(const [now,reset] of [['2026-10-16T18:29:59.999Z','2026-10-16T18:30:00.000Z'],['2026-10-16T18:30:00.000Z','2026-10-17T18:30:00.000Z'],['2026-12-31T18:29:59.999Z','2026-12-31T18:30:00.000Z']])assert.equal(new Date(nextVisionReset(Date.parse(now))).toISOString(),reset);
  assert.equal(dailyVisionMessage(Date.parse('2026-10-16T18:30:00Z')),'HealthStats has reached its daily AI vision limit of 400 pages. Reading resumes at 00:00 IST (India time) on 17 Oct 2026.');
 });
+
+test('scan rows clamp position hints without changing medical fields or mutating the reply',()=>{
+ for(const [before,after] of [[1.05,1],[-0.2,0],[0.5,0.5],[0,0],[1,1],[null,null],[undefined,null],[NaN,null],[Infinity,null],[-Infinity,null],['0.4',null]]){
+  const row={...scan.tests[0],sourceTop:before},result=validateScan({...scan,tests:[row]});
+  assert.equal(result.tests.length,1);assert.deepEqual(result.tests[0],{...row,sourceTop:after});assert.equal(row.sourceTop,before);
+ }
+});
+test('position normalization does not relax any other row validation',()=>{
+ for(const change of [{name:''},{name:3},{readable:'yes'},{value:2},{unit:5},{referenceRange:10}])assert.throws(()=>validateScan({...scan,tests:[{...scan.tests[0],sourceTop:1.05,...change}]}),/invalid test row/);
+});

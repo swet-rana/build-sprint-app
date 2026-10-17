@@ -85,3 +85,7 @@ test('daily cap exposes midnight IST retry time only while the current app count
  h.rows.get('today').day='2000-01-01';
  result=await jobs.get._handler(h.ctx,{sessionKey:h.args.sessionKey,jobId:id});assert.equal(result.retryAt,undefined,'Yesterday’s failure must allow retry after reset');
 });
+
+test('saved validation errors show the page-specific wording without a Convex stack trace',()=>{
+ assert.equal(jobs.failureReason("Uncaught ConvexError: We couldn't read some rows on page 2\n at handler"),"We couldn't read some rows on page 2");
+});
