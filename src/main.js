@@ -95,7 +95,7 @@ for(const name of ['home','reports','summary','profile']) {
   home.setActive(view==='home');
   document.querySelector('.intro').hidden=view==='profile'||view==='home';
   document.title=`HealthStats · ${{home:'Home',reports:'My Reports',summary:'Summary',profile:'Profile'}[view]||'HealthStats'}`;
-  document.querySelector('#page-title').textContent=view==='reports'?'Bring your reports together.':view==='summary'?'My health summary':'Your Health Summary, ready for your doctor.';
+  document.querySelector('#page-title').textContent=view==='reports'?'Bring your reports together.':view==='summary'?'My Summary':'Your Health Summary, ready for your doctor.';
   document.querySelector('#page-description').textContent=view==='sample'?'Two blood reports. One clear view of what changed.':view==='summary'?'Compares 2 or more similar medical reports.':'Keep the originals ready for your next doctor visit.';
 }
 document.querySelector('#home-begin').addEventListener('click',()=>switchView('reports'));
