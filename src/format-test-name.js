@@ -7,7 +7,7 @@ const unitPattern=/(?<![\p{L}\p{N}])(?:(?:[munpkµμ]?g|[munpµμ]?mol|[mµμ]?I
 export function formatTestName(name){
  const units=[];
  let label=String(name??'').replace(/\s+/g,' ').trim().replace(unitPattern,unit=>{units.push(unit);return `\uE000${units.length-1}\uE001`;});
- label=label.replace(/(?<=\p{L})\s*[-‐‑–]\s*(?=\p{L})/gu,' ').replace(/\s+/g,' ').toLowerCase();
+ label=label.replace(/(?:(?<=\p{L})\s*[-‐‑–]\s*(?=[\p{L}\p{N}])|(?<=\p{N})\s*[-‐‑–]\s*(?=\p{L}))/gu,' ').replace(/\s+/g,' ').toLowerCase();
  label=label.replace(/\p{L}/u,letter=>letter.toUpperCase()).replace(abbreviationPattern,match=>canonical.get(match.toLowerCase()));
  return label.replace(/\uE000(\d+)\uE001/g,(_,index)=>units[Number(index)]);
 }
