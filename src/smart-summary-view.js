@@ -1,3 +1,4 @@
+import {formatTestName} from './format-test-name.js';
 import {testInfoButton} from './test-explainer.js';
 import {SINGLE_REPORT_NOTE} from './smart-summary-rules.js';
 import {summaryRangeStatus} from './summary-range.js';
@@ -14,8 +15,8 @@ export function smartSummaryMarkup(state,comparison,sourceButton){
   const status=group==='hits'||group==='stayed'?'within':summaryRangeStatus(marker.value,marker.referenceText),normal=status==='within';
   const label=normal?'NORMAL':status==='above'?'HIGH':status==='below'?'LOW':'OUT OF RANGE';
   const description=group==='misses'&&item.line.includes('improved since last report')?'Improved since last report':/^HDL(?:[- ]cholesterol)?$/i.test(marker.name)?'Good cholesterol':'';
-  const original=sourceButton(marker,report,{scanNotice:false}),buttonHead=original.slice(0,original.indexOf('>')+1).replace('class="source-button"','class="source-button smart-source-direct"').replace('type="button"',`type="button" aria-label="Open source report for ${escape(marker.name)}"`);
-  return `<li class="smart-result-row"><span class="smart-icon-tile ${normal?'smart-normal':'smart-attention'}">${icon(normal?check:status==='above'?up:down)}</span><div class="smart-result-copy"><div class="smart-test-title"><strong class="smart-result-name">${escape(marker.name)}</strong>${testInfoButton(marker.name)}</div>${description?`<span class="smart-result-description">${description}</span>`:''}</div><span class="smart-range-pill ${normal?'smart-normal':'smart-attention'}">${label}</span>${buttonHead}<span class="smart-source-desktop">Source ${icon('M7 17 17 7M7 7h10v10')}</span>${icon('m9 5 7 7-7 7','smart-source-chevron')}</button></li>`;
+  const original=sourceButton(marker,report,{scanNotice:false}),buttonHead=original.slice(0,original.indexOf('>')+1).replace('class="source-button"','class="source-button smart-source-direct"').replace('type="button"',`type="button" aria-label="Open source report for ${escape(formatTestName(marker.name))}"`);
+  return `<li class="smart-result-row"><span class="smart-icon-tile ${normal?'smart-normal':'smart-attention'}">${icon(normal?check:status==='above'?up:down)}</span><div class="smart-result-copy"><div class="smart-test-title"><strong class="smart-result-name">${escape(formatTestName(marker.name))}</strong>${testInfoButton(marker.name)}</div>${description?`<span class="smart-result-description">${description}</span>`:''}</div><span class="smart-range-pill ${normal?'smart-normal':'smart-attention'}">${label}</span>${buttonHead}<span class="smart-source-desktop">Source ${icon('M7 17 17 7M7 7h10v10')}</span>${icon('m9 5 7 7-7 7','smart-source-chevron')}</button></li>`;
  }).join('')}</ul>`;
  const onlyList=state?.onlyInOneReport?.length?`<details class="smart-summary-only"><summary>Only in one report · ${state.onlyInOneReport.length} ${state.onlyInOneReport.length===1?'test':'tests'}</summary>${items(state.onlyInOneReport,'only')}</details>`:'';
  const groups=[['hits',single?'In range':'Hits',single?'':'Came back to normal'],['misses',single?'Out of range':'Misses',single?'':'Outside the normal range']];

@@ -1,3 +1,4 @@
+import {formatTestName} from './format-test-name.js';
 import {localStandard,mappingKey,standardTest,validStandardMatch,conversionFactor} from '../convex/testMappingRules.js';
 import {parseRange} from './lab-parser.js';
 import {unitIdentity} from './test-names.js';
@@ -9,7 +10,7 @@ function convertedRange(text,factor){
  if(range.low!==null)return `${range.lowInclusive?'>=':'>'}${scaled(range.low,factor)}`;
  return `${range.highInclusive?'<=':'<'}${scaled(range.high,factor)}`;
 }
-export function originalResultTitle(marker){const source=marker.original??{name:marker.rawName??marker.name,value:marker.value,unit:marker.unit,referenceText:marker.referenceText};return `Original report: ${source.name}: ${source.value} ${source.unit}. Reference: ${source.referenceText}`;}
+export function originalResultTitle(marker){const source=marker.original??{name:marker.rawName??marker.name,value:marker.value,unit:marker.unit,referenceText:marker.referenceText};return `Original report: ${formatTestName(source.name)}: ${source.value} ${source.unit}. Reference: ${source.referenceText}`;}
 export async function normalizeReportTests(reports,resolve){
  if(!resolve)return reports;
  const unknown=new Map();

@@ -1,3 +1,4 @@
+import {formatTestName} from '../src/format-test-name.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -100,7 +101,7 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blu
   assert.equal(paper.querySelector('.context strong').textContent,expected.patient);
   const markers=[...paper.querySelectorAll('.marker')];assert.equal(markers.length,expected.markers.length);
   for(const wanted of expected.markers){
-   const marker=markers.find(m=>m.querySelector('.marker-heading h4').textContent===wanted.name);
+   const marker=markers.find(m=>m.querySelector('.marker-heading h4').textContent===formatTestName(wanted.name));
    assert(marker,`Missing test ${wanted.name}`);
    assert.equal(marker.querySelector('[data-test-info]').dataset.testInfo,wanted.name);
    const picker=[...root.querySelectorAll('.test-option')].find(row=>row.querySelector('[data-test-info]').dataset.testInfo===wanted.name);assert(picker,`Missing picker explanation ${wanted.name}`);assert(!picker.querySelector('label button'),'Info must not toggle test selection');

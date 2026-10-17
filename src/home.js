@@ -1,3 +1,4 @@
+import {formatTestName} from './format-test-name.js';
 import {imageUrl} from './image-assets.js';
 import './home.css';
 
@@ -15,7 +16,7 @@ export function homeIcon(name) {
   };
   return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.reports}</svg>`;
 }
-const reportRows = '<div><span>Hemoglobin</span><span>13.2 g/dL</span></div><div><span>WBC</span><span>7,800 /µL</span></div><div><span>Platelets</span><span>2.6 L/µL</span></div>';
+const reportRows = [['Hemoglobin','13.2 g/dL'],['WBC','7,800 /µL'],['Platelets','2.6 L/µL']].map(([name,value])=>`<div><span>${formatTestName(name)}</span><span>${value}</span></div>`).join('');
 function reportsVisual() {
   return `<div class="home-documents" aria-label="Illustrative medical reports">
     <div class="home-paper home-paper-pdf"><span class="home-file-tag">PDF</span><strong>Medical report</strong><div class="home-paper-lines"><i></i><i></i><i></i></div></div>
@@ -30,7 +31,7 @@ const demoBloodReports = [
 ];
 function bloodReportsVisual() {
   const reports = demoBloodReports;
-  return `<div class="home-blood-reports" aria-label="Three illustrative blood test reports">${reports.map(report => `<article class="home-blood-report"><header><span class="home-blood-file">${homeIcon('reports')}<span>Test Report ${report.number}</span></span><strong>${report.title}</strong></header><div class="home-blood-date">${report.date}</div><div class="home-blood-results">${report.rows.map(([marker, value]) => `<div><span>${marker}</span><span>${value}</span></div>`).join('')}</div></article>`).join('')}</div>`;
+  return `<div class="home-blood-reports" aria-label="Three illustrative blood test reports">${reports.map(report => `<article class="home-blood-report"><header><span class="home-blood-file">${homeIcon('reports')}<span>Test Report ${report.number}</span></span><strong>${report.title}</strong></header><div class="home-blood-date">${report.date}</div><div class="home-blood-results">${report.rows.map(([marker, value]) => `<div><span>${formatTestName(marker)}</span><span>${value}</span></div>`).join('')}</div></article>`).join('')}</div>`;
 }
 function summaryPreview(completed = false) {
   const trends = demoBloodReports[0].rows.map(([marker, firstValue], index) => {
@@ -39,7 +40,7 @@ function summaryPreview(completed = false) {
     const min = Math.min(...numbers), max = Math.max(...numbers);
     const points = numbers.map((value, point) => ({ x: 30 + point * 120, y: max === min ? 35 : 52 - (value - min) / (max - min) * 28 }));
     const unit = firstValue.split(' ').slice(1).join(' ');
-    return `<div class="home-trend"><div class="home-trend-title"><strong>${marker}</strong><span>${unit}</span></div><svg viewBox="0 0 300 70" role="img" aria-label="${marker}: ${values.map((value, point) => `${value} on ${demoBloodReports[point].date}`).join('; ')}"><path class="home-trend-guide" d="M30 58H270"/><path class="home-trend-line" style="--trend-delay:${index * 0.22}s" d="${points.map((point, number) => `${number ? 'L' : 'M'}${point.x} ${point.y}`).join(' ')}" pathLength="1"/>${points.map((point, number) => `<circle cx="${point.x}" cy="${point.y}" r="3.5"/><text x="${point.x}" y="${point.y - 9}" text-anchor="middle">${values[number].split(' ')[0]}</text>`).join('')}</svg></div>`;
+    return `<div class="home-trend"><div class="home-trend-title"><strong>${formatTestName(marker)}</strong><span>${unit}</span></div><svg viewBox="0 0 300 70" role="img" aria-label="${formatTestName(marker)}: ${values.map((value, point) => `${value} on ${demoBloodReports[point].date}`).join('; ')}"><path class="home-trend-guide" d="M30 58H270"/><path class="home-trend-line" style="--trend-delay:${index * 0.22}s" d="${points.map((point, number) => `${number ? 'L' : 'M'}${point.x} ${point.y}`).join(' ')}" pathLength="1"/>${points.map((point, number) => `<circle cx="${point.x}" cy="${point.y}" r="3.5"/><text x="${point.x}" y="${point.y - 9}" text-anchor="middle">${values[number].split(' ')[0]}</text>`).join('')}</svg></div>`;
   }).join('');
   return `<div class="home-summary-preview${completed ? ' home-completed-report' : ''}">
     <div class="home-preview-title"><strong>Health Summary</strong><span>Example</span></div>
@@ -55,7 +56,7 @@ function premiumDecorations() {
   return `<div class="home-premium-reports" aria-hidden="true">
     <article class="home-floating-card home-floating-imaging"><header>${homeIcon('reports')}<strong>Imaging Report</strong></header><div class="home-imaging-thumb"><img src="${imageUrl("/images/categories/bone-minerals.webp")}" alt="" width="70" height="90" loading="lazy"></div><div class="home-paper-lines"><i></i><i></i></div></article>
     <article class="home-floating-card home-floating-prescription"><header><span class="home-rx">Rx</span><strong>Prescription</strong></header><div class="home-paper-lines"><i></i><i></i><i></i></div></article>
-    <article class="home-floating-card home-floating-lab"><header>${homeIcon('reports')}<strong>Lab Report</strong></header><div class="home-paper-lines"><i></i><i></i></div><svg class="home-decor-trend" viewBox="0 0 180 55" fill="none"><path d="M5 44 34 29 61 34 90 20 116 26 148 13 175 5" stroke="currentColor" stroke-width="2"/>${[[5,44],[34,29],[90,20],[148,13],[175,5]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="3" fill="currentColor"/>`).join('')}</svg><div class="home-decor-results">${[['HbA1c','5.6'],['Vitamin D','28'],['Cholesterol','180']].map(([n,v])=>`<div><span>${n}</span><span>${v}</span><i></i></div>`).join('')}</div><small>Illustrative values</small></article>
+    <article class="home-floating-card home-floating-lab"><header>${homeIcon('reports')}<strong>Lab Report</strong></header><div class="home-paper-lines"><i></i><i></i></div><svg class="home-decor-trend" viewBox="0 0 180 55" fill="none"><path d="M5 44 34 29 61 34 90 20 116 26 148 13 175 5" stroke="currentColor" stroke-width="2"/>${[[5,44],[34,29],[90,20],[148,13],[175,5]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="3" fill="currentColor"/>`).join('')}</svg><div class="home-decor-results">${[['HbA1c','5.6'],['Vitamin D','28'],['Cholesterol','180']].map(([n,v])=>`<div><span>${formatTestName(n)}</span><span>${v}</span><i></i></div>`).join('')}</div><small>Illustrative values</small></article>
   </div><div class="home-premium-ribbons" aria-hidden="true"><img class="home-ribbon-art" src="${imageUrl("/images/home-glass-ribbons.png")}" alt="" width="1024" height="1536" loading="lazy"><div class="home-health-symbols">${symbols.map(name=>`<span><img src="${imageUrl(`/images/home-static-${name}.png`)}" alt="" width="256" height="256" loading="lazy"></span>`).join('')}</div></div>`;
 }
 export function mountHome(root, onUploadReports = null, onSelectReports = null, onPrepareSummary = null, onReadySummary = null) {

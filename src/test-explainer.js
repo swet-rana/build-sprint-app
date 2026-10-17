@@ -1,6 +1,7 @@
+import {formatTestName} from './format-test-name.js';
 import {testExplanation,EXPLANATION_ENDING} from './test-glossary.js';
 const escape=text=>String(text??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-export const testInfoButton=name=>`<button type="button" class="test-info-button" data-test-info="${escape(name)}" aria-label="About ${escape(name)}" aria-haspopup="dialog" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 11v6m0-10v2"/></svg></button>`;
+export const testInfoButton=name=>`<button type="button" class="test-info-button" data-test-info="${escape(name)}" aria-label="About ${escape(formatTestName(name))}" aria-haspopup="dialog" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 11v6m0-10v2"/></svg></button>`;
 // One delegated listener also covers freshly rendered comparison and AI-summary rows.
 export function installTestExplainers(root){
  const doc=root.ownerDocument,win=doc.defaultView;
@@ -17,7 +18,7 @@ export function installTestExplainers(root){
   const button=event.target.closest?.('[data-test-info]');if(!button||!root.contains(button))return;
   event.preventDefault();event.stopPropagation();if(trigger===button){close(true);return;}close();trigger=button;
   const name=button.dataset.testInfo,item=testExplanation(name);
-  panel.innerHTML=`<div class="test-explainer-heading"><h2 id="${titleId}">${escape(name)}</h2><button type="button" class="test-explainer-close" aria-label="Close explanation">×</button></div><p>${escape(item?.text??`Explanation coming soon. ${EXPLANATION_ENDING}`)}</p>${item?`<a href="${escape(item.source)}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">Source<span class="sr-only">: MedlinePlus</span></a>`:''}`;
+  panel.innerHTML=`<div class="test-explainer-heading"><h2 id="${titleId}">${escape(formatTestName(name))}</h2><button type="button" class="test-explainer-close" aria-label="Close explanation">×</button></div><p>${escape(item?.text??`Explanation coming soon. ${EXPLANATION_ENDING}`)}</p>${item?`<a href="${escape(item.source)}" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">Source<span class="sr-only">: MedlinePlus</span></a>`:''}`;
   button.setAttribute('aria-expanded','true');panel.hidden=false;position();panel.querySelector('button').focus();
  }
  const outside=event=>{if(trigger&&!panel.contains(event.target)&&!trigger.contains(event.target))close();};
