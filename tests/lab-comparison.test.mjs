@@ -24,7 +24,7 @@ test('different titles for the same patient compare in date order without invent
 });
 test('different patients, same dates and incompatible units are not merged',()=>{
  const a=parseReport([page('27/May/2026')]);
- assert.throws(()=>compareReports(a,parseReport([page('25/Aug/2026','Mr.Other Patient','OTHER')])) ,/different people/);
+ assert.equal(compareReports(a,parseReport([page('25/Aug/2026','Mr.Other Patient','OTHER')])).needsIdentityConfirmation,true);
  assert.throws(()=>compareReports(a,parseReport([page('27/May/2026')])) ,/different dates/);
  assert.throws(()=>compareReports(a,parseReport([page('25/Aug/2026','Ms.Sample Patient','TEST-123','7.9','10^9\/L')])) ,/matching tests/);
 });
@@ -44,7 +44,7 @@ test('reads Tata collection labels and compares names across lab-specific patien
  const apollo=page('27/May/2026','Mrs.Sample Patient','APOLLO-1','12','g/dL');
  apollo.items=apollo.items.map(i=>({...i,str:i.str==='TOTAL LEUCOCYTE COUNT (TLC)'?'HAEMOGLOBIN':i.str}));
  const comparison=compareReports(old,parseReport([apollo]));assert.equal(comparison.comparable[0].change,0.3);
- assert.throws(()=>compareReports(old,{...parseReport([apollo]),patientName:'Other Person'}),/different people/);
+ assert.equal(compareReports(old,{...parseReport([apollo]),patientName:'Other Person'}).needsIdentityConfirmation,true);
 });
 test('keeps wrapped reference categories without borrowing the next test or notes',()=>{
  const p=page('19/Aug/2024');
@@ -65,7 +65,7 @@ test('three reports are ordered by date and missing results remain empty',async(
  assert.equal(result.comparable[1].missingLabels[1],'Not reported');
  b.markers.push({...a.markers[1],key:'crp|mg/dl',unit:'mg/dL'});
  assert.equal(compareReportSeries([a,b,c]).comparable[1].missingLabels[1],'Different unit');
- assert.throws(()=>compareReportSeries([a,b,{...c,patientName:'Other',patientId:'OTHER'}]),/different people/);
+ assert.equal(compareReportSeries([a,b,{...c,patientName:'Other',patientId:'OTHER'}]).needsIdentityConfirmation,true);
  assert.throws(()=>compareReportSeries([a,b,b]),/different dates/);
 });
 test('page-number footers cannot become a wrapped reference range',()=>{

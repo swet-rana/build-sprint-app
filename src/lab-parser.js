@@ -1,3 +1,4 @@
+import {patientNamesMatch} from './patient-name-match.js';
 import {pageSpecimen,specimenMarker} from './specimen-results.js';
 import { footerResults } from './footer-report-rows.js';
 import { semenIdentity } from './semen-markers.js';
@@ -137,8 +138,8 @@ export function parseReport(pages,{identityForPages}={}){
  const kinds=new Set([...markers.values()].map(m=>m.specimen??'blood'));
  return {reportKind:kinds.size===1?[...kinds][0]:'mixed',date:dates[0],patientName:identities[0].patientName,patientId:identities[0].patientId,patientIdIssuer:identities[0].patientIdIssuer,labName:labNames.size===1?[...labNames][0]:'',markers:[...markers.values()],usedPages:[...usedPages],excludedPages,pageCount:pages.length,warnings};
 }
-export function compareReports(a,b){
- if(a.patientId&&b.patientId&&a.patientIdIssuer===b.patientIdIssuer?a.patientId!==b.patientId:normalizePatient(a.patientName)!==normalizePatient(b.patientName))throw Error('These reports appear to belong to different people. Check the patient names before comparing.');
+export function compareReports(a,b,{samePerson=false}={}){
+ if(!samePerson&&!patientNamesMatch(a.patientName,b.patientName))return {needsIdentityConfirmation:true};
  if(a.date===b.date)throw Error('Choose reports from two different dates.');
  const [earlier,later]=a.date<b.date?[a,b]:[b,a];
  const old=new Map(earlier.markers.map(m=>[m.key,m]));
@@ -149,11 +150,11 @@ export function compareReports(a,b){
  return {earlier,later,comparable,unpaired};
 }
 
-export function compareReportSeries(input){
+export function compareReportSeries(input,{samePerson=false}={}){
  if(input.length<2)throw Error('Choose at least two uploaded PDFs.');
  for(let i=0;i<input.length;i++)for(let j=i+1;j<input.length;j++){
   const a=input[i],b=input[j];
-  if(a.patientId&&b.patientId&&a.patientIdIssuer===b.patientIdIssuer?a.patientId!==b.patientId:normalizePatient(a.patientName)!==normalizePatient(b.patientName))throw Error('These reports appear to belong to different people. Check the patient names before comparing.');
+  if(!samePerson&&!patientNamesMatch(a.patientName,b.patientName))return {needsIdentityConfirmation:true};
   if(a.date===b.date)throw Error('Choose reports from different dates.');
  }
  const reports=[...input].sort((a,b)=>a.date.localeCompare(b.date));

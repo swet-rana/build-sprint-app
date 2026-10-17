@@ -132,3 +132,23 @@ test('Summary pauses just the differing-name file; Yes retains all pages and No 
   }finally{dom.window.close();for(const k of keys){if(old[k]===undefined)delete globalThis[k];else globalThis[k]=old[k];}}
  }
 });
+
+test('Summary confirms different names across reports; Yes finishes and No returns to selection',async()=>{
+ for(const answer of ['yes','no']){
+  const dom=new JSDOM('<div id="summary" hidden></div>',{url:'http://localhost:5173'}),keys=['window','document','localStorage','MutationObserver','fetch'];const old=Object.fromEntries(keys.map(k=>[k,globalThis[k]]));
+  Object.assign(globalThis,{window:dom.window,document:dom.window.document,localStorage:dom.window.localStorage,MutationObserver:dom.window.MutationObserver});globalThis.fetch=async()=>new Response('fictional PDF',{headers:{'Content-Type':'application/pdf'}});
+  try{
+   const bundle=await build({entryPoints:['src/analysis.js'],bundle:true,write:false,format:'esm',platform:'node',define:{'import.meta.env.VITE_CONVEX_URL':'"https://fictional.convex.cloud"'},loader:{'.css':'empty'},plugins:[{name:'cross-report-confirmation',setup(b){
+    b.onResolve({filter:/report-reader\.js$|report-viewer\.js$|smart-summary-client\.js$/},a=>({path:a.path,namespace:'cross-report'}));
+    b.onLoad({filter:/.*/,namespace:'cross-report'},a=>({contents:a.path.includes('report-viewer')?'export async function openReportViewer(){}':a.path.includes('smart-summary-client')?'export async function requestSmartSummary(){return {available:false};}':`let calls=0;export async function readLabReport(){calls++;return {date:calls===1?'2026-01-15':'2026-07-15',patientName:calls===1?'Alex Sample':'Alex Other',patientId:null,pageCount:1,usedPages:[1],warnings:[],unreadable:[],markers:[{key:'crp|mg/l',name:'CRP',value:3,unit:'mg/L',page:1,referenceText:'0-5'}]};}`}));
+   }}]});
+   const {mountAnalysis}=await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}#cross-${answer}`),root=document.querySelector('#summary');let visits=0;
+   const analysis=mountAnalysis(root,()=>{},{onAddReports:()=>visits++});const saved=[{id:'cross-a-'+answer,serial:1,name:'fictional-first.pdf',contentType:'application/pdf',size:100},{id:'cross-b-'+answer,serial:2,name:'fictional-second.pdf',contentType:'application/pdf',size:100}];analysis.updateReports(saved,saved.map(r=>r.id));
+   const pending=analysis.prepare();for(let n=0;n<100&&!root.querySelector('[data-report-set-answer]');n++)await new Promise(r=>setTimeout(r,5));
+   const question=root.querySelector('#report-set-confirmation');assert.equal(question.hidden,false);assert(question.textContent.startsWith('These reports show different names. Are they the same person?'));assert(!question.textContent.includes('Alex'));assert.equal(root.querySelector('#real-summary').textContent,'');
+   question.querySelector(`[data-report-set-answer="${answer}"]`).click();await pending;
+   assert.equal(visits,answer==='no'?1:0);assert.equal(root.querySelectorAll('.real-summary-paper').length,answer==='yes'?1:0);assert.equal(root.querySelectorAll('.analysis-selected-list>li').length,2,'No returns to selection without removing reports');assert.equal(question.hidden,true);
+   console.log(`CROSS-REPORT ${answer.toUpperCase()}: ${answer==='yes'?'summary finished for both original reports; set approval saved':'returned to selection; no summary generated; selection preserved'}; names absent from the question and saved answer.`);
+  }finally{dom.window.close();for(const k of keys){if(old[k]===undefined)delete globalThis[k];else globalThis[k]=old[k];}}
+ }
+});
