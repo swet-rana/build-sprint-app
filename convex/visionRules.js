@@ -6,12 +6,15 @@ export const VISION_SCHEMA={type:'object',additionalProperties:false,properties:
 export {visionDay} from '../src/vision-limits.js';
 import {SUMMARY_VISION_PAGES,DAILY_VISION_PAGES} from '../src/vision-limits.js';
 export function visionLimitError(pages,calls){return calls>=DAILY_VISION_PAGES?`Scan reading stopped: HealthStats has reached its app-wide daily limit of ${DAILY_VISION_PAGES} vision pages. Try again tomorrow.`:pages>=SUMMARY_VISION_PAGES?`Scan reading stopped: the limit is ${SUMMARY_VISION_PAGES} vision pages per summary preparation. Choose a smaller set of result pages.`:null;}
-export function validateScan(result){
+export function validateScan(result,page=1){
  if(!result||!['blood','semen','urine','stool','other'].includes(result.reportKind)||!Array.isArray(result.tests)||result.tests.length>300)throw Error('The scan reader returned an invalid result. Try again.');
  for(const field of ['patientName','reportDate'])if(result[field]!==null&&typeof result[field]!=='string')throw Error('The scan reader returned invalid report details.');
- return classifyScanPage({...result,tests:result.tests.map(row=>{
-  if(!row||typeof row.name!=='string'||!row.name.trim()||typeof row.readable!=='boolean'||!['value','unit','referenceRange'].every(f=>row[f]===null||typeof row[f]==='string'))throw Error('The scan reader returned an invalid test row.');
+ const tests=[],droppedRows=[];
+ for(const row of result.tests){
+  const check=!row?'row':typeof row.name!=='string'||!row.name.trim()?'test_name':typeof row.readable!=='boolean'?'readable_flag':['value','unit','referenceRange'].find(f=>row[f]!==null&&typeof row[f]!=='string');
+  if(check){droppedRows.push({page,check});continue;}
   // An unsure value is never carried into comparison, even if a model filled it in.
-  return {...row,value:row.readable?row.value:null,sourceTop:Number.isFinite(row.sourceTop)?Math.max(0,Math.min(1,row.sourceTop)):null};
- })});
+  tests.push({...row,value:row.readable?row.value:null,sourceTop:Number.isFinite(row.sourceTop)?Math.max(0,Math.min(1,row.sourceTop)):null});
+ }
+ return classifyScanPage({...result,tests,...(droppedRows.length?{droppedRows}:{})});
 }

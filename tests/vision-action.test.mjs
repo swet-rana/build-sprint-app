@@ -91,10 +91,32 @@ test('explicit retry renews an expired preparation without resetting its spent p
 test('own validation failures name the page, preserve the raw error, and never blame OpenAI',async()=>{
  const oldFetch=globalThis.fetch,oldKey=process.env.OPENAI_API_KEY;process.env.OPENAI_API_KEY='fictional-test-key';const blobs=[],records=[];
  const ctx={runMutation:async(_ref,args)=>{records.push(args);return 'fictional-run';},storage:{store:async blob=>{blobs.push(blob);return 'fictional-storage';}}};
- const reply={reportKind:'blood',specimen:'blood',patientName:'Fictional Patient',reportDate:'2026-07-15',tests:[{name:'',value:'13.2',unit:'g/dL',referenceRange:'12-16',readable:true,sourceTop:1.05}]};
+ const reply={reportKind:'blood',specimen:'blood',patientName:42,reportDate:'2026-07-15',tests:[{name:'',value:'13.2',unit:'g/dL',referenceRange:'12-16',readable:true,sourceTop:1.05}]};
  globalThis.fetch=async()=>Response.json({status:'completed',error:null,output:[{content:[{type:'output_text',text:JSON.stringify(reply)}]}]});
  try{
   await assert.rejects(read._handler(ctx,{sessionKey:'a'.repeat(64),readingId:'fake',reportId:'fake',page:2,image:'data:image/jpeg;base64,/9j/AA=='}),/We couldn't read some rows on page 2/);
-  const saved=JSON.parse(await blobs.at(-1).text());assert.equal(saved.error,'The scan reader returned an invalid test row.');assert.equal(saved.rawResponse.status,'completed');assert.equal(records.at(-1).error,saved.error);
+  const saved=JSON.parse(await blobs.at(-1).text());assert.equal(saved.error,'The scan reader returned invalid report details.');assert.equal(saved.rawResponse.status,'completed');assert.equal(records.at(-1).error,saved.error);
  }finally{globalThis.fetch=oldFetch;if(oldKey===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=oldKey;}
+});
+
+test('server keeps ten good rows, saves one safe dropped-row diagnostic, and completes successfully',async()=>{
+ const oldFetch=globalThis.fetch,oldKey=process.env.OPENAI_API_KEY;process.env.OPENAI_API_KEY='fictional-test-key';const blobs=[],records=[];
+ const ctx={runMutation:async(_ref,args)=>{records.push(args);return 'fictional-run';},storage:{store:async blob=>{blobs.push(blob);return 'fictional-storage';}}};
+ const row={name:'Haemoglobin',value:'13.2',unit:'g/dL',referenceRange:'12-16',readable:true,sourceTop:.4};
+ const reply={reportKind:'blood',specimen:'blood',patientName:'Fictional Patient',reportDate:'2026-07-15',tests:[...Array.from({length:10},()=>({...row})),{...row,unit:42}]};
+ globalThis.fetch=async()=>Response.json({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(reply)}]}]});
+ try{
+ const result=await read._handler(ctx,{sessionKey:'a'.repeat(64),readingId:'fake',reportId:'fake',page:2,image:'data:image/jpeg;base64,/9j/AA=='});
+ assert.equal(result.tests.length,10);assert.deepEqual(result.droppedRows,[{page:2,check:'unit'}]);
+ const saved=JSON.parse(await blobs.at(-1).text());assert.deepEqual(saved.result.droppedRows,result.droppedRows);assert.equal(records.at(-1).error,undefined);
+ assert(!JSON.stringify(saved.result.droppedRows).includes(row.name));
+ }finally{globalThis.fetch=oldFetch;if(oldKey===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=oldKey;}
+});
+
+test('an internal storage failure is not reported as an AI service failure',async()=>{
+ const oldKey=process.env.OPENAI_API_KEY,oldFetch=globalThis.fetch;process.env.OPENAI_API_KEY='fictional-test-key';let stores=0;
+ const ctx={runMutation:async()=> 'fictional-run',storage:{store:async()=>{if(++stores===1)throw Error('Fictional storage failure');return 'fictional-log';}}};
+ globalThis.fetch=async()=>assert.fail('OpenAI must not be called after storage failed');
+ try{await assert.rejects(read._handler(ctx,{sessionKey:'a'.repeat(64),readingId:'fake',reportId:'fake',page:2,image:'data:image/jpeg;base64,/9j/AA=='}),/The server could not finish this page/);}
+ finally{globalThis.fetch=oldFetch;if(oldKey===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=oldKey;}
 });

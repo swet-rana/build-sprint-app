@@ -8,7 +8,7 @@ import type {ActionCtx} from './_generated/server';
 import {isSessionKey,matchesFileType} from './fileRules.js';
 import {DAILY_VISION_PAGES} from '../src/vision-limits.js';
 import {VISION_MODEL,VISION_PROMPT,VISION_SCHEMA,validateScan,visionDay,visionLimitError} from './visionRules.js';
-export const scanValidator=v.object({reportKind:v.union(v.literal('blood'),v.literal('semen'),v.literal('urine'),v.literal('stool'),v.literal('other')),specimen:v.optional(v.union(v.literal('blood'),v.literal('semen'),v.literal('urine'),v.literal('stool'),v.literal('other'),v.literal('unknown'))),originalReportKind:v.optional(v.literal('other')),patientName:v.union(v.string(),v.null()),reportDate:v.union(v.string(),v.null()),tests:v.array(v.object({name:v.string(),value:v.union(v.string(),v.null()),unit:v.union(v.string(),v.null()),referenceRange:v.union(v.string(),v.null()),readable:v.boolean(),sourceTop:v.union(v.number(),v.null())}))});
+export const scanValidator=v.object({droppedRows:v.optional(v.array(v.object({page:v.number(),check:v.string()}))),reportKind:v.union(v.literal('blood'),v.literal('semen'),v.literal('urine'),v.literal('stool'),v.literal('other')),specimen:v.optional(v.union(v.literal('blood'),v.literal('semen'),v.literal('urine'),v.literal('stool'),v.literal('other'),v.literal('unknown'))),originalReportKind:v.optional(v.literal('other')),patientName:v.union(v.string(),v.null()),reportDate:v.union(v.string(),v.null()),tests:v.array(v.object({name:v.string(),value:v.union(v.string(),v.null()),unit:v.union(v.string(),v.null()),referenceRange:v.union(v.string(),v.null()),readable:v.boolean(),sourceTop:v.union(v.number(),v.null())}))});
 export const begin=mutation({args:{sessionKey:v.string(),reportIds:v.array(v.id('reports')),requestKey:v.optional(v.string()),retry:v.optional(v.boolean())},returns:v.id('visionReadings'),handler:async(ctx,{sessionKey,reportIds,requestKey,retry})=>{
  if(!isSessionKey(sessionKey)||!reportIds.length||reportIds.length>10)throw new ConvexError('Invalid scan reading request.');
  for(const id of reportIds){const r=await ctx.db.get('reports',id);if(!r||r.sessionKey!==sessionKey||r.deleted)throw new ConvexError('Report not found in this browser.');}
@@ -53,19 +53,19 @@ export async function readPage(ctx:ActionCtx,{sessionKey,readingId,reportId,page
  const bytes=Uint8Array.from(atob(image.split(',')[1]),c=>c.charCodeAt(0));if(!matchesFileType(bytes,'image/jpeg'))throw new ConvexError('Invalid scan image.');
  if(ocrDiagnostics&&(ocrDiagnostics.length>100000||!JSON.parse(ocrDiagnostics)))throw new ConvexError('Invalid OCR details.');
  const runId=await ctx.runMutation(internal.vision.reserve,{sessionKey,readingId,reportId,page,...(jobId?{jobId}:{})});
- let imageStorageId:Id<"_storage">|undefined,rawResponse:any,request:any,validationFailed=false;
+ let imageStorageId:Id<"_storage">|undefined,rawResponse:any,request:any,validationFailed=false,providerFailed=false;
  try{
   imageStorageId=await ctx.storage.store(new Blob([bytes],{type:'image/jpeg'}));
   request={model:VISION_MODEL,store:false,input:[{role:'user',content:[{type:'input_text',text:VISION_PROMPT},{type:'input_image',image_url:image,detail:'high'}]}],text:{format:{type:'json_schema',name:'medical_scan',strict:true,schema:VISION_SCHEMA}},max_output_tokens:10000};
-  const response=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:`Bearer ${process.env.OPENAI_API_KEY}`,'Content-Type':'application/json'},body:JSON.stringify(request),signal:AbortSignal.timeout(90000)});
-  rawResponse=await response.json();
+  let response;try{response=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:`Bearer ${process.env.OPENAI_API_KEY}`,'Content-Type':'application/json'},body:JSON.stringify(request),signal:AbortSignal.timeout(90000)});
+  rawResponse=await response.json();}catch(error){providerFailed=true;throw error;}
   if(!response.ok)throw Error(`Scan reading stopped: the AI service could not read this page (API ${response.status}). Try again later.`);
   if(rawResponse.status!=='completed')throw Error('Scan reading stopped: the AI service did not finish this page. Try again.');
   const text=rawResponse.output?.flatMap((item:any)=>item.content??[]).filter((part:any)=>part.type==='output_text').map((part:any)=>part.text).join('');
   if(!text)throw Error('Scan reading stopped: the AI service returned no readable results. Upload a clearer copy.');
-  let result;try{result=validateScan(JSON.parse(text));}catch(error){validationFailed=true;throw error;}
+  let result;try{result=validateScan(JSON.parse(text),page);}catch(error){validationFailed=true;throw error;}
   await save({result});return result;
- }catch(error){const message=error instanceof Error?error.message:'Unknown scan reading error';await save({error:message});throw new ConvexError(validationFailed?`We couldn't read some rows on page ${page}`:message.startsWith('Scan reading stopped:')?message:'Scan reading stopped: the AI service failed. Try again later.');}
+ }catch(error){const message=error instanceof Error?error.message:'Unknown scan reading error';await save({error:message});throw new ConvexError(validationFailed?`We couldn't read some rows on page ${page}`:message.startsWith('Scan reading stopped:')?message:providerFailed?'Scan reading stopped: the AI service failed. Try again later.':'The server could not finish this page. Try again.');}
  async function save(outcome:object){
   const loggedRequest=request?{...request,input:[{role:'user',content:[{type:'input_text',text:VISION_PROMPT},{type:'input_image',storageId:imageStorageId,detail:'high'}]}]}:null;
   const outputStorageId=await ctx.storage.store(new Blob([JSON.stringify(withoutPatientNames({imageCheck,page,imageStorageId: imageStorageId??null,ocrDiagnostics:ocrDiagnostics?JSON.parse(ocrDiagnostics):null,request:loggedRequest,rawResponse:rawResponse??null,...outcome}))],{type:'application/json'}));

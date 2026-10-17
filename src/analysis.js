@@ -73,7 +73,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
  const confirmIdentity=createIdentityConfirmation(root.querySelector('#identity-confirmation'),{storage:localStorage,scope:JSON.stringify([import.meta.env.VITE_CONVEX_URL,localStorage.getItem('health-history-upload-session')]),onRemove:id=>{removedForIdentity.add(id);onRemoveReport(id);}});
  const removedForIdentity=new Set();
  const confirmSelectedReports=createReportSetConfirmation(root.querySelector('#report-set-confirmation'),{storage:localStorage,scope:JSON.stringify([import.meta.env.VITE_CONVEX_URL,localStorage.getItem('health-history-upload-session')]),onChangeSelection:onAddReports});
- const thumbnails=new Map(),readingPaths=new Map(),scanCoverage=new Map(),scanFailureReasons=new Map();
+ const thumbnails=new Map(),readingPaths=new Map(),scanCoverage=new Map(),scanFailureReasons=new Map(),droppedScanRows=new Map();
  addReports.addEventListener('click',onAddReports);
  selectionList.addEventListener('click',event=>{const remove=event.target.closest('[data-summary-remove]');if(remove&&!busy)onRemoveReport(remove.dataset.summaryRemove);});
  function canPrepare(){return reportIds.length>=1&&reportIds.length<=MAX_ANALYSIS_REPORTS&&reportIds.every(id=>reports.some(r=>r.id===id));}
@@ -89,7 +89,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
  }
  function showCoverage(){
   const box=root.querySelector('#scan-page-coverage');box.hidden=!scanCoverage.size;
-  box.innerHTML=[...scanCoverage].map(([id,coverage])=>`<div><h3>${escape(reports.find(r=>r.id===id)?.name??'Report')}</h3><p class="page-coverage-summary">${escape(plainPageCoverage(coverage,scanFailureReasons.get(id)?.pages??[]))}</p>${scanFailureReasons.has(id)?`<p class="reading-stopped" role="alert">Reading stopped on page ${scanFailureReasons.get(id).page}: ${escape(scanFailureReasons.get(id).reason)}</p>`:''}<details><summary>See page details</summary><p>${coverage.read} scanned ${coverage.read===1?'page':'pages'} read · ${coverage.skipped.length} skipped · ${coverage.checked} of ${coverage.total} scan/fallback pages checked${coverage.pdfTotal?` · PDF total: ${coverage.pdfTotal} pages`:""}. ${coverage.vision} included from AI vision; ${coverage.ocr} from local OCR.</p>${coverage.pdfTotal?`<p class="pdf-page-total">${escape(pdfPageTotal(coverage))}</p>`:''}${pageExplanations(coverage).length?`<ul>${pageExplanations(coverage).map(p=>`<li>Page ${p.page}: ${escape(p.reason==='AI vision found no supported blood or semen result table.'?'AI vision found no supported test result table.':p.reason)}</li>`).join('')}</ul>`:''}</details></div>`).join('');
+  box.innerHTML=[...scanCoverage].map(([id,coverage])=>`<div><h3>${escape(reports.find(r=>r.id===id)?.name??'Report')}</h3><p class="page-coverage-summary">${escape(plainPageCoverage(coverage,scanFailureReasons.get(id)?.pages??[]))}</p>${scanFailureReasons.has(id)?`<p class="reading-stopped" role="alert">Reading stopped on page ${scanFailureReasons.get(id).page}: ${escape(scanFailureReasons.get(id).reason)}</p>`:''}${[...new Set((droppedScanRows.get(id)??[]).map(row=>row.page))].map(page=>`<p role="status">${(droppedScanRows.get(id)??[]).filter(row=>row.page===page).length} ${(droppedScanRows.get(id)??[]).filter(row=>row.page===page).length===1?'row':'rows'} on page ${page} couldn't be read</p>`).join('')}<details><summary>See page details</summary><p>${coverage.read} scanned ${coverage.read===1?'page':'pages'} read · ${coverage.skipped.length} skipped · ${coverage.checked} of ${coverage.total} scan/fallback pages checked${coverage.pdfTotal?` · PDF total: ${coverage.pdfTotal} pages`:""}. ${coverage.vision} included from AI vision; ${coverage.ocr} from local OCR.</p>${coverage.pdfTotal?`<p class="pdf-page-total">${escape(pdfPageTotal(coverage))}</p>`:''}${pageExplanations(coverage).length?`<ul>${pageExplanations(coverage).map(p=>`<li>Page ${p.page}: ${escape(p.reason==='AI vision found no supported blood or semen result table.'?'AI vision found no supported test result table.':p.reason)}</li>`).join('')}</ul>`:''}</details></div>`).join('');
  }
  function showPaths(){
   for(const item of selectionList.querySelectorAll('li')){
@@ -179,7 +179,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   const countError=analysisCountError(ids.length);if(countError){message(countError,true);return;}
   if(choices.some(r=>r?.duplicateOf&&ids.includes(reports.find(p=>p.serial===r.duplicateOf)?.id))){message('Untick duplicate reports before analyzing. Each report date should appear once.',true);return;}
   if(!canPrepare()||choices.some(r=>!r)||new Set(ids).size!==ids.length){message('Select at least one medical report in My reports.',true);return;}
-  failures=[];readingPaths.clear();scanCoverage.clear();scanFailureReasons.clear();showCoverage();showPaths();showFailures();busy=true;setBusyControls();button.textContent='Reading reports…';comparison=null;smartSummary=null;output.innerHTML='';onReady(false);
+  failures=[];readingPaths.clear();scanCoverage.clear();scanFailureReasons.clear();droppedScanRows.clear();showCoverage();showPaths();showFailures();busy=true;setBusyControls();button.textContent='Reading reports…';comparison=null;smartSummary=null;output.innerHTML='';onReady(false);
   const logger=evaluationLogger();
   const summaryRun=await logger.begin('summary',ids,'HealthStats comparison and summary renderer v1');
   try{
@@ -190,7 +190,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
      else if(explainPdfTextPages)try{coverage.textPages=await explainPdfTextPages(await fetchReport(file));}catch{ /* Explanation failure must not fail a saved reading. */ }
     }
    }
-   let parsed=[];const vision=visionReading(ids,{resume,retryFailed,onStatus:job=>{if(job.retryAt>Date.now())blockDailyUntil(job.retryAt);if(job.status==='failed'&&job.failureReason)scanFailureReasons.set(job.reportId,{page:job.page,reason:job.failureReason,pages:[...new Set([...(scanFailureReasons.get(job.reportId)?.pages??[]),job.page])]});readingPaths.set(job.reportId,`scan (AI vision) · page ${job.page}: ${job.status}`);showPaths();message(job.status==='failed'?VISION_FAILURE:`Scan page ${job.page}: ${job.status==='succeeded'?'finished':'reading on the server'}…`,job.status==='failed');}});
+   let parsed=[];const vision=visionReading(ids,{resume,retryFailed,onStatus:job=>{if(job.result?.droppedRows?.length){const previous=(droppedScanRows.get(job.reportId)??[]).filter(row=>row.page!==job.page);droppedScanRows.set(job.reportId,[...previous,...job.result.droppedRows]);showCoverage();}if(job.retryAt>Date.now())blockDailyUntil(job.retryAt);if(job.status==='failed'&&job.failureReason)scanFailureReasons.set(job.reportId,{page:job.page,reason:job.failureReason,pages:[...new Set([...(scanFailureReasons.get(job.reportId)?.pages??[]),job.page])]});readingPaths.set(job.reportId,`scan (AI vision) · page ${job.page}: ${job.status}`);showPaths();message(job.status==='failed'?VISION_FAILURE:`Scan page ${job.page}: ${job.status==='succeeded'?'finished':'reading on the server'}…`,job.status==='failed');}});
    for(let i=0;i<choices.length;i++){
     message(`Opening report ${i+1} of ${choices.length}…`);
     const file=choices[i];
@@ -202,6 +202,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
       return readLabReport(blob,(page,total,step)=>{message(`Reading report ${i+1} of ${choices.length}: page ${page} of ${total}${step?` · ${step}`:''}…`);if(step?.includes('path'))showPath(step);},file.contentType,{vision:vision?(canvas,page,diagnostics)=>vision(canvas,page,file,diagnostics):null,confirmIdentity:conflict=>{readingPaths.set(file.id,'paused · confirm report names');showPaths();message('This report is paused. Confirm whether its names belong to the same person.');return confirmIdentity(file,conflict);}});
      });
      showPath((report.readingPaths??['text']).join(' + '));
+     if(report.droppedRows?.length)droppedScanRows.set(file.id,report.droppedRows);
      if(report.scanCoverage){await includeTextPages(file,report.scanCoverage);scanCoverage.set(file.id,report.scanCoverage);showCoverage();}
      await logger.finish(readingRun,report);parsed.push({...report,id:file.id,fileName:file.name});
     }catch(error){
@@ -252,7 +253,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   reports=saved;
   const next=ids.filter(id=>reports.some(r=>r.id===id));
   if(JSON.stringify(next)!==JSON.stringify(reportIds)){
-   blockDailyUntil(0);reportIds=next;selectionVersion++;failures=[];readingPaths.clear();scanCoverage.clear();scanFailureReasons.clear();showCoverage();showFailures();comparison=null;smartSummary=null;output.innerHTML='';onReady(false);
+   blockDailyUntil(0);reportIds=next;selectionVersion++;failures=[];readingPaths.clear();scanCoverage.clear();scanFailureReasons.clear();droppedScanRows.clear();showCoverage();showFailures();comparison=null;smartSummary=null;output.innerHTML='';onReady(false);
    message('Report selection changed. Prepare the summary when ready.');
   }
   const choices=reportIds.map(id=>reports.find(r=>r.id===id));

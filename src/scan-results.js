@@ -34,6 +34,7 @@ export function mergeScanResults(scans,native,pageCount,identityPages=[],confirm
   if(scan.tests.some(row=>row.readable&&row.value!==null)&&!result.usedPages.includes(page))result.usedPages.push(page);
  }
  if(!result?.markers.length)throw Error('No readable, dated test results were found in the scan. Upload a clearer result page.');
+ result.droppedRows=[...(native?.droppedRows??[]),...scans.flatMap(({result:scan})=>scan.droppedRows??[])];
  result.date=identity.reportDate;result.patientName=identity.patientName;result.identitySources=identity.identitySources;result.warnings.push(...identity.warnings);
  result.excludedPages=Array.from({length:pageCount},(_,i)=>i+1).filter(n=>!result.usedPages.includes(n));
  const kinds=new Set(result.markers.map(m=>m.specimen??'blood'));

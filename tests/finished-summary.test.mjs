@@ -37,7 +37,7 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blu
    }
    if(kind==='vision'||kind==='scan-filter'){
     builder.onResolve({filter:/vision-client\.js$/},()=>({path:'fictional-vision-transport',namespace:'fictional-vision'}));
-    builder.onLoad({filter:/.*/,namespace:'fictional-vision'},()=>({contents:`export const visionRequests=[];let resuming=false;export const enableResume=()=>{resuming=true;};export const savedVisionReading=()=>resuming?{status:'reading'}:null;export const finishVisionReading=()=>{resuming=false;};export const VISION_FAILURE="We couldn't finish reading this report. Tap Try again.";export function visionReading(){return async(canvas,page)=>{visionRequests.push(page);return ({reportKind:'blood',patientName:'Sample Patient',reportDate:'2026-07-15',tests:[{name:'Haemoglobin',value:'13.2',unit:'g/dL',referenceRange:'12 - 16',readable:true,sourceTop:0.27},{name:'CRP',value:'3.0',unit:'mg/L',referenceRange:'0 - 5',readable:true,sourceTop:0.32},{name:'Vitamin D',value:'24',unit:'ng/mL',referenceRange:'30 - 100',readable:true,sourceTop:0.37},{name:'Unreadable fictional marker',value:'999',unit:'mg/L',referenceRange:null,readable:false,sourceTop:null}]});};}`}));
+    builder.onLoad({filter:/.*/,namespace:'fictional-vision'},()=>({contents:`export const visionRequests=[];let resuming=false;export const enableResume=()=>{resuming=true;};export const savedVisionReading=()=>resuming?{status:'reading'}:null;export const finishVisionReading=()=>{resuming=false;};export const VISION_FAILURE="We couldn't finish reading this report. Tap Try again.";export function visionReading(){return async(canvas,page)=>{visionRequests.push(page);return ({droppedRows:[{page,check:'unit'}],reportKind:'blood',patientName:'Sample Patient',reportDate:'2026-07-15',tests:[{name:'Haemoglobin',value:'13.2',unit:'g/dL',referenceRange:'12 - 16',readable:true,sourceTop:0.27},{name:'CRP',value:'3.0',unit:'mg/L',referenceRange:'0 - 5',readable:true,sourceTop:0.32},{name:'Vitamin D',value:'24',unit:'ng/mL',referenceRange:'30 - 100',readable:true,sourceTop:0.37},{name:'Unreadable fictional marker',value:'999',unit:'mg/L',referenceRange:null,readable:false,sourceTop:null}]});};}`}));
    }
 
    builder.onResolve({filter:/evaluation-log\.js$/},()=>({path:'captured-logging',namespace:'captured-logging'}));
@@ -68,6 +68,7 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blu
    assert(root.querySelector('.real-summary-paper'),'Reopening must resume and show the finished summary without pressing Prepare summary');
    console.log('RESUME PROOF: the saved reading automatically restored a finished summary without pressing Prepare summary.');
   }else await analysis.prepare();
+  if(kind==='vision'||kind==='scan-filter'){const notice=root.querySelector('#scan-page-coverage');assert.match(notice.textContent,/1 row on page \d+ couldn't be read/);assert(!notice.hidden);assert(root.querySelector('.real-summary-paper'));}
   if(expected.mode==='reject'||expected.mode==='partial'){
    assert.deepEqual(downloads,['july','january'],'A failed file must not prevent the other download');
    const readings=capturedEvaluations.filter(run=>run.kind==='report-reading');assert.equal(readings.length,2);

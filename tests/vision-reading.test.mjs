@@ -72,5 +72,12 @@ test('scan rows clamp position hints without changing medical fields or mutating
  }
 });
 test('position normalization does not relax any other row validation',()=>{
- for(const change of [{name:''},{name:3},{readable:'yes'},{value:2},{unit:5},{referenceRange:10}])assert.throws(()=>validateScan({...scan,tests:[{...scan.tests[0],sourceTop:1.05,...change}]}),/invalid test row/);
+ for(const [change,check] of [[{name:''},'test_name'],[{name:3},'test_name'],[{readable:'yes'},'readable_flag'],[{value:2},'value'],[{unit:5},'unit'],[{referenceRange:10},'referenceRange']]){const result=validateScan({...scan,tests:[{...scan.tests[0],sourceTop:1.05,...change}]},2);assert.equal(result.tests.length,0);assert.deepEqual(result.droppedRows,[{page:2,check}]);}
 });
+
+ test('ten valid rows survive one invalid row, with only page and failed check recorded',()=>{
+ const good=Array.from({length:10},()=>({...scan.tests[0]}));
+ const result=validateScan({...scan,tests:[...good,{...scan.tests[0],unit:42}]},2);
+ assert.equal(result.tests.length,10);assert.deepEqual(result.tests,good);assert.deepEqual(result.droppedRows,[{page:2,check:'unit'}]);
+ const merged=mergeScanResults([{page:2,result}],null,2);assert.deepEqual(merged.droppedRows,result.droppedRows);assert.equal(merged.markers.length,1);
+ });
