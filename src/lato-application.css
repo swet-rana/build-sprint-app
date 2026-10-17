@@ -90,3 +90,7 @@
 /* Bold report type/title; filenames remain supporting details. */
 #app #uploads-view.premium-reports #reports-list .premium-report-card .report-details h2{font-family:Lato,Arial,sans-serif!important;font-weight:700!important}
 #app #uploads-view.premium-reports #reports-list .premium-report-card .report-filename{font-family:Lato,Arial,sans-serif!important;font-weight:400!important;font-size:var(--report-detail-size)!important}
+
+/* Summary preparation titles, filenames and primary action. */
+#app #summary-view :is(#selected-analysis-title,#preparation-title,.selected-report-details strong,#prepare-summary){font-family:'Lato Medium',Lato,Arial,sans-serif!important;font-weight:500!important;font-size:20px!important;line-height:1.5!important}
+@media(max-width:760px){#app #summary-view :is(#selected-analysis-title,#preparation-title,.selected-report-details strong,#prepare-summary){font-size:18px!important}}
