@@ -66,3 +66,12 @@
 @media(max-width:360px){
  #app:has(#summary-view:not([hidden])) .summary-title-with-art .health-page-heading-art{height:112px!important}
 }
+
+/* Reports search, category filters and sorting share the action typography. */
+#app #uploads-view :is(#search-reports,.report-filters button,.report-sort,#sort-reports,#sort-reports option){font-family:'Lato Medium',Lato,Arial,sans-serif!important;font-weight:500!important;font-size:20px!important;line-height:1.5!important}
+#app #uploads-view .report-sort{flex-wrap:wrap}
+#app #uploads-view #sort-reports{min-width:0;max-width:100%}
+@media(max-width:760px){
+ #app #uploads-view :is(#search-reports,.report-filters button,.report-sort,#sort-reports,#sort-reports option){font-size:18px!important}
+ #app #uploads-view .report-sort{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px}
+}
