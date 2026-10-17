@@ -4,6 +4,9 @@ import {formatTestName} from '../src/format-test-name.js';
 const cases=[
  ['BLOOD GLUCOSE-POST PRANDIAL','Blood glucose post prandial'],
  ['Fasting glucose','Fasting glucose'],
+ ['amh','AMH'],['fsh','FSH'],['lh','LH'],['e2','E2'],['dhea-s','DHEA-S'],['hcg','HCG'],
+ ['SERUM DHEA-S','Serum DHEA-S'],['DHEA-S LEVEL','DHEA-S level'],
+ ['amh fsh lh e2 dhea-s hcg','AMH FSH LH E2 DHEA-S HCG'],
  ['T4-FREE','T4 free'],['T3-T4','T3 T4'],['FRACTION 3-5 (mg/dL)','Fraction 3-5 (mg/dL)'],
  ['  tOtAl   BiLiRuBiN  ','Total bilirubin'],
  ['C-REACTIVE PROTEIN','C reactive protein'],
