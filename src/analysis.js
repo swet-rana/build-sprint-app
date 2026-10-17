@@ -1,3 +1,4 @@
+import {showReportReadingPath} from './reading-path-view.js';
 import {createIdentityConfirmation} from './identity-confirmation.js';
 import {requestSmartSummary} from './smart-summary-client.js';
 import {smartSummaryMarkup} from './smart-summary-view.js';
@@ -88,10 +89,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
  function showPaths(){
   for(const item of selectionList.querySelectorAll('li')){
    const id=item.querySelector('[data-summary-remove]')?.dataset.summaryRemove,text=readingPaths.get(id);
-   let label=item.querySelector('.reading-path');
-   if(!text){label?.remove();continue;}
-   if(!label){label=document.createElement('p');label.className='reading-path';item.querySelector('.selected-report-details').append(label);}
-   label.textContent=`Reading path: ${text}`;
+   showReportReadingPath(item,text);
   }
  }
  function showFailures(){

@@ -124,8 +124,8 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blu
    assert.equal(unreadable.dataset.sourceTop,'');
    assert.equal(paper.textContent.includes('999'),false,'An unsure scan value must never be included');
    assert.equal(root.querySelectorAll('.reading-path').length,2);
-   assert([...root.querySelectorAll('.reading-path')].some(p=>p.textContent.includes('AI vision')));
-   assert([...root.querySelectorAll('.reading-path')].some(p=>p.textContent.includes('text')));
+   assert([...root.querySelectorAll('[data-reading-path-detail]')].some(p=>p.textContent.includes('AI vision')));
+   assert([...root.querySelectorAll('[data-reading-path-detail]')].some(p=>p.textContent.includes('Reading path: text')));
    assert.equal(captured.output.comparison.later.markers.every(m=>m.readPath==='vision'),true);
    if(kind==='scan-filter'){
     assert.deepEqual(visionRequests,[27],'The first 26 OCR-screened covers/images must never reach AI vision');
@@ -139,8 +139,8 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blu
 
    analysis.updateReports(['july','january'].map((id,i)=>({id,serial:i+1,name:`updated-${id}.pdf`,contentType:'application/pdf',size:files[id==='january'?0:1].length,details:{labName:'Updated details',testDate:'',patientName:'',testType:''}})),['july','january']);
    assert.equal(root.querySelectorAll('.reading-path').length,2,'Reading paths survive a report-details refresh');
-   assert([...root.querySelectorAll('.reading-path')].some(p=>p.textContent.includes('AI vision')));
-   assert([...root.querySelectorAll('.reading-path')].some(p=>p.textContent.includes('text')));
+   assert([...root.querySelectorAll('[data-reading-path-detail]')].some(p=>p.textContent.includes('AI vision')));
+   assert([...root.querySelectorAll('[data-reading-path-detail]')].some(p=>p.textContent.includes('Reading path: text')));
 
   }
   if(kind==='fertility'){
