@@ -8,3 +8,9 @@ export function pdfPageTotal(coverage){
  const text=coverage.pdfTotal-coverage.total,skipped=coverage.skipped.length,unfinished=Math.max(0,coverage.total-coverage.read-skipped);
  return `PDF total: ${coverage.pdfTotal} pages = ${text} read as text + ${coverage.read} scan/fallback ${coverage.read===1?'page':'pages'} read + ${skipped} skipped${unfinished?` + ${unfinished} scan/fallback pages not finished`:''}.`;
 }
+export function plainPageCoverage(coverage,failedPages=[]){
+ const text=Math.max(0,(coverage.pdfTotal??coverage.total)-coverage.total);
+ const checked=text+(coverage.checked??coverage.total),found=text+coverage.read,skipped=coverage.skipped.length;
+ const failed=new Set(failedPages.filter(Number.isInteger)).size;
+ return `${checked} ${checked===1?'page':'pages'} checked · test results found on ${found} · ${skipped} had no test results${failed?` · ${failed} ${failed===1?'page':'pages'} couldn't be read, try uploading again`:''}`;
+}

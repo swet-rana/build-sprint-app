@@ -137,7 +137,7 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blu
     assert.equal(coverage.checked,27);assert.equal(coverage.read,1);assert.equal(coverage.vision,1);assert.equal(coverage.skipped.length,26);
     assert.deepEqual(coverage.skipped.map(p=>p.page),Array.from({length:26},(_,i)=>i+1));
     assert(coverage.skipped.every(p=>p.reason.includes('no test-like')));
-    assert(root.querySelector('#scan-page-coverage').textContent.includes('1 scanned page read · 26 skipped · 27 of 27 scan/fallback pages checked · PDF total: 27 pages'));
+    assert(root.querySelector('#scan-page-coverage details').textContent.includes('1 scanned page read · 26 skipped · 27 of 27 scan/fallback pages checked · PDF total: 27 pages'));assert.equal(root.querySelector('.page-coverage-summary').textContent,'27 pages checked · test results found on 1 · 26 had no test results');assert.equal(root.querySelector('#scan-page-coverage details').open,false);
     assert(root.querySelector('#scan-page-coverage').textContent.includes('Page 26:'));
    }
 

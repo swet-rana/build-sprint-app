@@ -6,7 +6,7 @@ import {createIdentityConfirmation} from './identity-confirmation.js';
 import {requestSmartSummary} from './smart-summary-client.js';
 import {smartSummaryMarkup} from './smart-summary-view.js';
 import './smart-summary.css';
-import {pdfPageTotal,pageExplanations} from './page-coverage.js';
+import {pdfPageTotal,pageExplanations,plainPageCoverage} from './page-coverage.js';
 import {dailyVisionMessage,isDailyVisionLimit,nextVisionReset} from './vision-limits.js';
 import {CATEGORY_ART,categoryIllustration} from './category-art.js';
 import {reportCache} from './report-cache.js';
@@ -89,7 +89,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
  }
  function showCoverage(){
   const box=root.querySelector('#scan-page-coverage');box.hidden=!scanCoverage.size;
-  box.innerHTML=[...scanCoverage].map(([id,coverage])=>`<div><h3>${escape(reports.find(r=>r.id===id)?.name??'Scanned report')}</h3><p>${coverage.read} scanned ${coverage.read===1?'page':'pages'} read · ${coverage.skipped.length} skipped · ${coverage.checked} of ${coverage.total} scan/fallback pages checked${coverage.pdfTotal?` · PDF total: ${coverage.pdfTotal} pages`:""}. ${coverage.vision} included from AI vision; ${coverage.ocr} from local OCR.</p>${coverage.pdfTotal?`<p class="pdf-page-total">${escape(pdfPageTotal(coverage))}</p>`:''}${scanFailureReasons.has(id)?`<p class="reading-stopped" role="alert">Reading stopped on page ${scanFailureReasons.get(id).page}: ${escape(scanFailureReasons.get(id).reason)}</p>`:''}${pageExplanations(coverage).length?`<details><summary>Why pages were skipped</summary><ul>${pageExplanations(coverage).map(p=>`<li>Page ${p.page}: ${escape(p.reason==='AI vision found no supported blood or semen result table.'?'AI vision found no supported test result table.':p.reason)}</li>`).join('')}</ul></details>`:''}</div>`).join('');
+  box.innerHTML=[...scanCoverage].map(([id,coverage])=>`<div><h3>${escape(reports.find(r=>r.id===id)?.name??'Report')}</h3><p class="page-coverage-summary">${escape(plainPageCoverage(coverage,scanFailureReasons.get(id)?.pages??[]))}</p>${scanFailureReasons.has(id)?`<p class="reading-stopped" role="alert">Reading stopped on page ${scanFailureReasons.get(id).page}: ${escape(scanFailureReasons.get(id).reason)}</p>`:''}<details><summary>See page details</summary><p>${coverage.read} scanned ${coverage.read===1?'page':'pages'} read · ${coverage.skipped.length} skipped · ${coverage.checked} of ${coverage.total} scan/fallback pages checked${coverage.pdfTotal?` · PDF total: ${coverage.pdfTotal} pages`:""}. ${coverage.vision} included from AI vision; ${coverage.ocr} from local OCR.</p>${coverage.pdfTotal?`<p class="pdf-page-total">${escape(pdfPageTotal(coverage))}</p>`:''}${pageExplanations(coverage).length?`<ul>${pageExplanations(coverage).map(p=>`<li>Page ${p.page}: ${escape(p.reason==='AI vision found no supported blood or semen result table.'?'AI vision found no supported test result table.':p.reason)}</li>`).join('')}</ul>`:''}</details></div>`).join('');
  }
  function showPaths(){
   for(const item of selectionList.querySelectorAll('li')){
@@ -190,7 +190,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
      else if(explainPdfTextPages)try{coverage.textPages=await explainPdfTextPages(await fetchReport(file));}catch{ /* Explanation failure must not fail a saved reading. */ }
     }
    }
-   let parsed=[];const vision=visionReading(ids,{resume,retryFailed,onStatus:job=>{if(job.retryAt>Date.now())blockDailyUntil(job.retryAt);if(job.status==='failed'&&job.failureReason)scanFailureReasons.set(job.reportId,{page:job.page,reason:job.failureReason});readingPaths.set(job.reportId,`scan (AI vision) · page ${job.page}: ${job.status}`);showPaths();message(job.status==='failed'?VISION_FAILURE:`Scan page ${job.page}: ${job.status==='succeeded'?'finished':'reading on the server'}…`,job.status==='failed');}});
+   let parsed=[];const vision=visionReading(ids,{resume,retryFailed,onStatus:job=>{if(job.retryAt>Date.now())blockDailyUntil(job.retryAt);if(job.status==='failed'&&job.failureReason)scanFailureReasons.set(job.reportId,{page:job.page,reason:job.failureReason,pages:[...new Set([...(scanFailureReasons.get(job.reportId)?.pages??[]),job.page])]});readingPaths.set(job.reportId,`scan (AI vision) · page ${job.page}: ${job.status}`);showPaths();message(job.status==='failed'?VISION_FAILURE:`Scan page ${job.page}: ${job.status==='succeeded'?'finished':'reading on the server'}…`,job.status==='failed');}});
    for(let i=0;i<choices.length;i++){
     message(`Opening report ${i+1} of ${choices.length}…`);
     const file=choices[i];
@@ -206,7 +206,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
      await logger.finish(readingRun,report);parsed.push({...report,id:file.id,fileName:file.name});
     }catch(error){
      if(error.message.includes(VISION_FAILURE)){error.message=VISION_FAILURE;error.code='VISION_STOP';}
-     if(error.pageCoverage){await includeTextPages(file,error.pageCoverage);scanCoverage.set(file.id,error.pageCoverage);showCoverage();}
+     if(error.pageCoverage){const failedPage=error.message.match(/^Page (\d+):/i);if(failedPage&&!scanFailureReasons.has(file.id))scanFailureReasons.set(file.id,{page:Number(failedPage[1]),reason:error.message.replace(/^Page \d+:\s*/i,''),pages:[Number(failedPage[1])]});await includeTextPages(file,error.pageCoverage);scanCoverage.set(file.id,error.pageCoverage);showCoverage();}
      await logger.finish(readingRun,null,error);
      const reason=dailyRetryAt>Date.now()?dailyVisionMessage(dailyRetryAt):error.name==='TimeoutError'?'The file took too long to download. Try again.':error.message==='Failed to fetch'?'Could not download the file. Check your connection and try again.':error.message.includes('confidently')?'The scan is too unclear to read safely. Upload a clearer copy.':error.message.includes('No supported dated')?'Could not find a readable, dated test results table.':error.message;
      failures.push({reportId:file.id,fileName:file.name,error:error.message,message:`Report #${file.serial} (${file.name}) could not be read: ${reason}`});showFailures();
