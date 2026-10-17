@@ -25,6 +25,8 @@ test('Summary preserves selected originals, waits for a click and offers retry a
   assert.equal(downloads.length,0,'Entering Summary must not read PDF reports automatically');
   assert.equal(root.querySelector('#real-summary').textContent,'');
   assert.equal(root.querySelector('#analysis-selection-count').textContent,'2 of 10 reports selected');
+  assert.equal(root.querySelector('.preparation-date-note').hidden,false);
+  assert.equal(root.querySelector('.preparation-date-note p').textContent,'Add missing test dates so trends line up on a proper timeline.');
   assert(root.querySelector('.selected-report-details').textContent.includes('15 Jan 2026'),'Use the recorded date, not a date in the filename');
   assert(root.querySelectorAll('.selected-report-details')[1].textContent.includes('Date not added'));
   root.querySelector('#add-analysis-reports').click();assert.equal(visits,1);
@@ -38,6 +40,7 @@ test('Summary preserves selected originals, waits for a click and offers retry a
   analysis.updateReports(saved,['january']);
   assert.equal(root.querySelector('#prepare-summary').disabled,false);
   assert.equal(root.querySelector('#analysis-selection-count').textContent,'1 of 10 reports selected');
+  assert.equal(root.querySelector('.preparation-date-note').hidden,true);
  }finally{dom.window.close();for(const key of globals){if(previous[key]===undefined)delete globalThis[key];else globalThis[key]=previous[key];}}
 });
 

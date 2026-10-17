@@ -1,0 +1,27 @@
+/* PrepareSummaryDesign reference: keep all presentation scoped to this panel. */
+#app #summary-view #analysis-form #summary-preparation-panel{
+ position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;align-self:start;
+ padding:28px 27px 25px;border:1px solid #30248d;border-radius:24px;
+ background:radial-gradient(ellipse at 100% 0%,#5143bd 0%,#302393 32%,transparent 62%),linear-gradient(155deg,#251491 0%,#1c1376 55%,#22205e 100%);
+ box-shadow:0 24px 40px -16px rgb(39 25 111 / 36%);color:#fff;
+}
+#app #summary-view #analysis-form #summary-preparation-panel::before{content:"";position:absolute;z-index:-1;width:238px;height:238px;right:-99px;top:-99px;border:1px solid rgb(255 255 255 / 4%);border-radius:50%;pointer-events:none}
+#app #summary-view #analysis-form #summary-preparation-panel .preparation-badge{display:inline-flex;align-self:flex-start;align-items:center;gap:7px;min-height:24px;padding:3px 11px;margin:0 0 20px;border:1px solid rgb(255 255 255 / 12%);border-radius:999px;background:rgb(188 176 255 / 16%);color:#ece9ff;font-family:Inter,Arial,sans-serif!important;font-size:10px!important;font-weight:600!important;line-height:16px!important;letter-spacing:.02em}
+#app #summary-view #analysis-form #summary-preparation-panel .preparation-badge svg{width:10px;height:10px;flex-shrink:0}
+#app #summary-view #analysis-form #summary-preparation-panel #preparation-title{display:block;max-width:none;margin:0 0 20px;color:#fff;font-family:'Plus Jakarta Sans',Arial,sans-serif!important;font-size:26px!important;font-weight:800!important;line-height:1.12!important;letter-spacing:-.035em!important;overflow:visible;text-wrap:initial}
+#app #summary-view #analysis-form #summary-preparation-panel .analysis-guide{display:grid;gap:10px;margin:0 0 24px;padding:0;list-style:none}
+#app #summary-view #analysis-form #summary-preparation-panel .analysis-guide li{display:flex;align-items:flex-start;gap:10px;color:#f1efff;font-family:Inter,Arial,sans-serif!important;font-size:14px!important;font-weight:400!important;line-height:19px!important}
+#app #summary-view #analysis-form #summary-preparation-panel .analysis-guide span{font-family:Inter,Arial,sans-serif!important;font-size:14px!important;font-weight:400!important;line-height:19px!important}
+#app #summary-view #analysis-form #summary-preparation-panel .analysis-guide svg{width:21px;height:21px;flex-shrink:0;margin:0;padding:5px;border:1px solid rgb(255 255 255 / 4%);border-radius:7px;background:linear-gradient(135deg,#354b84,#333475);color:#a4ddcb;stroke:#a4ddcb;stroke-width:2}
+#app #summary-view #analysis-form #summary-preparation-panel .preparation-date-note{display:flex;align-items:flex-start;gap:10px;margin:0 0 20px;padding:12px 14px;border:1px solid rgb(192 177 255 / 13%);border-radius:14px;background:rgb(141 118 226 / 14%)}
+#app #summary-view #analysis-form #summary-preparation-panel .preparation-date-note[hidden]{display:none}
+#app #summary-view #analysis-form #summary-preparation-panel .preparation-date-note svg{width:14px;height:14px;flex-shrink:0;margin-top:2px;color:#f6d071;stroke-width:1.8}
+#app #summary-view #analysis-form #summary-preparation-panel .preparation-date-note p{margin:0;color:#eeeaff;font-family:Inter,Arial,sans-serif!important;font-size:12px!important;font-weight:400!important;line-height:18px!important}
+#app #summary-view #analysis-form #summary-preparation-panel #prepare-summary{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:50px;margin-top:auto;padding:13px 14px;border:1px solid #e3dcff;border-radius:14px;background:linear-gradient(180deg,#fff 0%,#f0edff 100%);box-shadow:0 6px 12px rgb(7 0 58 / 12%);color:#130664;font-family:Inter,Arial,sans-serif!important;font-size:14px!important;font-weight:700!important;line-height:22px!important;transition:transform .2s,box-shadow .2s}
+#app #summary-view #analysis-form #summary-preparation-panel #prepare-summary span{font-family:Inter,Arial,sans-serif!important;font-size:17px!important;font-weight:400!important;line-height:22px!important}
+#app #summary-view #analysis-form #summary-preparation-panel #prepare-summary:hover:not(:disabled){background:#fff;transform:translateY(-1px);box-shadow:0 8px 16px rgb(7 0 58 / 20%)}
+#app #summary-view #analysis-form #summary-preparation-panel #prepare-summary:disabled{background:#dcd6f0;color:#5a527b;border-color:#dcd6f0;box-shadow:none;opacity:.75}
+#app #summary-view #analysis-form #summary-preparation-panel .preparation-help{margin:10px 0 0;text-align:center;color:#d0c9f0;font-family:Inter,Arial,sans-serif!important;font-size:11px!important;font-weight:400!important;line-height:16px!important}
+#app #summary-view #analysis-form #summary-preparation-panel :focus-visible{outline-color:#f6d071;outline-offset:4px}
+@media(max-width:340px){#app #summary-view #analysis-form #summary-preparation-panel{padding-inline:22px}#app #summary-view #analysis-form #summary-preparation-panel #preparation-title{font-size:24px!important}}
+@media(prefers-reduced-motion:reduce){#app #summary-view #analysis-form #summary-preparation-panel #prepare-summary{transition:none}}
