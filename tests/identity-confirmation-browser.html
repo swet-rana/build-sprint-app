@@ -1,0 +1,15 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fictional report-name confirmation</title><link rel="stylesheet" href="/typography.css"><style>body{font-family:Lato,Arial,sans-serif;color:#17145c;background:#f8f7ff;margin:24px;max-width:860px}button{font:500 18px Lato,Arial;padding:12px 18px;min-height:44px;border-radius:14px;border:1px solid #493dbb;color:#17145c;background:white}.primary{background:#100078;color:white}.identity-confirmation{padding:20px;border:1px solid #e7e3fa;border-radius:16px;background:white;margin:20px 0}.identity-confirmation-actions{display:flex;gap:12px;flex-wrap:wrap}p{font-size:16px;line-height:1.5}pre{white-space:pre-wrap}</style></head><body><h1>Fictional report-name check</h1><button id="one">Read one-letter variant</button> <button id="different">Read different surname</button><section id="confirmation" class="identity-confirmation" hidden></section><pre id="receipt" role="status"></pre><script type="module">
+import {guardTestTarget} from './test-target.js';guardTestTarget(location.origin,{script:'identity-confirmation-browser.html',devOnly:true});
+import {confirmReportIdentity,createIdentityConfirmation} from '/src/identity-confirmation.js';
+import {mergeScanResults} from '/src/scan-results.js';
+const receipt=document.querySelector('#receipt'),box=document.querySelector('#confirmation');let run=0;
+async function read(different){
+ const file={id:'fictional-'+(++run)},sources=[{page:1,patientName:'Alex Sample',reportDate:'2026-07-15'},{page:7,patientName:different?'Alex Other':'Alec Sample',reportDate:null}];
+ const ask=createIdentityConfirmation(box,{storage:sessionStorage,scope:'fictional-dev',onRemove:()=>{receipt.textContent='Report removed from selection. Upload a separate file for each person.';}});
+ try{receipt.textContent='Reading fictional report…';const identity=await confirmReportIdentity(sources,c=>ask(file,c));
+ const scans=sources.map((s,i)=>({page:s.page,result:{reportKind:'blood',patientName:s.patientName,reportDate:s.reportDate,tests:[{name:i?'CRP':'Haemoglobin',value:i?'3':'13',unit:i?'mg/L':'g/dL',referenceRange:i?'0-5':'12-16',readable:true,sourceTop:.4}]}}));
+ const result=mergeScanResults(scans,null,7,[],identity);receipt.textContent=`Reading succeeded: ${result.usedPages.length} result pages retained; ${result.markers.length} tests. No additional AI calls.`;
+ }catch(e){receipt.textContent=e.message;}
+}
+document.querySelector('#one').onclick=()=>read(false);document.querySelector('#different').onclick=()=>read(true);
+</script></body></html>

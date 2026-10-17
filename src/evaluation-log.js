@@ -1,3 +1,4 @@
+import {withoutPatientNames} from './private-log.js';
 import {ConvexHttpClient} from 'convex/browser';
 import {api} from '../convex/_generated/api';
 import {memoryRetryStore,browserRetryStore} from './evaluation-retry-store.js';
@@ -25,7 +26,7 @@ export function createEvaluationLogger(client,sessionKey,onFailure=error=>consol
  function save(job){const pending=saving.then(async()=>{if(running)await running;await store.put(job);await flush();});saving=pending.catch(onFailure);return pending;}
  return {
   async begin(kind,reportIds,engine){const id=makeId();await save({id,sessionKey,kind,reportIds,engine});return id;},
-  async finish(id,output,error){if(!id)return;if(running)await running;const job=await store.get(id);if(!job)return;job.result=error?{error:String(error.message||error),...((error.diagnostics||error.pageCoverage)?{outputJson:JSON.stringify({... (error.diagnostics?{diagnostics:error.diagnostics}:{}),...(error.pageCoverage?{pageCoverage:error.pageCoverage}:{})})}:{})}:{outputJson:JSON.stringify(output)};await save(job);},
+  async finish(id,output,error){if(!id)return;if(running)await running;const job=await store.get(id);if(!job)return;job.result=error?{error:String(error.message||error),...((error.diagnostics||error.pageCoverage)?{outputJson:JSON.stringify({... (error.diagnostics?{diagnostics:error.diagnostics}:{}),...(error.pageCoverage?{pageCoverage:error.pageCoverage}:{})})}:{})}:{outputJson:JSON.stringify(withoutPatientNames(output))};await save(job);},
   flush,dispose(){closed=true;if(timer)cancel(timer);},
  };
 }

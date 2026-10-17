@@ -1,3 +1,4 @@
+import {withoutPatientNames} from '../src/private-log.js';
 import {v,ConvexError} from 'convex/values';
 import {getAuthUserId} from '@convex-dev/auth/server';
 import {action,mutation,internalMutation} from './_generated/server';
@@ -67,7 +68,7 @@ export async function readPage(ctx:ActionCtx,{sessionKey,readingId,reportId,page
  }catch(error){const message=error instanceof Error?error.message:'Unknown scan reading error';await save({error:message});throw new ConvexError(message.startsWith('Scan reading stopped:')?message:'Scan reading stopped: the AI service failed. Try again later.');}
  async function save(outcome:object){
   const loggedRequest=request?{...request,input:[{role:'user',content:[{type:'input_text',text:VISION_PROMPT},{type:'input_image',storageId:imageStorageId,detail:'high'}]}]}:null;
-  const outputStorageId=await ctx.storage.store(new Blob([JSON.stringify({imageCheck,page,imageStorageId: imageStorageId??null,ocrDiagnostics:ocrDiagnostics?JSON.parse(ocrDiagnostics):null,request:loggedRequest,rawResponse:rawResponse??null,...outcome})],{type:'application/json'}));
+  const outputStorageId=await ctx.storage.store(new Blob([JSON.stringify(withoutPatientNames({imageCheck,page,imageStorageId: imageStorageId??null,ocrDiagnostics:ocrDiagnostics?JSON.parse(ocrDiagnostics):null,request:loggedRequest,rawResponse:rawResponse??null,...outcome}))],{type:'application/json'}));
   await ctx.runMutation(internal.evaluations.complete,{sessionKey,runId,outputStorageId,...('error' in outcome?{error:String(outcome.error)}:{})});
  }
 }

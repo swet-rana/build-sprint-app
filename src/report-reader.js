@@ -1,5 +1,6 @@
+import {confirmReportIdentity} from './identity-confirmation.js';
 import {visionPageQueue} from './vision-page-queue.js';
-import {identityFromItems,resolveReportIdentity} from './report-identity.js';
+import {identityFromItems} from './report-identity.js';
 import {textPageNeedsVision} from './text-page-fallback.js';
 import {classifyScanPage} from './blood-page-classification.js';
 import './pdf-stream-compat.js';
@@ -46,7 +47,8 @@ export async function readLabReport(blob,onProgress=()=>{},contentType=blob.type
    onProgress(1,1,'Scan path · AI vision');
    const scan=classifyScanPage(await options.vision(canvas,1,error.diagnostics));
    if(scan.reportKind==='other')skipPage(coverage,1,'AI vision found no supported blood or semen result table.');
-   const result=mergeScanResults([{page:1,result:scan}],null,1);finishCoverage(coverage,result,[1],[{page:1}]);result.ocrDiagnostics=error.diagnostics?[error.diagnostics]:[];return result;
+   const identity=await confirmReportIdentity([{page:1,patientName:scan.patientName,reportDate:scan.reportDate}],options.confirmIdentity);
+   const result=mergeScanResults([{page:1,result:scan}],null,1,[],identity);finishCoverage(coverage,result,[1],[{page:1}]);result.ocrDiagnostics=error.diagnostics?[error.diagnostics]:[];return result;
   }finally{canvas.width=canvas.height=0;}
  }catch(error){error.pageCoverage=coverage;throw error;}finally{await reader.close();}
 }
@@ -111,11 +113,12 @@ export async function readLabPdf(blob,onProgress=()=>{},options={}){
   await visionQueue.finish();
   visionPages.sort((a,b)=>a.page-b.page);coverage.skipped.sort((a,b)=>a.page-b.page);
   let native,identityForPages,reportIdentity;
-  if(scanned.length){reportIdentity=resolveReportIdentity([...reportIdentities,...visionPages.map(({page,result})=>({page,patientName:result.patientName,reportDate:result.reportDate}))]);identityForPages=new Map(scanned.map(n=>[n,reportIdentity]));}
+  if(scanned.length){reportIdentity=await confirmReportIdentity([...reportIdentities,...visionPages.map(({page,result})=>({page,patientName:result.patientName,reportDate:result.reportDate}))],options.confirmIdentity);identityForPages=new Map(pages.map(p=>[p.page,scanned.includes(p.page)?reportIdentity:{patientName:reportIdentity.patientName}]));}
   try{native=parseReport(pages,{identityForPages});}catch(error){if(!visionPages.length||!error.message.startsWith('No supported dated'))throw error;}
   if(native&&reportIdentity){native.identitySources=reportIdentity.identitySources;native.warnings.push(...reportIdentity.warnings);}
   if(native)native.readingPaths=[...(scanned.length<pages.length?['text']:[]),...(scanned.length>visionPages.length?['scan (OCR)']:[])];
-  const result=visionPages.length?mergeScanResults(visionPages,native,pdf.numPages,reportIdentities):native;
+  if(visionPages.length&&!reportIdentity)reportIdentity=await confirmReportIdentity([...reportIdentities,...visionPages.map(({page,result})=>({page,patientName:result.patientName,reportDate:result.reportDate})),...(native?[{page:native.usedPages[0],patientName:native.patientName,reportDate:native.date}]:[])],options.confirmIdentity);
+  const result=visionPages.length?mergeScanResults(visionPages,native,pdf.numPages,reportIdentities,reportIdentity):native;
   finishCoverage(coverage,result,attempts,visionPages);
   if(visionPages.some(p=>nativeFallback.includes(p.page))){
    result.readingPaths=(result.readingPaths??[]).filter(path=>path!=='scan (AI vision)'||visionPages.some(p=>scanned.includes(p.page)));

@@ -3,8 +3,9 @@ import {classifyScanPage,isStandardBloodTest} from './blood-page-classification.
 import {resolveReportIdentity} from './report-identity.js';
 import {testIdentity} from './test-names.js';
 import {semenIdentity} from './semen-markers.js';
-export function mergeScanResults(scans,native,pageCount,identityPages=[]){
- const identity=resolveReportIdentity([...identityPages,...scans.map(({page,result})=>({page,patientName:result.patientName,reportDate:result.reportDate})),...(native?[{page:native.usedPages[0],patientName:native.patientName,reportDate:native.date}]:[])]);
+export function mergeScanResults(scans,native,pageCount,identityPages=[],confirmedIdentity){
+ const identity=confirmedIdentity??resolveReportIdentity([...identityPages,...scans.map(({page,result})=>({page,patientName:result.patientName,reportDate:result.reportDate})),...(native?[{page:native.usedPages[0],patientName:native.patientName,reportDate:native.date}]:[])]);
+ if(identity.needsConfirmation)return {identityConfirmation:identity.conflict};
  let result=native?{...native,markers:[...native.markers],warnings:[...native.warnings],usedPages:[...native.usedPages],unreadable:[...(native.unreadable??[])]}:null;
  for(const {page,result:originalScan} of scans){
   const scan=classifyScanPage(originalScan);

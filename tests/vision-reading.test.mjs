@@ -16,7 +16,8 @@ test('vision caps 100 pages per reading and 400 pages across the app per IST day
 });
 test('vision cannot silently merge different people or conflicting values',()=>{
  const first=mergeScanResults([{page:1,result:validateScan(scan)}],null,2);
- for(const change of [{patientName:'Someone Else'},{tests:[{...scan.tests[0],value:'15'}]}])assert.throws(()=>mergeScanResults([{page:2,result:validateScan({...scan,...change})}],first,2));
+ assert.equal(mergeScanResults([{page:2,result:validateScan({...scan,patientName:'Someone Else'})}],first,2).identityConfirmation.length,2);
+ assert.throws(()=>mergeScanResults([{page:2,result:validateScan({...scan,tests:[{...scan.tests[0],value:'15'}]})}],first,2));
 });
 
 test('report identity from the first page applies to later scan results with missing identity',()=>{
@@ -30,7 +31,7 @@ test('a cover-page identity can supply missing details without being a result pa
 });
 test('missing whole-file identity and conflicting names on a non-result page are rejected',()=>{
  assert.throws(()=>mergeScanResults([{page:2,result:{...scan,patientName:null,reportDate:null}}],null,2),/patient name and report date/);
- assert.throws(()=>mergeScanResults([{page:1,result:scan},{page:2,result:{reportKind:'other',specimen:'other',patientName:'Different Person',reportDate:null,tests:[]}}],null,2),/different patient names/);
+ assert.equal(mergeScanResults([{page:1,result:scan},{page:2,result:{reportKind:'other',specimen:'other',patientName:'Different Person',reportDate:null,tests:[]}}],null,2).identityConfirmation.length,2);
 });
 
 test('different printed dates for the same patient use the first report date with a source-check warning',()=>{

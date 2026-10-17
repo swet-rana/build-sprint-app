@@ -154,3 +154,9 @@
 }
 
 #summary-view .test-selection-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+
+#summary-view .identity-confirmation{padding:20px;margin:20px 0;background:#fff;border:1px solid #d8d1f3;border-radius:16px;scroll-margin:110px;overflow-wrap:anywhere}
+#summary-view .identity-confirmation[hidden]{display:none}
+#summary-view .identity-confirmation-actions{display:flex;flex-wrap:wrap;gap:12px}
+#summary-view .identity-confirmation-actions button{min-height:44px}
+@media(max-width:760px){#summary-view .identity-confirmation-actions button{width:100%}}

@@ -95,3 +95,37 @@ test('daily-limit banner hides retry until midnight IST, then restores retry wit
  console.log('DAILY LIMIT UI: 400-page banner; resumes 17 Oct 2026 at 00:00 IST; Try again hidden before reset and available after reset; no automatic read.');
  }finally{Date.now=realNow;dom.window.close();for(const key of keys){if(old[key]===undefined)delete globalThis[key];else globalThis[key]=old[key];}}
 });
+
+test('Summary pauses just the differing-name file; Yes retains all pages and No removes it while the other report finishes',async()=>{
+ for(const answer of ['yes','no']){
+  const dom=new JSDOM('<div id="summary" hidden></div>',{url:'http://localhost:5173'}),keys=['window','document','localStorage','MutationObserver','fetch'];const old=Object.fromEntries(keys.map(k=>[k,globalThis[k]]));
+  Object.assign(globalThis,{window:dom.window,document:dom.window.document,localStorage:dom.window.localStorage,MutationObserver:dom.window.MutationObserver});
+  globalThis.fetch=async()=>new Response('fictional PDF',{headers:{'Content-Type':'application/pdf'}});
+  try{
+   const bundle=await build({entryPoints:['src/analysis.js'],bundle:true,write:false,format:'esm',platform:'node',define:{'import.meta.env.VITE_CONVEX_URL':'"https://fictional.convex.cloud"'},loader:{'.css':'empty'},plugins:[{name:'identity-pause-flow',setup(b){
+    b.onResolve({filter:/report-reader\.js$|report-viewer\.js$|smart-summary-client\.js$/},a=>({path:a.path,namespace:'identity-flow'}));
+    b.onLoad({filter:/.*/,namespace:'identity-flow'},a=>({resolveDir:process.cwd(),contents:a.path.includes('report-viewer')?'export async function openReportViewer(){}':a.path.includes('smart-summary-client')?'export async function requestSmartSummary(){return {available:false};}':`
+     import {confirmReportIdentity} from './src/identity-confirmation.js';
+     import {mergeScanResults} from './src/scan-results.js';let calls=0;
+     export async function readLabReport(_b,_p,_t,options){calls++;
+      const name=calls===1?'Alex Other':'Alex Sample';const sources=[{page:1,patientName:'Alex Sample',reportDate:calls===1?'2026-01-15':'2026-07-15'},{page:7,patientName:name,reportDate:null}];
+      const identity=await confirmReportIdentity(sources,options.confirmIdentity);
+      const scans=sources.map((s,i)=>({page:s.page,result:{reportKind:'blood',patientName:s.patientName,reportDate:s.reportDate,tests:[{name:i?'CRP':'Haemoglobin',value:i?'3':'13',unit:i?'mg/L':'g/dL',referenceRange:i?'0-5':'12-16',readable:true,sourceTop:.4}]}}));
+      return mergeScanResults(scans,null,7,[],identity);
+     }`}));
+   }}]});
+   const {mountAnalysis}=await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}#${answer}`),root=document.querySelector('#summary'),removed=[];
+   const saved=[{id:'names-'+answer,serial:1,name:'fictional-names.pdf',contentType:'application/pdf',size:100},{id:'good-'+answer,serial:2,name:'fictional-good.pdf',contentType:'application/pdf',size:100}];let ids=saved.map(r=>r.id);
+   const analysis=mountAnalysis(root,()=>{},{onRemoveReport:id=>{removed.push(id);ids=ids.filter(x=>x!==id);analysis.updateReports(saved,ids);}});analysis.updateReports(saved,ids);
+   const pending=analysis.prepare();
+   for(let n=0;n<100&&!root.querySelector('[data-identity-answer]');n++)await new Promise(r=>setTimeout(r,5));
+   assert.equal(root.querySelector('#identity-confirmation').hidden,false);assert.equal(root.querySelector('#real-summary').textContent,'');
+   root.querySelector(`[data-identity-answer="${answer}"]`).click();await pending;
+   assert(root.querySelector('.real-summary-paper'),'The remaining readable report must finish');
+   assert.equal(removed.length,answer==='no'?1:0);assert.equal(root.querySelectorAll('.analysis-selected-list>li').length,answer==='no'?1:2);
+   assert(root.querySelector('#analysis-status').textContent.includes(answer==='no'?'1 report read':'2 reports read'));
+   if(answer==='no')assert.equal(root.querySelector('#identity-confirmation').textContent,'Upload a separate file for each person.');
+   console.log(`IDENTITY ${answer.toUpperCase()}: paused one file; ${answer==='yes'?'both pages retained; 2 reports finished':'only that report removed from selection; 1 report finished'}; no pages sent to AI again.`);
+  }finally{dom.window.close();for(const k of keys){if(old[k]===undefined)delete globalThis[k];else globalThis[k]=old[k];}}
+ }
+});

@@ -2,10 +2,10 @@ import test from 'node:test';import assert from 'node:assert/strict';import {rea
 import {getDocument} from 'pdfjs-dist/legacy/build/pdf.mjs';
 import {identityFromItems,identityFromOcr,resolveReportIdentity} from '../src/report-identity.js';
 import {parseReport,rowsFromItems} from '../src/lab-parser.js';
-test('printed identity can be assembled from separate pages, and conflicting names are rejected',()=>{
+test('printed identity can be assembled from separate pages, and conflicting names request confirmation',()=>{
  const identity=resolveReportIdentity([{page:1,patientName:'Sample Patient',reportDate:null},{page:3,patientName:null,reportDate:'2026-07-15'}]);
  assert.equal(identity.patientName,'Sample Patient');assert.equal(identity.reportDate,'2026-07-15');assert.deepEqual(identity.identitySources,{patientPage:1,datePage:3});
- assert.throws(()=>resolveReportIdentity([{page:1,patientName:'Sample Patient',reportDate:'2026-07-15'},{page:4,patientName:'Another Person',reportDate:null}]),/different patient names/);
+ assert.equal(resolveReportIdentity([{page:1,patientName:'Sample Patient',reportDate:'2026-07-15'},{page:4,patientName:'Another Person',reportDate:null}]).needsConfirmation,true);
  assert.throws(()=>resolveReportIdentity([{page:1,patientName:'Sample Patient',reportDate:'2026-02-30'}]),/patient name and report date/);
 });
 test('OCR identity from a cover respects the unchanged 80-percent confidence rule',()=>{
@@ -40,8 +40,8 @@ test('doctor and referrer labels are not patient identity, even if vision choose
  // A real patient with a Dr title is still a patient, not a doctor field.
  assert.doesNotThrow(()=>resolveReportIdentity([{page:1,patientName:'Dr Alex Sample',reportDate:'2026-07-15'},{page:2,patientName:'Alex Sample',reportDate:null}]));
 });
-test('clearly different patients remain rejected, including ambiguous initials between full names',()=>{
+test('clearly different patients request confirmation, including ambiguous initials between full names',()=>{
  for(const names of [['Alex Sample','Jamie Sample'],['Alex Sample','Alex Other'],['Alex Sample','A. Sample','Andrew Sample']]){
-  assert.throws(()=>resolveReportIdentity(names.map((patientName,i)=>({page:i+1,patientName,reportDate:'2026-07-15'}))),error=>/different patient names/.test(error.message)&&error.message.includes('pages 1 and '+names.length)&&!names.some(name=>error.message.includes(name)));
+  const result=resolveReportIdentity(names.map((patientName,i)=>({page:i+1,patientName,reportDate:'2026-07-15'})));assert.equal(result.needsConfirmation,true);assert.deepEqual(result.conflict.map(x=>x.page),[1,names.length]);
  }
 });
