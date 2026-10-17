@@ -103,6 +103,6 @@
  #app #summary-view #analysis-form .summary-preparation :is(.analysis-guide li,.analysis-guide span,#prepare-summary,#prepare-summary span,.preparation-help){font-size:18px!important}
 }
 
-/* Selected-reports section heading size. */
-#app #summary-view #analysis-form #selected-analysis-title{font-size:27px!important}
-@media(max-width:760px){#app #summary-view #analysis-form #selected-analysis-title{font-size:25px!important}}
+/* Summary section heading sizes. */
+#app #summary-view #analysis-form :is(#selected-analysis-title,#preparation-title){font-size:27px!important}
+@media(max-width:760px){#app #summary-view #analysis-form :is(#selected-analysis-title,#preparation-title){font-size:25px!important}}
