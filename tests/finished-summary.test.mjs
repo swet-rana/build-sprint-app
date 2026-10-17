@@ -102,6 +102,8 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blu
   for(const wanted of expected.markers){
    const marker=markers.find(m=>m.querySelector('.marker-heading h4').textContent===wanted.name);
    assert(marker,`Missing test ${wanted.name}`);
+   assert.equal(marker.querySelector('[data-test-info]').dataset.testInfo,wanted.name);
+   const picker=[...root.querySelectorAll('.test-option')].find(row=>row.querySelector('[data-test-info]').dataset.testInfo===wanted.name);assert(picker,`Missing picker explanation ${wanted.name}`);assert(!picker.querySelector('label button'),'Info must not toggle test selection');
    assert.deepEqual([...marker.querySelectorAll('.values>div')].map(v=>v.querySelector('.result-value')?.textContent??null),wanted.values);
    assert.equal(marker.querySelector('.marker-heading span').textContent,wanted.unit);
    assert.deepEqual([...marker.querySelectorAll('.values>div')].map(v=>v.querySelector('.result-value')?v.querySelector(':scope>span').textContent:null),wanted.values.map((v,i)=>v===null?null:`Reference: ${wanted.references?.[i]??wanted.reference}`));
@@ -117,6 +119,7 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blu
    assert(paper.textContent.includes('unreadable in scan'));
    const unreadable=paper.querySelector('p.scan-value-notice .source-button');
    assert(unreadable,'Unreadable scan entries must link to their original report');
+   assert.equal(unreadable.parentElement.querySelector('[data-test-info]').dataset.testInfo,'Unreadable fictional marker');
    assert.equal(unreadable.dataset.source,'july');
    assert.equal(unreadable.dataset.page,kind==='scan-filter'?'27':'1');
    assert.equal(unreadable.dataset.sourcePath,'vision');

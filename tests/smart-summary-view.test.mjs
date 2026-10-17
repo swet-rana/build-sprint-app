@@ -31,7 +31,7 @@ test('list rows preserve groups and latest source data, with distinct labels, co
  assert.equal(doc.querySelector('.smart-count-normal').textContent,'7');assert.equal(doc.querySelector('.smart-count-attention').textContent,'9');
  assert.equal(doc.querySelectorAll('.smart-summary-scan-note').length,1);assert.equal(doc.querySelectorAll('.scan-value-notice').length,0);assert(options.every(o=>o.scanNotice===false));
  assert.equal(doc.querySelectorAll('[popover]').length,0);assert.equal(doc.querySelectorAll('.smart-source-direct').length,3);assert.deepEqual([...doc.querySelectorAll('.smart-source-direct')].map(p=>[p.dataset.source,p.dataset.page]),[['2026-07-15','2'],['2026-07-15','3'],['2026-07-15','4']]);
- for(const item of doc.querySelectorAll('.smart-result-row')){assert(!/2026|Page |read from scan/.test(item.textContent));assert.equal(item.querySelectorAll('button').length,1);}
+ for(const item of doc.querySelectorAll('.smart-result-row')){assert(!/2026|Page |read from scan/.test(item.textContent));assert.equal(item.querySelectorAll('[data-source]').length,1);assert.equal(item.querySelectorAll('[data-test-info]').length,1);}
  assert.equal(doc.querySelector('.smart-summary-questions'),null);assert(doc.querySelector('.smart-summary-disclaimer').textContent.includes('Not a diagnosis; discuss results with your doctor.'));
  assert.equal(doc.querySelectorAll('[aria-label="Hits"] .smart-result-row').length,1);assert.equal(doc.querySelectorAll('[aria-label="Misses"] .smart-result-row').length,2);
 });
