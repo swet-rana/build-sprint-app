@@ -96,6 +96,10 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blu
   assert.deepEqual(downloads,['july','january']);
   const captured=capturedEvaluations.find(run=>run.kind==='summary');assert(captured?.output,'Finished output must be available for logging');
   if(expected.labs)assert.deepEqual(captured.output.comparison.reports.map(r=>r.labName),expected.labs);
+  const included=[...root.querySelectorAll('.included-report')];assert.equal(included.length,2,'Both selected reports must have their own inclusion block');
+  assert(!root.querySelector('.reading-coverage').textContent.includes('dated result-table pages used.'));
+  for(const report of captured.output.comparison.reports){const block=included.find(e=>e.querySelector('strong').textContent===report.fileName);assert(block);assert(block.textContent.includes(`Total pages: ${report.pageCount}`));const pages=[...new Set(report.usedPages)].sort((a,b)=>a-b);assert(block.textContent.includes(`Pages with test results: ${pages.length}`));}
+
   root.querySelector('[data-category="all"]').click();
   const paper=root.querySelector('.real-summary-paper');assert(paper,'A finished summary must be rendered');
   assert.equal(paper.querySelector('.summary-heading p').textContent,expected.dates);
