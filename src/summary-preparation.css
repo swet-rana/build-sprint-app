@@ -27,16 +27,16 @@
 @media(prefers-reduced-motion:reduce){#app #summary-view #analysis-form #summary-preparation-panel #prepare-summary{transition:none}}
 
 /* Summary section titles share the preparation panel's typography. */
-#app #summary-view :is(#analysis-form #selected-analysis-title,#smart-summary-title,#category-title,#lab-report-summary-title){
+#app #summary-view :is(#analysis-form #selected-analysis-title,#smart-summary-title,#category-title,#lab-report-summary-title,#behind-scenes-title){
  font-family:'Plus Jakarta Sans',Arial,sans-serif!important;
  font-size:26px!important;font-weight:800!important;line-height:1.12!important;letter-spacing:-.035em!important;
 }
 @media(max-width:340px){
- #app #summary-view :is(#analysis-form #selected-analysis-title,#smart-summary-title,#category-title,#lab-report-summary-title){font-size:24px!important}
+ #app #summary-view :is(#analysis-form #selected-analysis-title,#smart-summary-title,#category-title,#lab-report-summary-title,#behind-scenes-title){font-size:24px!important}
 }
 
 /* These section headings keep the health-category heading's dark purple. */
-#app #summary-view :is(#analysis-form #selected-analysis-title,#smart-summary-title,#lab-report-summary-title){color:#35328b!important}
+#app #summary-view :is(#analysis-form #selected-analysis-title,#smart-summary-title,#lab-report-summary-title,#behind-scenes-title){color:#35328b!important}
 
 /* Keep the existing section heading size; its subtitle is exactly 2px smaller. */
 #app #summary-view .reading-coverage-subtitle{font-size:calc(var(--type-h2) - 2px)!important;line-height:1.25!important;margin:4px 0 18px}
@@ -47,3 +47,9 @@
 #app #summary-view .behind-scenes>details{background:transparent;border:0;border-top:1px solid #e9e6fa;border-radius:0;box-shadow:none;padding:16px 0;margin:16px 0 0}
 #app #summary-view .behind-scenes>#scan-page-coverage{border-top:1px solid #e9e6fa;padding-top:16px;margin-top:16px}
 @media(max-width:760px){#app #summary-view .behind-scenes{padding:18px 16px}}
+
+/* Supporting text matches the subtitle below My Summary. */
+#app #summary-view #real-summary .behind-scenes :is(p,h3,h4,strong,summary,li,span,small,button,td,th,a){font-family:Lato,Arial,sans-serif!important;font-size:16px!important;font-weight:400!important;line-height:1.5!important;letter-spacing:normal!important}
+#app #summary-view #real-summary .behind-scenes #behind-scenes-title{font-family:'Plus Jakarta Sans',Arial,sans-serif!important;font-size:26px!important;font-weight:800!important;line-height:1.12!important;letter-spacing:-.035em!important}
+@media(max-width:760px){#app #summary-view #real-summary .behind-scenes :is(p,h3,h4,strong,summary,li,span,small,button,td,th,a){font-size:14px!important}}
+@media(max-width:340px){#app #summary-view #real-summary .behind-scenes #behind-scenes-title{font-size:24px!important}}
