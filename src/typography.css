@@ -50,3 +50,13 @@ body,#app,.original-viewer{font-family:var(--font-body)!important;font-size:var(
  #app:has(#home-tab[aria-pressed]) .view-tabs button{font-family:var(--font-primary)!important;font-size:var(--type-navigation)!important;font-weight:500!important;line-height:1.5!important;letter-spacing:normal}
 }
 @media screen and (max-width:760px){#app .view-tabs{--type-navigation:14px}}
+
+/* Shared Reports, Summary and Profile footer. */
+@media screen{
+ #app .page-footer{font-size:16px!important}
+ #app .page-footer a{font-size:14px}
+}
+@media screen and (max-width:760px){
+ #app .page-footer{font-size:14px!important}
+ #app .page-footer a{font-size:12px}
+}
