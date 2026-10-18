@@ -10,6 +10,7 @@ export default defineSchema({
     name: v.string(),
     contentType: v.string(),
     size: v.number(),
+    pageCount: v.optional(v.number()),
     uploadId: v.optional(v.string()),
     serial: v.optional(v.number()),
     contentHash: v.optional(v.string()),

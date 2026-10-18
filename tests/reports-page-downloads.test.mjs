@@ -5,7 +5,7 @@ import { JSDOM } from 'jsdom';
 
 // Mount the actual Reports page against a fake backend: no stored data is touched.
 const reports = [
-  { id:'pdf-1',serial:1,name:'Fictional.pdf',contentType:'application/pdf',size:5000000 },
+  { id:'pdf-1',serial:1,name:'Fictional.pdf',contentType:'application/pdf',size:5000000,pageCount:27 },
   { id:'photo-2',serial:2,name:'Fictional.jpg',contentType:'image/jpeg',size:80000 },
 ];
 test('PDF cards stay unopened; central selection and private image previews work', async () => {
@@ -37,7 +37,7 @@ test('PDF cards stay unopened; central selection and private image previews work
     const root=document.querySelector('#reports');const selection=mountUploads(root,(...args)=>selections.push(args),()=>summaries++);
     await new Promise(resolve=>setTimeout(resolve,60));
     assert.equal(root.querySelectorAll('[data-report-id]').length,2,'Both saved report cards must be rendered');
-    assert.equal(downloads.length,0,`Reports load downloaded ${downloads.length} files`);
+    assert.equal(downloads.length,0,`Reports load downloaded ${downloads.length} files`);assert(root.querySelector('.report-file-badge').textContent.includes(', 27 pages'));
     assert(!mutations.includes('setContentHash')&&!mutations.includes('updateDetails'),'Page load must not backfill stored report data');
     root.querySelector('#search-reports').value='Fictional';
     root.querySelector('#search-reports').dispatchEvent(new window.Event('input',{bubbles:true}));

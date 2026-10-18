@@ -150,3 +150,9 @@ export async function explainPdfTextPages(blob){
   return textPages;
  }finally{await task.destroy?.();}
 }
+
+// PDF metadata only: no page rendering, OCR or report-value extraction.
+export async function pdfPageCount(blob){
+ const task=getDocument({data:new Uint8Array(await blob.arrayBuffer()),isEvalSupported:false,useSystemFonts:true,disableFontFace:true});
+ try{return (await task.promise).numPages;}finally{await task.destroy();}
+}

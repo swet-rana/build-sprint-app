@@ -7,11 +7,11 @@ import type { Doc } from "./_generated/dataModel";
 import { paginationOptsValidator, paginationResultValidator } from "convex/server";
 const detailsValidator = v.object({ labName: v.string(), testType: v.string(), patientName: v.string(), testDate: v.string() });
 const reportValidator = v.object({
-  id:v.id("reports"),name:v.string(),contentType:v.string(),size:v.number(),uploadedAt:v.number(),
+  id:v.id("reports"),name:v.string(),contentType:v.string(),size:v.number(),uploadedAt:v.number(),pageCount:v.optional(v.number()),
   details:v.optional(detailsValidator),serial:v.optional(v.number()),contentHash:v.optional(v.string()),
 });
 const toListed = (r: Doc<"reports">) => ({id:r._id,name:r.name,contentType:r.contentType,size:r.size,uploadedAt:r._creationTime,
-  ...(r.details?{details:r.details}:{}),...(r.serial?{serial:r.serial}:{}),...(r.contentHash?{contentHash:r.contentHash}:{})});
+  ...(r.pageCount?{pageCount:r.pageCount}:{}),...(r.details?{details:r.details}:{}),...(r.serial?{serial:r.serial}:{}),...(r.contentHash?{contentHash:r.contentHash}:{})});
 async function counterFor(ctx: MutationCtx, sessionKey: string) {
   const counter=await ctx.db.query("reportCounters").withIndex("by_session",q=>q.eq("sessionKey",sessionKey)).first();
   if(counter)return counter;
@@ -133,5 +133,17 @@ export const listPage = query({
   if(!isSessionKey(sessionKey))throw new ConvexError("Invalid upload session.");
   const result=await ctx.db.query("reports").withIndex("by_session_deleted",q=>q.eq("sessionKey",sessionKey).eq("deleted",undefined)).order("desc").paginate(paginationOpts);
   return {...result,page:result.page.map(toListed)};
+ }
+});
+
+export const setPageCount=mutation({
+ args:{sessionKey:v.string(),reportId:v.id('reports'),pageCount:v.number()},returns:v.null(),
+ handler:async(ctx,{sessionKey,reportId,pageCount})=>{
+  if(!isSessionKey(sessionKey))throw new ConvexError('Invalid upload session.');
+  const report=await ctx.db.get('reports',reportId);
+  if(!report||report.sessionKey!==sessionKey||report.deleted)throw new ConvexError('Report not found in this browser.');
+  if(!Number.isSafeInteger(pageCount)||pageCount<1)throw new ConvexError('Invalid report page count.');
+  if(report.pageCount!==pageCount)await ctx.db.patch('reports',reportId,{pageCount});
+  return null;
  }
 });

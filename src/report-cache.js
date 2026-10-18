@@ -66,6 +66,13 @@ export function createReportCache({scope,store=browserReportStore(),download}){
   try{return await pending;}catch(error){if(memory.get(report.id)===pending)memory.delete(report.id);throw error;}
  }
  return {
+  // Inspect existing browser data without downloading or starting a reading.
+  async peek(report,kind='original'){
+   const identity=identify(report),memory=kind==='original'?originals:readings;
+   if(memory.has(report.id))try{return await memory.get(report.id);}catch{return null;}
+   const saved=await storage(()=>store.get(key(report,kind)));
+   return saved?.identity===identity&&saved.version===(kind==='reading'?READING_CACHE_VERSION:null)?saved.value:null;
+  },
   original:report=>cached(report,'original',()=>download(report)),
   reading:async(report,read)=>structuredClone(await cached(report,'reading',read)),
   async remember(report,blob){

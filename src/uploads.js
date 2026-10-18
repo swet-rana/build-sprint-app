@@ -1,4 +1,5 @@
 import {imageUrl} from './image-assets.js';
+import {pageCountLabel} from './report-page-count.js';
 import {reportCache} from './report-cache.js';
 import {convertHeicUpload,isHeicPhoto} from './heic-upload.js';
 import { matchesReportSearch } from './report-search.js';
@@ -85,12 +86,28 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
   const trashPages = [], trashSubscriptions = [];
   const url = import.meta.env.VITE_CONVEX_URL;
   const site = url?.replace(/\.convex\.cloud\/?$/, '.convex.site');
-  const recentUploads=new Map();
+  const recentUploads=new Map(),pageCounts=new Map(),countingPages=new Set();
+  async function rememberPageCount(report,blob){
+    if(report.pageCount||countingPages.has(report.id))return;
+    countingPages.add(report.id);
+    try{
+      const cache=reportCache(site,sessionKey),reading=await cache.peek(report,'reading');
+      let count=reading?.pageCount;
+      if(!count&&report.contentType.startsWith('image/'))count=1;
+      if(!count){blob??=await cache.peek(report);if(!blob)return;count=await (await import('./report-reader.js')).pdfPageCount(blob);}
+      if(!Number.isSafeInteger(count)||count<1)return;
+      pageCounts.set(report.id,count);renderReports();
+      await client.mutation(api.reports.setPageCount,{sessionKey,reportId:report.id,pageCount:count});
+    }catch{/* Page metadata must never prevent uploads or opening a report. */}
+    finally{countingPages.delete(report.id);}
+  }
+  function loadCachedPageCounts(){for(const report of saved)if(!report.pageCount&&!pageCounts.has(report.id))void rememberPageCount(report);}
+
   function syncCachedReports(){
     const cache=reportCache(site,sessionKey);
     for(const report of saved){
       const file=recentUploads.get(report.id);
-      if(file&&file.size===report.size&&file.type===report.contentType){void cache.remember(report,file);recentUploads.delete(report.id);}
+      if(file&&file.size===report.size&&file.type===report.contentType){void cache.remember(report,file).then(()=>rememberPageCount(report,file));recentUploads.delete(report.id);}
     }
     void cache.sync(saved);
   }
@@ -135,11 +152,12 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
     });
     list.innerHTML = visible.length ? `<ul class="report-rows premium-grid">${visible.map(report => {
       const d = report.details || emptyDetails(), type=shortTestType(d.testType) || 'Medical report';
-      return `<li class="premium-report-card"><div class="card-topline"><div class="card-identity"><span class="report-number">Report #${report.serial}</span><span class="report-kind-badge">${report.contentType==='application/pdf'?'PDF':'Image'}</span></div><label class="report-analysis-check"><input type="checkbox" data-analysis-id="${report.id}" aria-label="Select report #${report.serial} for analysis" ${analysisIds.has(report.id)?'checked':''}><span>For summary</span></label><details class="report-menu" data-report-menu="${report.id}" ${openMenus.has(report.id)?'open':''}><summary aria-label="Actions for report #${report.serial}"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></summary><div><button class="secondary" type="button" data-edit-id="${report.id}" aria-label="Edit details for report #${report.serial}">Edit details</button><button class="secondary report-delete" type="button" ${reportControlsReady ? '' : 'disabled'} data-delete-id="${report.id}" aria-label="Delete report #${report.serial}">Delete report</button></div></details></div>${Number.isFinite(report.uploadedAt)?`<p class="report-uploaded-date">Uploaded on ${escape(new Date(report.uploadedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}))}</p>`:''}${readingErrors.has(report.id)?`<p class="report-reading-error" role="status">Reading error: ${escape(readingErrors.get(report.id))}</p>`:''}${report.duplicateOf ? `<p class="duplicate-note">Duplicate of report #${report.duplicateOf}</p>` : ''}<div class="card-report-content"><div class="report-preview" ${report.contentType.startsWith('image/')?`data-thumbnail-id="${report.id}"`:''} aria-hidden="true">${report.contentType==='application/pdf'?pdfPreviewIcon:imagePreviewIcon}</div><div class="report-details"><h2>${escape(type)}</h2><p class="report-lab"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 21h14M9 3h6m-5 0v7L5 21h14l-5-11V3M8 15h8"/></svg>${escape(d.labName || 'Lab not added')}</p><p class="report-date"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 11h16"/></svg>${escape(d.testDate?testDateLabel(d.testDate):'Test date not added')}</p><p class="report-person"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="7" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg> ${escape(d.patientName || 'Name not added')}</p><span class="report-file-badge">${documentIcon}${report.contentType==='application/pdf'?'PDF':'Photo'} · ${sizeLabel(report.size)}</span></div></div><p class="report-filename" title="${escape(report.name)}">${escape(report.name)}</p>${(!d.labName||!d.patientName||!d.testDate)?`<button class="report-add-details" type="button" data-edit-id="${report.id}" aria-label="Add missing details for report #${report.serial}">Add missing details</button>`:''}<div class="report-edit-slot"></div><div class="report-card-actions"><button class="report-open primary" type="button" data-report-id="${report.id}" aria-label="Open report #${report.serial}">Open report <span aria-hidden="true">→</span></button></div></li>`;
+      return `<li class="premium-report-card"><div class="card-topline"><div class="card-identity"><span class="report-number">Report #${report.serial}</span><span class="report-kind-badge">${report.contentType==='application/pdf'?'PDF':'Image'}</span></div><label class="report-analysis-check"><input type="checkbox" data-analysis-id="${report.id}" aria-label="Select report #${report.serial} for analysis" ${analysisIds.has(report.id)?'checked':''}><span>For summary</span></label><details class="report-menu" data-report-menu="${report.id}" ${openMenus.has(report.id)?'open':''}><summary aria-label="Actions for report #${report.serial}"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></summary><div><button class="secondary" type="button" data-edit-id="${report.id}" aria-label="Edit details for report #${report.serial}">Edit details</button><button class="secondary report-delete" type="button" ${reportControlsReady ? '' : 'disabled'} data-delete-id="${report.id}" aria-label="Delete report #${report.serial}">Delete report</button></div></details></div>${Number.isFinite(report.uploadedAt)?`<p class="report-uploaded-date">Uploaded on ${escape(new Date(report.uploadedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}))}</p>`:''}${readingErrors.has(report.id)?`<p class="report-reading-error" role="status">Reading error: ${escape(readingErrors.get(report.id))}</p>`:''}${report.duplicateOf ? `<p class="duplicate-note">Duplicate of report #${report.duplicateOf}</p>` : ''}<div class="card-report-content"><div class="report-preview" ${report.contentType.startsWith('image/')?`data-thumbnail-id="${report.id}"`:''} aria-hidden="true">${report.contentType==='application/pdf'?pdfPreviewIcon:imagePreviewIcon}</div><div class="report-details"><h2>${escape(type)}</h2><p class="report-lab"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 21h14M9 3h6m-5 0v7L5 21h14l-5-11V3M8 15h8"/></svg>${escape(d.labName || 'Lab not added')}</p><p class="report-date"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 11h16"/></svg>${escape(d.testDate?testDateLabel(d.testDate):'Test date not added')}</p><p class="report-person"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="7" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg> ${escape(d.patientName || 'Name not added')}</p><span class="report-file-badge">${documentIcon}${report.contentType==='application/pdf'?'PDF':'Photo'} · ${sizeLabel(report.size)}${pageCountLabel(report.pageCount??pageCounts.get(report.id))}</span></div></div><p class="report-filename" title="${escape(report.name)}">${escape(report.name)}</p>${(!d.labName||!d.patientName||!d.testDate)?`<button class="report-add-details" type="button" data-edit-id="${report.id}" aria-label="Add missing details for report #${report.serial}">Add missing details</button>`:''}<div class="report-edit-slot"></div><div class="report-card-actions"><button class="report-open primary" type="button" data-report-id="${report.id}" aria-label="Open report #${report.serial}">Open report <span aria-hidden="true">→</span></button></div></li>`;
     }).join('')}</ul>` : '<div class="reports-empty"><div><h3>No matching reports</h3><p>Try a different search or filter.</p><button type="button" class="secondary" data-clear-filters>Clear filters</button></div></div>';
     updateSummaryActions();
     list.innerHTML += `<p class="stored-note" id="details-status" role="status"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v2"/></svg><span>Check report details against the originals. Access stays tied to this browser until sign-in is available.</span></p>`;
     loadVisibleThumbnails();
+    loadCachedPageCounts();
   }
   list.addEventListener('change',event=>{
     const input=event.target.closest('[data-analysis-id]');if(!input)return;
@@ -311,7 +329,7 @@ export function mountUploads(root, onReports = () => {}, onSummary = () => {}) {
     if (!button || button.disabled) return;
     const report = saved.find(r=>r.id===button.dataset.reportId);
     if(!report) return;
-    await openReportViewer({name:`Report #${report.serial} · ${report.name}`,load:()=>reportCache(site,sessionKey).original(report)});
+    await openReportViewer({name:`Report #${report.serial} · ${report.name}`,load:async()=>{const blob=await reportCache(site,sessionKey).original(report);void rememberPageCount(report,blob);return blob;}});
   });
   return {removeFromAnalysis(id){
     if(!analysisIds.delete(id))return;
