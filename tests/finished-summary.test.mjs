@@ -98,7 +98,7 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blu
   if(expected.labs)assert.deepEqual(captured.output.comparison.reports.map(r=>r.labName),expected.labs);
   const included=[...root.querySelectorAll('.included-report')];assert.equal(included.length,2,'Both selected reports must have their own inclusion block');
   assert(!root.querySelector('.reading-coverage').textContent.includes('dated result-table pages used.'));
-  for(const report of captured.output.comparison.reports){const block=included.find(e=>e.querySelector('strong').textContent===report.fileName);assert(block);assert(block.textContent.includes(`Total pages: ${report.pageCount}`));const pages=[...new Set(report.usedPages)].sort((a,b)=>a-b);assert(block.textContent.includes(`Pages with test results: ${pages.length}`));}
+  for(const report of captured.output.comparison.reports){const block=included.find(e=>e.querySelector('strong').textContent===report.fileName);assert(block);assert(block.textContent.includes(`Total pages: ${report.pageCount}`));const count=report.scanCoverage?Math.max(0,(report.scanCoverage.pdfTotal??report.scanCoverage.total)-report.scanCoverage.total)+report.scanCoverage.read:new Set(report.usedPages).size;assert(block.textContent.includes(`Pages with test results: ${count}`));}
 
   root.querySelector('[data-category="all"]').click();
   const paper=root.querySelector('.real-summary-paper');assert(paper,'A finished summary must be rendered');
