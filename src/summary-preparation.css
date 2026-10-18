@@ -40,3 +40,10 @@
 
 /* Keep the existing section heading size; its subtitle is exactly 2px smaller. */
 #app #summary-view .reading-coverage-subtitle{font-size:calc(var(--type-h2) - 2px)!important;line-height:1.25!important;margin:4px 0 18px}
+
+/* One shared card for Behind the Scenes, page details and exclusions. */
+#app #summary-view .behind-scenes{padding:24px;background:#fff;border:1px solid #e9e6fa;border-radius:16px;box-shadow:0 5px 14px rgb(53 43 140 / 5%);overflow-wrap:anywhere}
+#app #summary-view .behind-scenes>h3{margin-top:0}
+#app #summary-view .behind-scenes>details{background:transparent;border:0;border-top:1px solid #e9e6fa;border-radius:0;box-shadow:none;padding:16px 0;margin:16px 0 0}
+#app #summary-view .behind-scenes>#scan-page-coverage{border-top:1px solid #e9e6fa;padding-top:16px;margin-top:16px}
+@media(max-width:760px){#app #summary-view .behind-scenes{padding:18px 16px}}
