@@ -25,3 +25,12 @@
 #app #summary-view #analysis-form #summary-preparation-panel :focus-visible{outline-color:#f6d071;outline-offset:4px}
 @media(max-width:340px){#app #summary-view #analysis-form #summary-preparation-panel{padding-inline:22px}#app #summary-view #analysis-form #summary-preparation-panel #preparation-title{font-size:24px!important}}
 @media(prefers-reduced-motion:reduce){#app #summary-view #analysis-form #summary-preparation-panel #prepare-summary{transition:none}}
+
+/* Summary section titles share the preparation panel's typography. */
+#app #summary-view :is(#analysis-form #selected-analysis-title,#smart-summary-title,#category-title,#lab-report-summary-title){
+ font-family:'Plus Jakarta Sans',Arial,sans-serif!important;
+ font-size:26px!important;font-weight:800!important;line-height:1.12!important;letter-spacing:-.035em!important;
+}
+@media(max-width:340px){
+ #app #summary-view :is(#analysis-form #selected-analysis-title,#smart-summary-title,#category-title,#lab-report-summary-title){font-size:24px!important}
+}
