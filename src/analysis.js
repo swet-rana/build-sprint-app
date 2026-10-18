@@ -1,3 +1,4 @@
+import {reportPageDetails,pageDetailLine} from './report-page-details.js';
 import {reportInclusion,inclusionPageList} from './report-inclusion.js';
 import {formatTestName} from './format-test-name.js';
 import {testInfoButton,installTestExplainers} from './test-explainer.js';
@@ -7,7 +8,7 @@ import {createIdentityConfirmation} from './identity-confirmation.js';
 import {requestSmartSummary} from './smart-summary-client.js';
 import {smartSummaryMarkup} from './smart-summary-view.js';
 import './smart-summary.css';
-import {pdfPageTotal,pageExplanations,plainPageCoverage} from './page-coverage.js';
+import {pdfPageTotal,plainPageCoverage} from './page-coverage.js';
 import {dailyVisionMessage,isDailyVisionLimit,nextVisionReset} from './vision-limits.js';
 import {CATEGORY_ART,categoryIllustration} from './category-art.js';
 import {reportCache} from './report-cache.js';
@@ -74,7 +75,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
  const confirmIdentity=createIdentityConfirmation(root.querySelector('#identity-confirmation'),{storage:localStorage,scope:JSON.stringify([import.meta.env.VITE_CONVEX_URL,localStorage.getItem('health-history-upload-session')]),onRemove:id=>{removedForIdentity.add(id);onRemoveReport(id);}});
  const removedForIdentity=new Set();
  const confirmSelectedReports=createReportSetConfirmation(root.querySelector('#report-set-confirmation'),{storage:localStorage,scope:JSON.stringify([import.meta.env.VITE_CONVEX_URL,localStorage.getItem('health-history-upload-session')]),onChangeSelection:onAddReports});
- const thumbnails=new Map(),readingPaths=new Map(),scanCoverage=new Map(),scanFailureReasons=new Map(),droppedScanRows=new Map();
+ const thumbnails=new Map(),readingPaths=new Map(),scanCoverage=new Map(),scanFailureReasons=new Map(),droppedScanRows=new Map(),pageReadReports=new Map();
  addReports.addEventListener('click',onAddReports);
  selectionList.addEventListener('click',event=>{const remove=event.target.closest('[data-summary-remove]');if(remove&&!busy)onRemoveReport(remove.dataset.summaryRemove);});
  function canPrepare(){return reportIds.length>=1&&reportIds.length<=MAX_ANALYSIS_REPORTS&&reportIds.every(id=>reports.some(r=>r.id===id));}
@@ -89,8 +90,14 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   status.textContent=blocked?dailyVisionMessage(dailyRetryAt):text;status.hidden=!status.textContent;status.classList.toggle('is-error',error||blocked);retry.hidden=!error||blocked;
  }
  function showCoverage(){
-  const box=pageCoverageBox;box.hidden=!scanCoverage.size;
-  box.innerHTML=[...scanCoverage].map(([id,coverage])=>`<div><h3>${escape(reports.find(r=>r.id===id)?.name??'Report')}</h3><p class="page-coverage-summary">${escape(plainPageCoverage(coverage,scanFailureReasons.get(id)?.pages??[]))}</p>${scanFailureReasons.has(id)?`<p class="reading-stopped" role="alert">Reading stopped on page ${scanFailureReasons.get(id).page}: ${escape(scanFailureReasons.get(id).reason)}</p>`:''}${[...new Set((droppedScanRows.get(id)??[]).map(row=>row.page))].map(page=>`<p role="status">${(droppedScanRows.get(id)??[]).filter(row=>row.page===page).length} ${(droppedScanRows.get(id)??[]).filter(row=>row.page===page).length===1?'row':'rows'} on page ${page} couldn't be read</p>`).join('')}<details><summary>See page details</summary><p>${coverage.read} scanned ${coverage.read===1?'page':'pages'} read · ${coverage.skipped.length} skipped · ${coverage.checked} of ${coverage.total} scan/fallback pages checked${coverage.pdfTotal?` · PDF total: ${coverage.pdfTotal} pages`:""}. ${coverage.vision} included from AI vision; ${coverage.ocr} from local OCR.</p>${coverage.pdfTotal?`<p class="pdf-page-total">${escape(pdfPageTotal(coverage))}</p>`:''}${pageExplanations(coverage).length?`<ul>${pageExplanations(coverage).map(p=>`<li>Page ${p.page}: ${escape(p.reason==='AI vision found no supported blood or semen result table.'?'AI vision found no supported test result table.':p.reason)}</li>`).join('')}</ul>`:''}</details></div>`).join('');
+  const box=pageCoverageBox;box.hidden=!scanCoverage.size&&!pageReadReports.size;
+  if(box.hidden){box.innerHTML='';return;}
+  box.innerHTML=reportIds.map(id=>{
+   const file=reports.find(report=>report.id===id);if(!file)return '';
+   const coverage=scanCoverage.get(id),report=pageReadReports.get(id)??{pageCount:file.pageCount,scanCoverage:coverage,unavailable:true};
+   const rows=reportPageDetails(report);
+   return `<div data-page-details-report="${escape(id)}"><h3>${escape(file.name)}</h3>${coverage?`<p class="page-coverage-summary">${escape(plainPageCoverage(coverage,scanFailureReasons.get(id)?.pages??[]))}</p>`:''}${scanFailureReasons.has(id)?`<p class="reading-stopped" role="alert">Reading stopped on page ${scanFailureReasons.get(id).page}: ${escape(scanFailureReasons.get(id).reason)}</p>`:''}${[...new Set((droppedScanRows.get(id)??[]).map(row=>row.page))].map(page=>`<p role="status">${(droppedScanRows.get(id)??[]).filter(row=>row.page===page).length} ${(droppedScanRows.get(id)??[]).filter(row=>row.page===page).length===1?'row':'rows'} on page ${page} couldn't be read</p>`).join('')}<details><summary>See page details</summary>${coverage?`<p>${coverage.read} scanned ${coverage.read===1?'page':'pages'} read · ${coverage.skipped.length} skipped · ${coverage.checked} of ${coverage.total} scan/fallback pages checked${coverage.pdfTotal?` · PDF total: ${coverage.pdfTotal} pages`:''}. ${coverage.vision} included from AI vision; ${coverage.ocr} from local OCR.</p>${coverage.pdfTotal?`<p class="pdf-page-total">${escape(pdfPageTotal(coverage))}</p>`:''}`:''}${rows.length?`<ul class="page-reading-details">${rows.map(row=>`<li>${escape(pageDetailLine(row))}</li>`).join('')}</ul>`:'<p>No saved page details are available yet.</p>'}</details></div>`;
+  }).join('');
  }
  function showPaths(){
   for(const item of selectionList.querySelectorAll('li')){
@@ -182,7 +189,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   const countError=analysisCountError(ids.length);if(countError){message(countError,true);return;}
   if(choices.some(r=>r?.duplicateOf&&ids.includes(reports.find(p=>p.serial===r.duplicateOf)?.id))){message('Untick duplicate reports before analyzing. Each report date should appear once.',true);return;}
   if(!canPrepare()||choices.some(r=>!r)||new Set(ids).size!==ids.length){message('Select at least one medical report in My reports.',true);return;}
-  failures=[];readingPaths.clear();scanCoverage.clear();scanFailureReasons.clear();droppedScanRows.clear();showCoverage();showPaths();showFailures();busy=true;setBusyControls();button.textContent='Reading reports…';comparison=null;smartSummary=null;output.before(pageCoverageBox);output.innerHTML='';onReady(false);
+  failures=[];readingPaths.clear();scanCoverage.clear();scanFailureReasons.clear();droppedScanRows.clear();pageReadReports.clear();showCoverage();showPaths();showFailures();busy=true;setBusyControls();button.textContent='Reading reports…';comparison=null;smartSummary=null;output.before(pageCoverageBox);output.innerHTML='';onReady(false);
   const logger=evaluationLogger();
   const summaryRun=await logger.begin('summary',ids,'HealthStats comparison and summary renderer v1');
   try{
@@ -206,11 +213,15 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
      });
      showPath((report.readingPaths??['text']).join(' + '));
      if(report.droppedRows?.length)droppedScanRows.set(file.id,report.droppedRows);
-     if(report.scanCoverage){await includeTextPages(file,report.scanCoverage);scanCoverage.set(file.id,report.scanCoverage);showCoverage();}
+     pageReadReports.set(file.id,report);
+     if(report.scanCoverage){await includeTextPages(file,report.scanCoverage);scanCoverage.set(file.id,report.scanCoverage);}
+     showCoverage();
      await logger.finish(readingRun,report);parsed.push({...report,id:file.id,fileName:file.name});
     }catch(error){
+     pageReadReports.set(file.id,{pageCount:file.pageCount,scanCoverage:error.pageCoverage,unavailable:true});
      if(error.message.includes(VISION_FAILURE)){error.message=VISION_FAILURE;error.code='VISION_STOP';}
      if(error.pageCoverage){const failedPage=error.message.match(/^Page (\d+):/i);if(failedPage&&!scanFailureReasons.has(file.id))scanFailureReasons.set(file.id,{page:Number(failedPage[1]),reason:error.message.replace(/^Page \d+:\s*/i,''),pages:[Number(failedPage[1])]});await includeTextPages(file,error.pageCoverage);scanCoverage.set(file.id,error.pageCoverage);showCoverage();}
+     showCoverage();
      await logger.finish(readingRun,null,error);
      const reason=dailyRetryAt>Date.now()?dailyVisionMessage(dailyRetryAt):error.name==='TimeoutError'?'The file took too long to download. Try again.':error.message==='Failed to fetch'?'Could not download the file. Check your connection and try again.':error.message.includes('confidently')?'The scan is too unclear to read safely. Upload a clearer copy.':error.message.includes('No supported dated')?'Could not find a readable, dated test results table.':error.message;
      failures.push({reportId:file.id,fileName:file.name,error:error.message,message:`Report #${file.serial} (${file.name}) could not be read: ${reason}`});showFailures();
@@ -256,7 +267,7 @@ export function mountAnalysis(root,onReady,{onAddReports=()=>{},onRemoveReport=(
   reports=saved;
   const next=ids.filter(id=>reports.some(r=>r.id===id));
   if(JSON.stringify(next)!==JSON.stringify(reportIds)){
-   blockDailyUntil(0);reportIds=next;selectionVersion++;failures=[];readingPaths.clear();scanCoverage.clear();scanFailureReasons.clear();droppedScanRows.clear();showCoverage();showFailures();comparison=null;smartSummary=null;output.before(pageCoverageBox);output.innerHTML='';onReady(false);
+   blockDailyUntil(0);reportIds=next;selectionVersion++;failures=[];readingPaths.clear();scanCoverage.clear();scanFailureReasons.clear();droppedScanRows.clear();pageReadReports.clear();showCoverage();showFailures();comparison=null;smartSummary=null;output.before(pageCoverageBox);output.innerHTML='';onReady(false);
    message('Report selection changed. Prepare the summary when ready.');
   }
   const choices=reportIds.map(id=>reports.find(r=>r.id===id));

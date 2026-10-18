@@ -17,6 +17,7 @@ function finishCoverage(coverage,result,scanned,visionPages){
  coverage.vision=scanned.filter(n=>used.has(n)&&vision.has(n)).length;coverage.ocr=coverage.read-coverage.vision;
  for(const n of scanned)if(!used.has(n))skipPage(coverage,n,'No supported, dated test result table was included from this scanned page.');
  for(const page of coverage.textPages??[])if(page.tests===null)page.tests=result.markers.filter(marker=>marker.page===page.page).length;
+ coverage.readPages=scanned.filter(page=>used.has(page)).map(page=>({page,path:vision.has(page)?'AI vision':'local OCR',tests:result.markers.filter(marker=>marker.page===page).length}));
  result.scanCoverage=coverage;
 }
 

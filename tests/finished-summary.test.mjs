@@ -97,6 +97,9 @@ for(const kind of ['fertility','blood','semen','crosslab','scanned','mixed','blu
   const captured=capturedEvaluations.find(run=>run.kind==='summary');assert(captured?.output,'Finished output must be available for logging');
   if(expected.labs)assert.deepEqual(captured.output.comparison.reports.map(r=>r.labName),expected.labs);
   const included=[...root.querySelectorAll('.included-report')];assert.equal(included.length,2,'Both selected reports must have their own inclusion block');
+  const perReportDetails=[...root.querySelectorAll('#scan-page-coverage > [data-page-details-report]')];assert.equal(perReportDetails.length,2,'Every selected report, including text PDFs, has its own page details');
+  for(const report of captured.output.comparison.reports){const block=perReportDetails.find(e=>e.querySelector('h3').textContent===report.fileName);assert(block);assert.equal(block.querySelector('summary').textContent,'See page details');const lines=[...block.querySelectorAll('.page-reading-details li')];assert.equal(lines.length,report.pageCount);lines.forEach((line,index)=>assert(line.textContent.startsWith(`Page ${index+1}: `)));}
+
   assert(!root.querySelector('.reading-coverage').textContent.includes('dated result-table pages used.'));
   for(const report of captured.output.comparison.reports){const block=included.find(e=>e.querySelector('strong').textContent===report.fileName);assert(block);assert(block.textContent.includes(`Total pages: ${report.pageCount}`));const count=report.scanCoverage?Math.max(0,(report.scanCoverage.pdfTotal??report.scanCoverage.total)-report.scanCoverage.total)+report.scanCoverage.read:new Set(report.usedPages).size;assert(block.textContent.includes(`Pages with test results: ${count}`));}
 
