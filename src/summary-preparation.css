@@ -34,3 +34,6 @@
 @media(max-width:340px){
  #app #summary-view :is(#analysis-form #selected-analysis-title,#smart-summary-title,#category-title,#lab-report-summary-title){font-size:24px!important}
 }
+
+/* These section headings keep the health-category heading's dark purple. */
+#app #summary-view :is(#analysis-form #selected-analysis-title,#smart-summary-title,#lab-report-summary-title){color:#35328b!important}
