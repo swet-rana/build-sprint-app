@@ -37,3 +37,6 @@
 
 /* These section headings keep the health-category heading's dark purple. */
 #app #summary-view :is(#analysis-form #selected-analysis-title,#smart-summary-title,#lab-report-summary-title){color:#35328b!important}
+
+/* Keep the existing section heading size; its subtitle is exactly 2px smaller. */
+#app #summary-view .reading-coverage-subtitle{font-size:calc(var(--type-h2) - 2px)!important;line-height:1.25!important;margin:4px 0 18px}
